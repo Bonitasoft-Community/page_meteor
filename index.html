@@ -1,0 +1,216 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <title>Meteor</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/animate.css" />
+    <link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/bootstrap.min.css">
+	<link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/main.css">
+	<link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/style.css">
+
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="https://www.google.com/uds/?file=visualization&amp;v=1&amp;hl=fr&amp;packages=corechart&amp;async=2"></script>
+	<link type="text/css" href="https://www.google.com/uds/api/visualization/1.0/ff67c3772da186a412ae3231c32409e9/ui+fr.css" rel="stylesheet">
+	<script type="text/javascript" src="https://www.google.com/uds/api/visualization/1.0/ff67c3772da186a412ae3231c32409e9/format+fr,default+fr,ui+fr,corechart+fr.I.js"></script>
+	<link href="https://ajax.googleapis.com/ajax/static/modules/gviz/1.0/core/tooltip.css" rel="stylesheet" type="text/css">
+
+<style>
+.Loading {
+    display: inline-block;
+    vertical-align: middle;
+    background-position: center;
+    background:no-repeat;
+    background-image: url('data:image/gif;base64,R0lGODlhFAAUAIQAAGRmZLS2tNze3IyOjPTy9Hx6fMTGxKSmpOzq7Pz6/ISChMzOzJSWlKyurHRydMTCxOTm5JSSlPT29Hx+fMzKzOzu7Pz+/ISGhNTS1LSytP///wAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQIBgAAACwAAAAAFAAUAAAFsqAmjqKEIBKpipYlJhCEQMnrkslcJcQ8S4mKrMbyQQgmGYogk90szZMmmTo1b5qKr7Ji6nBaAnZk6VWwCeBqJSRMYwj3WgShGAxK5Vxk7zdlexoLdxQUEkpyc3V3EBo8KYEaTIkIDAUHkDgLGQ9cLBMAoQcrCwemATcVoaEFGhQDAxQaGQcNpkQJDqsRAhe+FwIPpgcZRBoYugoID78XDwQBxI04Yhq9vwIaZcZzFBGxcyEAIfkECAYAAAAsAAAAABQAFACEZGZktLa03N7clJKU9PL0zM7MpKak7OrsnJqc/Pr81NbUhIaExMbErK6sbG5svLq85ObklJaU9Pb01NLUrKqs7O7snJ6c/P783Nrc////AAAAAAAAAAAAAAAAAAAAAAAABbZgJo6idBwSqYrXJSYQdEDJ65LJXCXEPEuJiqzG8kEIJhmKIJPdLs1TJpk6NW+Ziq+yYupwWgJ2dOlVsIqAYrXi1QKA+IM98kIkjjjAQRdZT3lxfH1WMg96c31eBwQZGAEYfSM8KSIEFBEPlSQXAhMKmxcIC6SJJAIMqRM3BKSkCBkKDQ1rE6kFDEQJA64UEBQGwAcKqQwFRI68CAQTwQYGEwm2BY04Yhm/zhAZFwnIdAoUFGtsIQAh+QQIBgAAACwAAAAAFAAUAIRkZmS0trTc3tyMjoz08vTExsR8enykpqTs6uz8+vzMzsyEgoSsrqx0cnTEwsTk5uSUkpT09vTMyszs7uz8/vzU0tSEhoS0srT///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAFrSAmjmKEIBGpislEYcnzIE/CvmTVAAtC0LRIa2Zj7QAAiGmGIsxmuAkSacCYUBggUURZTA8rJ21CQkAMhyIp8XONBAXBasW2FSx4yXwkfkQGeBYQeyJaZoGDhIZ3eYQYfSkCEnKOMARqBA4XCmojFG1qFAEHpAphT2QlpAwHFxgPChIPWVo4CRekBw4EBRIFBQQTQAg4r6wBTr++NUApawk2BBIOvgQ3lQ8SsnshACH5BAgGAAAALAAAAAAUABQAhGRmZLS2tNze3JSSlPTy9MzOzKSmpOzq7JyanPz6/NTW1ISGhMTGxKyurHRydLy6vOTm5JSWlPT29NTS1KyqrOzu7JyenPz+/Nza3P///wAAAAAAAAAAAAAAAAAAAAAAAAWzYCaOYuA4AamKCXFlCiADCvuSwrBYVTADgUTlcJCMErrFgjL5TQgQCPFGUCoRiccpSJRCbheE9bEaSg+kCgXxMKouhEPlloEoIKtVKwGjGCg1eSJxUgQNfwYNgiIHXgcNfomLGY2VCoiBgoRFdRNokxkSoiMSGAUCdCNwcnwiFxMMsQIrUESfGQmxBQwToURGXVKtCbuxGAmOEmZTIwS7Ey3JCV2tRwl8yJVuF6l5Eo1uKyEAIfkECAYAAAAsAAAAABQAFACEZGZktLa03N7cjI6M9PL0xMbEfHp8pKak7Ors/Pr8zM7MhIKErK6sdHJ0xMLE5ObklJKU9Pb0zMrM7O7s/P781NLUhIaEtLK0////AAAAAAAAAAAAAAAAAAAAAAAAAAAABbYgJo5iMQwFqYpURGGCJVsCRk2J+lxHQDgziwOxADQqowTjwHTEZgIIYNrIYSJM5gUjgQwkGMN0SmAFlgew6jBevES/S8VKShwMEMSI8CivVAkEOQ8FBRIPf3sPCA8REoYOCokijJUKhRJqiZWLD48FiJMElWUTfZMjEapJEwgEbyQUoxOwGK2LfiS3CBMjFJx6EQgIERjAVr+dBMKdCbsIsAmMOBGdrs6LxbFvCdbaFLV/wsSJIQAh+QQIBgAAACwAAAAAFAAUAIRkZmS0trTc3tyUkpT08vTMzsykpqTs6uycmpz8+vzU1tSEhoTExsSsrqxsbmy8urzk5uSUlpT09vTU0tSsqqzs7uycnpz8/vzc2tz///8AAAAAAAAAAAAAAAAAAAAAAAAFsWAmjqLSNAqpildyZRBlyFB2EYlaFcwkTbPZpIJYDASjC4/BwMQM0NhiOshlEkzmJDM5YTKR6ZTAmmSRqocY8RIlMBNBm5R4IChkkQS3Wk0CKRIHEAd5fRkBAIoPg42HIg6KAA6NhI8ZkYoOBIQQEpcPkg9XfJcZCg9bLBWFc0kEBxVWIgeNFSucg7csnbUZggefjYNtF5WyvXu9cwm6N704FYSzLG0JnRBWF659wJ99IQAh+QQIBgAAACwAAAAAFAAUAAAFtaAmjiJEURCpipYlEoZBGYRmSYmaIFCVQLIYhBA4ZFIsHo9Qmc0Ij4M0k7NBlAiNCaXJSKWSUUVZWVEa0oBLlBgT1qQEJfCosXGrlcAg0EggV3Z5GgYXhhQIWIMiA4YXEVeAWYuNhgN/iYJ5hYcaCQRhiyICFH0sbnAjEgcTEZMiY4ErBwC1CmsWkYl+iWEFtbV2Fko9P0oSEcAOVZ48PphXEggKAA4YKi1sumEWBMyD0hChKyEAIfkECAYAAAAsAAAAABQAFACEZGZktLa03N7clJKU9PL0zM7MpKak7OrsnJqc/Pr81NbUhIaExMbErK6sdHJ0vLq85ObklJaU9Pb01NLUrKqs7O7snJ6c/P783Nrc////AAAAAAAAAAAAAAAAAAAAAAAABbRgJo6idBwSqYrXJSYQdEBJdiU1mcxVQswziWTCKFRGFyCEYJKhMIxoIXeROTPNFDHKyGUqwKNKIJ14E2CCSwWbmEcJiXc1gkwg2NiBQB8pKAYUCidXfRkNgQYNVjKGhwaBFBJOfIZ/kAoZPimOGXYHSGlrOgEIFGIiYDKVJAELrxZrVUAHFwEODgEXCK+vlUlWFQoAxAATFL0DZzwJAcUAARW8AxgqLSITzxM2BHN0D7gBfSEAOw==');
+    width:20px;
+    height:20px;
+    margin-top:6px;
+    margin-right:7px;
+}
+</style>
+</head>
+<body ng-app="meteormonitor">
+<div class="bs-component"  ng-controller="TitleController as titlectrl">
+<center>
+	<table><tr><td><h1>Meteor</h1></td><td rowspan="2"><img src="pageResource?page=custompage_meteor&location=img/meteor.jpg" width="150" heigth="150" /></td></tr>
+		<tr><td style="font-size:0.8em"> <a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V1.0</a></td></tr>
+		<tr><td>
+		<div id="showHistory" ng-show="titlectrl.isshowhistory" style="border-width:2px;border-style:ridge;border-color:blue">
+		1.0 First version<br>
+		</td></tr>
+		</div>
+	</table>
+	</center>
+</div>
+
+
+
+<div class="container-fluid" id="accordion">
+
+	<div class="col-xs-12">
+		<div class="bs-component"  ng-controller="MeteorControler as meteorctrl">
+			<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Scenarii</legend>
+			<div class="panel panel-primary">
+				<div class="explanation">
+					All processes on the server
+				</div>
+				
+				<table width="100%">
+				<tr><td>
+					<span ng-show="meteorctrl.wait">
+						<span class="Loading" >.</span> Collect in progress...
+					</span>
+				
+					<button id="collectbtn" ng-click="meteorctrl.getlistprocesses()" class="btn btn-info">Collect informations</button>
+					{{meteorctrl.status}}
+				
+						<div ng-bind-html="meteorctrl.getListEvents(meteorctrl.listeventslistprocesses )"></div>
+
+				</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td width="600">
+				<div class="panel panel-primary">
+			    	<div class="panel-heading">
+			    		<h3 class="panel-title">Saved configurations</h3>
+			    	</div>
+			    	<div class="panel-body">
+			    		<table><tr><td>Configuration name : <input ng-model="meteorctrl.config.newname"/>
+			    				<button ng-click="meteorctrl.saveConfig()" class="btn btn-success">save</button>
+			    		<td>
+			    			<select ng-model="meteorctrl.config.currentname" ng-change="meteorctrl.loadConfig( meteorctrl.config.currentname )">
+			    				<option ng-repeat="name in meteorctrl.config.list" value="{{name}}">{{name}}</option>
+			    			</select>
+			    			<button ng-click="meteorctrl.deleteConfig()" class="btn btn-danger">delete {{meteorctrl.config.currentname}}</button></td>
+						</td>
+						</tr>	
+						</table>
+					</div>
+				</div>
+				</td>
+				</tr>
+				
+				</table>
+				
+				<h3>List of processes</h3>
+				<input type="checkbox" ng-model="meteorctrl.showonlyactive">Show only actives robot" 
+				<!-- style="background-color: #f9f9f9;" -->
+				<table class="table table-striped table-hover table-condensed" >
+					<tr>
+						<th style="background-color:#f2dede">Name</th>
+						<th style="background-color:#f2dede">Number of robots</th>
+						<th style="background-color:#f2dede">Number of cases/robot</th>
+						<th style="background-color:#f2dede">Time sleep (ms)</th>
+						<th style="background-color:#f2dede">Contrats</th>
+					</tr>
+					<tbody ng-repeat="processinfo in meteorctrl.processes track by $index" >
+						<tr style="background-color:##D9EDF7" ng-show="! meteorctrl.showonlyactive  || processinfo.nbrob>0">
+							<td style="background-color:#D9EDF7">process {{processinfo.information}}</td>
+							<td style="background-color:#D9EDF7;text-align: center;"><input type="number" ng-model="processinfo.nbrob" style="text-align: right;width:80px;"
+													title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably"></td>
+							<td style="background-color:#D9EDF7;text-align: center;"><input type="number" ng-model="processinfo.nbcases" style="text-align: right;width:80px;"
+													title="Attention, the number of case created will be Nb robots*nbCases">({{processinfo.nbrob*processinfo.nbcases}})</td>
+							<td style="background-color:#D9EDF7;text-align: center"><input type="number" ng-model="processinfo.timesleep" style="text-align: right;width:80px;"
+													title="between each creation, robots will sleep this time (in ms)"></td>
+							<td style="background-color:#D9EDF7;text-align: center;"><textarea ng-model="processinfo.variablestring" ></textarea></td>
+						</tr>
+						<tr ng-repeat="activityinfo in processinfo.activities track by $index" ng-show="! meteorctrl.showonlyactive  || activityinfo.nbrob>0" >
+							<td style="background-color:#fcf8e3">&nbsp;&nbsp;activity {{activityinfo.activityname}}</td>
+							<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.nbrob" style="text-align: right;width:80px;"></td>
+							<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.nbcases" style="text-align: right;width:80px;"></td>
+							<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.timesleep" style="text-align: right;width:80px;"></td>
+							<td style="background-color:#fcf8e3;text-align: center;;text-align: center"><textarea ng-model="activityinfo.variablestring" ></textarea></td>							
+						</tr>
+					</tbody>
+				</table>
+				
+			</div> <! -- end process -->
+				
+			<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Execution</legend>
+			<div class="panel panel-primary">	
+				<center>
+					<button ng-click="meteorctrl.start()" class="btn btn-warning">start</button>
+				</center>
+				
+				  <span ng-show="meteorctrl.startwait">
+					<span class="Loading" >.</span> Start in progress...
+				  </span>
+		
+				<br>
+				<center>
+					<div ng-bind-html="meteorctrl.getListEvents( meteorctrl.listeventsexecution )"></div>
+				</center>
+			
+				
+				
+				<table class="table table-striped table-hover table-condensed" >
+					<tr>
+					    <th style="background-color:#99D9EA">Completion</th>
+						<th style="background-color:#99D9EA">Robot</th>
+						<th style="background-color:#99D9EA">Status</th>
+						<th style="background-color:#99D9EA">Advance</th>
+						<th style="background-color:#99D9EA">Time(ms)</th>
+						<th style="background-color:#99D9EA">Average(ms)</th>
+					</tr>
+					<tr ng-repeat="robotinfo in meteorctrl.execution.robots track by $index" >
+						<td><progress max="100" value="{{robotinfo.percent}}"></progress>({{robotinfo.percent}} %)</td>
+						<td>{{robotinfo.title}}</td>
+						<td>{{robotinfo.status}}</td>
+						<td>{{robotinfo.adv}}</td>
+						<td>{{robotinfo.time}}</td>
+						<td>{{robotinfo.timeavg}}</td>
+					</tr>
+				</table>
+				
+				<table>
+					<tr><td>Simulation Id</td><td>{{meteorctrl.simulationid}}</td></tr>
+					<tr><td>Status</td><td>{{meteorctrl.execution.Status}}</td></tr>					
+					<tr><td>Time started:</td><td>{{meteorctrl.execution.TimeStarted}}</td></tr>
+					<tr><td>Delay to finish (estimation) ms</td><td>{{meteorctrl.execution.TimeEstimatedRest}}</td></tr>
+					<tr><td>Time end (estimation)</td><td>{{meteorctrl.execution.TimeEstimatedEnd}}</td></tr>
+					<tr><td>Percent global</td><td>{{meteorctrl.execution.TimeEstimatedPercent}}</td></tr>
+				</table>
+				
+				<center>
+					<button ng-click="meteorctrl.refresh()" class="btn btn-success">refresh</button>
+				</center>
+				<p>
+				Exe: {{meteorctrl.statusexecution}}<p>
+				SimulationId{{meteorctrl.simulationid}}
+				<!-- <div google-chart chart="graph.createcase" style="height: 200px; width: 100%; position: relative; "></div> -->
+
+			
+		</div>
+	</div>
+
+
+</div>
+
+
+
+<!-- Third party dependencies -->
+
+<script src="pageResource?page=custompage_meteor&location=3rd-party/jquery.min.js"></script>
+
+<script src="pageResource?page=custompage_meteor&location=3rd-party/angular.min.js"></script>
+
+<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-resource.min.js"></script>
+<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-cookies.min.js"></script>
+
+<script src="pageResource?page=custompage_meteor&location=3rd-party/bootstrap/js/bootstrap.min.js"></script>
+<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-bootstrap-tpls.min.js"></script>
+<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-file-upload.js"></script>
+<script src="pageResource?page=custompage_meteor&location=3rd-party/ng-google-chart.js"></script>
+<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-sanitize.min.js"></script>
+
+
+<!-- Application dependencies -->
+<script src="pageResource?page=custompage_meteor&location=meteormonitor.js"></script>
+
+</body>
+</html>

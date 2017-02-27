@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>CustomPageMeteor</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.m2e.core.maven2Builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.eclipse.m2e.core.maven2Nature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>custompage/7.2.4/Index.groovy</name>
+			<type>1</type>
+			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_meteor/Index.groovy</location>
+		</link>
+		<link>
+			<name>custompage/7.2.4/index.html</name>
+			<type>1</type>
+			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_meteor/index.html</location>
+		</link>
+		<link>
+			<name>custompage/7.2.4/meteormonitor.js</name>
+			<type>1</type>
+			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_meteor/resources/meteormonitor.js</location>
+		</link>
+	</linkedResources>
+</projectDescription>
