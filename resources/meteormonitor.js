@@ -76,7 +76,7 @@ appCommand.controller('MeteorControler',
 	// Start
 	this.start = function()
 	{
-		var param = { "processes": this.processes};
+		var param = { "processes": this.processes, "scenarii": this.scenarii};
  		var json= angular.toJson( param, false);
 		var self=this;
 		self.startwait=true;

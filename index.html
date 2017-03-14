@@ -97,39 +97,55 @@
 				
 				</table>
 				
-				<h3>List of processes</h3>
-				<input type="checkbox" ng-model="meteorctrl.showonlyactive">Show only actives robot" 
-				<!-- style="background-color: #f9f9f9;" -->
-				<table class="table table-striped table-hover table-condensed" >
-					<tr>
-						<th style="background-color:#f2dede">Name</th>
-						<th style="background-color:#f2dede">Number of robots</th>
-						<th style="background-color:#f2dede">Number of cases/robot</th>
-						<th style="background-color:#f2dede">Time sleep (ms)</th>
-						<th style="background-color:#f2dede">Contrats</th>
-					</tr>
-					<tbody ng-repeat="processinfo in meteorctrl.processes track by $index" >
-						<tr style="background-color:##D9EDF7" ng-show="! meteorctrl.showonlyactive  || processinfo.nbrob>0">
-							<td style="background-color:#D9EDF7">process {{processinfo.information}}</td>
-							<td style="background-color:#D9EDF7;text-align: center;"><input type="number" ng-model="processinfo.nbrob" style="text-align: right;width:80px;"
-													title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably"></td>
-							<td style="background-color:#D9EDF7;text-align: center;"><input type="number" ng-model="processinfo.nbcases" style="text-align: right;width:80px;"
-													title="Attention, the number of case created will be Nb robots*nbCases">({{processinfo.nbrob*processinfo.nbcases}})</td>
-							<td style="background-color:#D9EDF7;text-align: center"><input type="number" ng-model="processinfo.timesleep" style="text-align: right;width:80px;"
-													title="between each creation, robots will sleep this time (in ms)"></td>
-							<td style="background-color:#D9EDF7;text-align: center;"><textarea ng-model="processinfo.variablestring" ></textarea></td>
+				<h3><input type="checkbox" ng-model="meteorctrl.showprocess">List of processes</h3>
+				<div ng-show="meteorctrl.showprocess">
+					<input type="checkbox" ng-model="meteorctrl.showonlyactive">Show only actives robot</input>
+					<!-- style="background-color: #f9f9f9;" -->
+					<table class="table table-striped table-hover table-condensed" >
+						<tr>
+							<th style="background-color:#f2dede">Name</th>
+							<th style="background-color:#f2dede">Number of robots</th>
+							<th style="background-color:#f2dede">Number of cases/robot</th>
+							<th style="background-color:#f2dede">Time sleep (ms)</th>
+							<th style="background-color:#f2dede">Contrats</th>
 						</tr>
-						<tr ng-repeat="activityinfo in processinfo.activities track by $index" ng-show="! meteorctrl.showonlyactive  || activityinfo.nbrob>0" >
-							<td style="background-color:#fcf8e3">&nbsp;&nbsp;activity {{activityinfo.activityname}}</td>
-							<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.nbrob" style="text-align: right;width:80px;"></td>
-							<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.nbcases" style="text-align: right;width:80px;"></td>
-							<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.timesleep" style="text-align: right;width:80px;"></td>
-							<td style="background-color:#fcf8e3;text-align: center;;text-align: center"><textarea ng-model="activityinfo.variablestring" ></textarea></td>							
+						<tbody ng-repeat="processinfo in meteorctrl.processes track by $index" >
+							<tr style="background-color:##D9EDF7" ng-show="! meteorctrl.showonlyactive  || processinfo.nbrob>0">
+								<td style="background-color:#D9EDF7">process {{processinfo.information}}</td>
+								<td style="background-color:#D9EDF7;text-align: center;"><input type="number" ng-model="processinfo.nbrob" style="text-align: right;width:80px;"
+														title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably"></td>
+								<td style="background-color:#D9EDF7;text-align: center;"><input type="number" ng-model="processinfo.nbcases" style="text-align: right;width:80px;"
+														title="Attention, the number of case created will be Nb robots*nbCases">({{processinfo.nbrob*processinfo.nbcases}})</td>
+								<td style="background-color:#D9EDF7;text-align: center"><input type="number" ng-model="processinfo.timesleep" style="text-align: right;width:80px;"
+														title="between each creation, robots will sleep this time (in ms)"></td>
+								<td style="background-color:#D9EDF7;text-align: center;"><textarea ng-model="processinfo.variablestring" ></textarea></td>
+							</tr>
+							<tr ng-repeat="activityinfo in processinfo.activities track by $index" ng-show="! meteorctrl.showonlyactive  || activityinfo.nbrob>0" >
+								<td style="background-color:#fcf8e3">&nbsp;&nbsp;activity {{activityinfo.activityname}}</td>
+								<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.nbrob" style="text-align: right;width:80px;"></td>
+								<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.nbcases" style="text-align: right;width:80px;"></td>
+								<td style="background-color:#fcf8e3;text-align: center;"><input type="number" ng-model="activityinfo.timesleep" style="text-align: right;width:80px;"></td>
+								<td style="background-color:#fcf8e3;text-align: center;;text-align: center"><textarea ng-model="activityinfo.variablestring" ></textarea></td>							
+							</tr>
+						</tbody>
+					</table>				
+				</div> <! -- end process -->
+
+				<h3><input type="checkbox" ng-model="meteorctrl.showscenarii"> Scenarii</h3>
+				<div ng-show="meteorctrl.showscenarii">
+					<table class="table table-striped table-hover table-condensed" >
+						<tr>
+							<th style="background-color:#f2dede">Name</th>
+							<th style="background-color:#f2dede">Text</th>
 						</tr>
-					</tbody>
-				</table>
-				
-			</div> <! -- end process -->
+						<tbody ng-repeat="scenarioinfo in meteorctrl.scenarii track by $index" >
+							<tr>
+								<td ><input ng-model="scenarioinfo.name" ></td>
+								<td ><textarea ng-model="scenarioinfo.scenario" > </textarea></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 				
 			<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Execution</legend>
 			<div class="panel panel-primary">	
