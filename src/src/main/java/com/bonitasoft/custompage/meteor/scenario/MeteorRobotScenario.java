@@ -1,13 +1,28 @@
-package com.bonitasoft.custompage.meteor;
+package com.bonitasoft.custompage.meteor.scenario;
+
+import java.util.List;
 
 import org.bonitasoft.engine.api.APIAccessor;
+import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.log.event.BEventFactory;
+
+import com.bonitasoft.custompage.meteor.MeteorRobot;
 
 public class MeteorRobotScenario extends MeteorRobot {
 
-    protected MeteorRobotScenario(final APIAccessor apiAccessor) {
+
+
+
+    public Scenario meteorScenario;
+
+    public MeteorRobotScenario(final APIAccessor apiAccessor) {
         super(apiAccessor);
     }
 
+    public void setScenario(final Scenario meteorScenario)
+    {
+        this.meteorScenario = meteorScenario;
+    }
     /**
      * Unit Test :
      * <createCase processdefinitionname="pool" processdefinition="1.0" caseid="MyCaseFrancis">
@@ -43,10 +58,24 @@ public class MeteorRobotScenario extends MeteorRobot {
      * @param args
      */
 
+
     @Override
     public void executeRobot() {
         // please call setNumberTotalOperation( long nbOperation) and setOperationIndex( long indexOperation)
+        final List<BEvent> listEvents = meteorScenario.decodeScenario();
+        if (BEventFactory.isError(listEvents)) {
+            return;
+        }
+
+        setNumberTotalOperation(meteorScenario.listSentences.size());
+        for (int i = 0; i < meteorScenario.listSentences.size(); i++)
+        {
+
+            setOperationIndex(i);
+            meteorScenario.listSentences.get(i).execute();
+        }
 
     }
+
 
 }

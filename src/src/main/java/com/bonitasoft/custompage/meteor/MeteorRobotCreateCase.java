@@ -61,41 +61,10 @@ public class MeteorRobotCreateCase extends MeteorRobot {
                     + " Sleep[" + mMeteorProcessDefinition.mTimeSleep + "]");
 
             // -------------------------------------- create
-            final List<Operation> listOperations = new ArrayList<Operation>();
-            final Map<String, Serializable> ListExpressionsContext = new HashMap<String, Serializable>();
+                final long timeStart = System.currentTimeMillis();
 
-            for (String variableName : mMeteorProcessDefinition.mVariables.keySet()) {
+                createACase(mMeteorProcessDefinition.mProcessDefinitionId, mMeteorProcessDefinition.mVariables, mListDocuments, processAPI);
 
-                if (mMeteorProcessDefinition.mVariables.get(variableName) == null
-                        || !(mMeteorProcessDefinition.mVariables.get(variableName) instanceof Serializable)) {
-                    continue;
-                }
-                final Object value = mMeteorProcessDefinition.mVariables.get(variableName);
-                final Serializable valueSerializable = (Serializable) value;
-
-                variableName = variableName.toLowerCase();
-                final Expression expr = new ExpressionBuilder().createExpression(variableName, variableName, value.getClass().getName(),
-                        ExpressionType.TYPE_INPUT);
-                final Operation op = new OperationBuilder().createSetDataOperation(variableName, expr);
-                listOperations.add(op);
-                ListExpressionsContext.put(variableName, valueSerializable);
-            }
-
-            // add documents
-            for (final meteorDocument toolHatProcessDefinitionDocument : mListDocuments) {
-                final DocumentValue documentValue = new DocumentValue(toolHatProcessDefinitionDocument.mContent.toByteArray(), "plain/text",
-                        "myfilename");
-                final Operation docRefOperation = new OperationBuilder().createSetDocument(
-                        toolHatProcessDefinitionDocument.mDocumentName,
-                        new ExpressionBuilder().createInputExpression(toolHatProcessDefinitionDocument.mDocumentName + "Reference",
-                                DocumentValue.class.getName()));
-
-                listOperations.add(docRefOperation);
-                ListExpressionsContext.put(toolHatProcessDefinitionDocument.mDocumentName + "Reference", documentValue);
-            }
-
-            final long timeStart = System.currentTimeMillis();
-            processAPI.startProcess(mMeteorProcessDefinition.mProcessDefinitionId, listOperations, ListExpressionsContext);
             final long timeEnd = System.currentTimeMillis();
             mCollectPerformance.collectOneTime(timeEnd - timeStart);
                 if (mTimeEndOfTheSimulationInMs != null) {
@@ -136,4 +105,57 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 
     } // end robot type CREATE CASE
 
+    /**
+     * create a case
+     * 
+     * @param processDefinitionId
+     * @param variables
+     * @param listDocuments
+     * @param processAPI
+     * @throws InvalidExpressionException
+     * @throws ProcessDefinitionNotFoundException
+     * @throws ProcessActivationException
+     * @throws ProcessExecutionException
+     */
+    public static void createACase(final Long processDefinitionId, final Map<String, Object> variables, final List<meteorDocument> listDocuments,
+            final ProcessAPI processAPI) throws InvalidExpressionException, ProcessDefinitionNotFoundException, ProcessActivationException,
+            ProcessExecutionException
+    {
+
+        final List<Operation> listOperations = new ArrayList<Operation>();
+        final Map<String, Serializable> ListExpressionsContext = new HashMap<String, Serializable>();
+
+        for (String variableName : variables.keySet()) {
+
+            if (variables.get(variableName) == null
+                    || !(variables.get(variableName) instanceof Serializable)) {
+                continue;
+            }
+            final Object value = variables.get(variableName);
+            final Serializable valueSerializable = (Serializable) value;
+
+            variableName = variableName.toLowerCase();
+            final Expression expr = new ExpressionBuilder().createExpression(variableName, variableName, value.getClass().getName(),
+                    ExpressionType.TYPE_INPUT);
+            final Operation op = new OperationBuilder().createSetDataOperation(variableName, expr);
+            listOperations.add(op);
+            ListExpressionsContext.put(variableName, valueSerializable);
+        }
+
+        // add documents
+        for (final meteorDocument toolHatProcessDefinitionDocument : listDocuments) {
+            final DocumentValue documentValue = new DocumentValue(toolHatProcessDefinitionDocument.mContent.toByteArray(), "plain/text",
+                    "myfilename");
+            final Operation docRefOperation = new OperationBuilder().createSetDocument(
+                    toolHatProcessDefinitionDocument.mDocumentName,
+                    new ExpressionBuilder().createInputExpression(toolHatProcessDefinitionDocument.mDocumentName + "Reference",
+                            DocumentValue.class.getName()));
+
+            listOperations.add(docRefOperation);
+            ListExpressionsContext.put(toolHatProcessDefinitionDocument.mDocumentName + "Reference", documentValue);
+        }
+
+        processAPI.startProcess(processDefinitionId, listOperations, ListExpressionsContext);
+
+    }
 }

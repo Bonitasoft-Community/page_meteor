@@ -17,6 +17,8 @@ import com.bonitasoft.custompage.meteor.MeteorProcessDefinitionList.MeteorProces
 import com.bonitasoft.custompage.meteor.MeteorProcessDefinitionList.MeteorProcessDefinitionUser;
 import com.bonitasoft.custompage.meteor.MeteorRobot.RobotStatus;
 import com.bonitasoft.custompage.meteor.MeteorRobot.RobotType;
+import com.bonitasoft.custompage.meteor.scenario.MeteorRobotScenario;
+import com.bonitasoft.custompage.meteor.scenario.Scenario;
 
 public class MeteorSimulation {
 
@@ -104,6 +106,12 @@ public class MeteorSimulation {
         }
     }
 
+    /**
+     * add a Robot Activity
+     *
+     * @param meteorActivity
+     * @param apiAccessor
+     */
     public void addActivity(final MeteorActivity meteorActivity, final APIAccessor apiAccessor) {
         if (meteorActivity.mNumberOfRobots == 0)
         {
@@ -113,6 +121,23 @@ public class MeteorSimulation {
             final MeteorRobotActivity robot = (MeteorRobotActivity) MeteorRobot.getInstance(MeteorRobot.RobotType.PLAYACTIVITY, apiAccessor);
             robot.mRobotId = i + 1;
             robot.setParameters(meteorActivity);
+            mListRobots.add(robot);
+        }
+    }
+
+    /**
+     * add a Robot Scenario
+     */
+    public void addScenario(final Scenario meteorScenario, final APIAccessor apiAccessor) {
+        if (meteorScenario.mNumberOfRobots == 0)
+        {
+            meteorScenario.mNumberOfRobots = 1;
+        }
+        for (int i = 0; i < meteorScenario.mNumberOfRobots; i++) {
+            final MeteorRobotScenario robot = (MeteorRobotScenario) MeteorRobot.getInstance(RobotType.SCENARIO, apiAccessor);
+            robot.mRobotId = i + 1;
+            robot.setScenario(meteorScenario);
+
             mListRobots.add(robot);
         }
     }

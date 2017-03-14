@@ -133,6 +133,8 @@ public class MeteorAccess {
     public static class StartParameters {
 
         public List<Map<String, String>> listOfProcesses;
+        public List<Map<String, String>> listOfScenarii;
+
         /**
          * keep the parameters as a JSON to sent it to the command
          */
@@ -152,11 +154,13 @@ public class MeteorAccess {
             if (jsonSt == null)
             {
                 listOfProcesses = new ArrayList<Map<String, String>>();
+                listOfScenarii = new ArrayList<Map<String, String>>();
                 return;
             }
             final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
 
             listOfProcesses = (ArrayList<Map<String, String>>) jsonHash.get("processes");
+            listOfScenarii = (ArrayList<Map<String, String>>) jsonHash.get("scenarii");
         }
 
 
@@ -220,6 +224,8 @@ public class MeteorAccess {
         parameters.put( CmdMeteor.cstParamCommandName, CmdMeteor.cstParamCommandNameStart);
 
         try {
+
+            // see the command in CmdMeteor
             final Serializable resultCommand = commandAPI.execute(command.getId(), parameters);
 
             resultCommandHashmap = (Map<String, Object>) resultCommand;

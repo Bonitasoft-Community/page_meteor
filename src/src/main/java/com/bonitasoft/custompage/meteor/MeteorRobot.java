@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.bonitasoft.engine.api.APIAccessor;
 
 import com.bonitasoft.custompage.meteor.MeteorSimulation.CollectPerformance;
+import com.bonitasoft.custompage.meteor.scenario.MeteorRobotScenario;
 
 public abstract class MeteorRobot implements Runnable {
 
@@ -92,6 +93,7 @@ public abstract class MeteorRobot implements Runnable {
     }
 
 
+    @Override
     public void run() {
 
         logger.info("----------- Start robot #" + mRobotId + " type[" + this.getClass().getName() + "]");

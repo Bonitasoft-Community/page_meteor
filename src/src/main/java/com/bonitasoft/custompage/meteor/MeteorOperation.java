@@ -14,6 +14,7 @@ import org.bonitasoft.log.event.BEventFactory;
 
 import com.bonitasoft.custompage.meteor.MeteorAccess.StartParameters;
 import com.bonitasoft.custompage.meteor.MeteorAccess.StatusParameters;
+import com.bonitasoft.custompage.meteor.scenario.Scenario;
 
 
 public class MeteorOperation {
@@ -49,6 +50,8 @@ public class MeteorOperation {
     public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor) {
         final MeteorResult meteorResult= new MeteorResult();
         logger.info("MeteorOperation.Start " + startParameters.toString());
+
+        // Decode here the Json
         startParameters.decodeFromJsonSt();
 
         if (simulation)
@@ -86,7 +89,14 @@ public class MeteorOperation {
         // Ok, now let's look on the processDefinition list, and for each robots defined, let's register it in the simulation
         meteorResult.listEvents.addAll(meteorProcessDefinitionList.registerInSimulation(meteorSimulation, apiAccessor));
 
-        // 2 . next
+        // 2. Scenario
+        for (final Map<String, String> mapScenario : startParameters.listOfScenarii)
+        {
+            final Scenario meteorScenario = new Scenario(apiAccessor);
+            meteorScenario.fromMap(mapScenario);
+            meteorSimulation.addScenario(meteorScenario, apiAccessor);
+        }
+        // 3. next
 
         logger.info("Update finish, let's start ?");
 
