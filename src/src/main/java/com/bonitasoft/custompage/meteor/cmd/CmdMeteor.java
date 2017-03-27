@@ -101,7 +101,7 @@ public class CmdMeteor extends TenantCommand {
             final StartParameters startParameters = StartParameters.getInstanceFromJsonSt((String) parameters.get(cstParamCommandNameStartParams));
             logger.info("COMMANDMETEOR.Start params[" + startParameters.toString() + "]");
 
-            result = MeteorOperation.start(startParameters, connectorAccessorAPI).getMap();
+            result = MeteorOperation.start(startParameters, connectorAccessorAPI, tenantId).getMap();
         }
         else if (cstParamCommandNameStatus.equals(commandName)) {
             logger.info("COMMANDMETEOR.Status ");
