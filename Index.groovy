@@ -74,6 +74,7 @@ public class Index implements PageController {
 	
 		Logger logger= Logger.getLogger("org.bonitasoft");
 		
+           Long staticInformation=null;
 		
 		try {
 			def String indexContent;
@@ -82,7 +83,7 @@ public class Index implements PageController {
 			PrintWriter out = response.getWriter()
 
 			String action=request.getParameter("action");
-			logger.info("###################################### action 2.1 is["+action+"] !");
+			logger.info("###################################### action 2.1.a is["+action+"] !");
 			if (action==null || action.length()==0 )
 			{
 				logger.severe("###################################### RUN Default !");
@@ -106,11 +107,47 @@ public class Index implements PageController {
             
            
 			HashMap<String,Object> answer = null;
-			if ("getlistprocesses".equals(action))
+            if ("ping".equals(action))
+            {
+                HttpSession session = request.getSession();
+                staticInformation = session.getAttribute("ticket");
+                if ( staticInformation == null)
+                {
+                    staticInformation = Long.valueOf( System.currentTimeMillis());
+                    session.setAttribute("ticket", staticInformation);
+                    
+                }
+                answer = new HashMap<String,Object>()
+                answer.put("ticket", staticInformation);
+                
+            }
+            
+			else if ("getlistprocesses".equals(action))
 			{
 				ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJson );
 				answer = meteorAccess.getListProcesses( listProcessParameter, processAPI);
 			}
+            
+            /** POST is too big, so use the start_reset, [start_add] * , start to do the same as start */
+            else if ("start_reset".equals(action))
+            {
+                HttpSession session = request.getSession();
+                 session.setAttribute("accumulate", new ArrayList<String> () );
+                answer = new HashMap<String,Object>()
+                answer.put("status", "ok");
+
+            }
+            else if ("start_add".equals(action))
+            {
+                HttpSession session = request.getSession();
+                List<String> listJson = session.getAttribute("accumulate" );
+                listJson.add(paramJson);
+                 session.setAttribute("accumulate", listJson );
+               answer = new HashMap<String,Object>()
+               answer.put("status", "ok");
+
+            }
+          
 			else if ("start".equals(action))
 			{
                 List jarDependencies = new ArrayList<>();
@@ -120,7 +157,20 @@ public class Index implements PageController {
                 List<BEvent> listEventsDeploy = meteorAccess.deployCommand(true, "1.0", jarDependencies, commandAPI, null);
                     
 				// logger.info("Json=["+paramJson+"]");
-				StartParameters startParameters = StartParameters.getInstanceFromJsonSt( paramJson );
+                HttpSession session = request.getSession();
+                List<String> listJson = ( List<String>) session.getAttribute("accumulate" );
+                
+                StartParameters startParameters; 
+                if (listJson!=null)
+                {
+                    logger.info(" We get a LIST JSON size=("+listJson.size()+" - first value =["+ (listJson.size()>0 ? listJson.get(0):"-empty-")+"]");
+                    startParameters = StartParameters.getInstanceFromJsonList( listJson );
+                }
+                else
+                {
+                    logger.info(" We get a STRING size=("+paramJson+"]");                    
+				    startParameters = StartParameters.getInstanceFromJsonSt( paramJson );
+                }
 				answer = meteorAccess.start(startParameters, processAPI, commandAPI);
 				
 				//Thread.sleep(1000);

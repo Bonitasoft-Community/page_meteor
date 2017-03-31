@@ -45,6 +45,7 @@ appCommand.controller('MeteorControler',
 	this.wait=false;
 	this.startwait=false;
 	
+	// ------------------------------------------------------------------------------------------------------
 	// --------------------- getListProcess
 	this.getlistprocesses = function()
 	{
@@ -73,16 +74,103 @@ appCommand.controller('MeteorControler',
 	}
 	this.getlistprocesses();
 	
+	
+	// ------------------------------------------------------------------------------------------------------
+	// Scenarii
+	 this.scenarii= [];
+	 this.scenarii = [ { 'name':'Chigago' } ];
+	 this.scenarii = [ { 'name':'Chigago',  'type':'GRV',   'nbrobots': 1,   'scenario':'Hello Chigago'  } ];
+	 
+	this.removeScenarii = function ( scenarioinfo ) {
+		var index = this.scenarii.indexOf(scenarioinfo);
+		this.scenarii.splice(index, 1); 
+	}
+	this.addScenarii = function ()
+	{
+		this.scenarii.push( {} );
+	}
+	
+	
+	
+	// ------------------------------------------------------------------------------------------------------
 	// Start
+	this.listUrlIndex=0;
+	this.listUrlCall = [];
+	this.listUrlPercent=0;
+	
 	this.start = function()
 	{
-		var param = { "processes": this.processes, "scenarii": this.scenarii};
- 		var json= angular.toJson( param, false);
+		
+	
+		// the array maybe very big, so let's create a list of http call
+		this.listUrlCall=[];
+		this.listUrlCall.push( "action=start_reset");
+		for (var index= 0; index < this.processes.length;index++)
+		{
+			    // 	send one per one
+				var param = { "process" :  this.processes[ index ]};
+		 		var json= angular.toJson( param, false);
+				console.log("json:"+json);
+				this.listUrlCall.push( "action=start_add&paramjson="+json);
+		}
+		for (var index= 0; index <  this.scenarii.length; index++ )
+		{
+				// 	send one per one
+				var param = { "scenario" : this.scenarii[ index ]};
+		 		var json= angular.toJson( param, false);
+				console.log("json:"+json);
+				this.listUrlCall.push( "action=start_add&paramjson="+json);
+		}
 		var self=this;
+		self.listUrlCall.push( "action=start");
+		
 		self.startwait=true;
+		self.listUrlIndex=0;
+		self.executeListUrl( self ) // , self.listUrlCall, self.listUrlIndex );
+	};
+	
+	this.executeListUrl = function( self ) //, listUrlCall, listUrlIndex )
+	{
+		console.log(" Call "+self.listUrlIndex+" : "+self.listUrlCall[ self.listUrlIndex ]);
+		self.listUrlPercent= (100 *  self.listUrlIndex) / self.listUrlCall.length;
+		
+		$http.get( '?page=custompage_meteor&'+self.listUrlCall[ self.listUrlIndex ] )
+			.success( function ( jsonResult ) {
+				// console.log("Correct, advance one more", angular.toJson(jsonResult));
+				self.listUrlIndex = self.listUrlIndex+1;
+				if (self.listUrlIndex  < self.listUrlCall.length )
+					self.executeListUrl( self ) // , self.listUrlCall, self.listUrlIndex);
+				else
+				{
+					console.log("Finish", angular.toJson(jsonResult));
+					self.startwait=false;
+					self.listUrlPercent= 100; 
+					self.listeventsexecution    = jsonResult.listevents;
 
-		// alert("start json="+json);
- 		
+					self.simulationid								= jsonResult.simulationid;
+					self.execution={};
+					self.execution.robots 						=  jsonResult.robots;
+					self.execution.status							=  jsonResult.Status;
+					self.execution.statusExecution		=  jsonResult.statusexecution;
+					self.execution.timeStarted				=  jsonResult.TimeStarted;
+					
+
+				}
+			})
+			.error( function() {
+				self.startwait=false;
+				alert('an error occure');
+				});
+		
+	};
+
+
+	this.startAllInOne = function() 
+	{
+		var param = { "processes": this.processes, "scenarii": this.scenarii};
+		var json= angular.toJson( param, false);
+ 		console.log("Start : "+json);
+
 		$http.get( '?page=custompage_meteor&action=start&paramjson='+json )
 				.success( function ( jsonResult ) {
 						console.log("history", angular.toJson(jsonResult));
@@ -101,8 +189,7 @@ appCommand.controller('MeteorControler',
 					alert('an error occure');
 					});
 	};
-	
-	
+
 	// Refresh
 	this.execution={};
 	this.refresh = function()
@@ -173,7 +260,7 @@ appCommand.controller('MeteorControler',
 	{
 		$http.get( '?page=custompage_meteor&action=initconfig' )
 		.success( function ( jsonResult ) {
-			self.config.list = jsonResult.list;
+			// self.config.list = jsonResult.list;
 			self.startwait=false;
 		})
 		.error( function() {
