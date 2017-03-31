@@ -4,18 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 
 import com.bonitasoft.custompage.meteor.MeteorToolbox;
+import com.bonitasoft.custompage.meteor.scenario.cmd.Sentence;
 
 /**
  * scenario
  */
 
 public class Scenario {
+
+    private static Logger logger = Logger.getLogger(Scenario.class.getName());
 
     private static BEvent EventSyntaxMissingParenthese = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 1, Level.APPLICATIONERROR,
             "A parenthesis is expected", "Check the sentence",
@@ -24,10 +28,17 @@ public class Scenario {
     public static String cstHtmlScenario = "scenario";
     public static String cstHtmlName = "name";
     public static String cstHtmlNumberOfRobots = "nbrob";
+    public static String cstHtmlType = "type";
 
     public String mScenario = "";
     public String mName;
     public long mNumberOfRobots;
+
+    public enum TYPESCENARIO {
+        GRV, CMD
+    };
+
+    public TYPESCENARIO mType; // expected GRV or CMD
     public List<Sentence> listSentences = new ArrayList<Sentence>();
 
     APIAccessor apiAccessor;
@@ -45,6 +56,14 @@ public class Scenario {
         mNumberOfRobots = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfRobots, 0);
         mName = MeteorToolbox.getParameterString(mapScenario, cstHtmlName, "");
         mScenario = MeteorToolbox.getParameterString(mapScenario, cstHtmlScenario, "");
+        try
+        {
+            mType = TYPESCENARIO.valueOf(MeteorToolbox.getParameterString(mapScenario, cstHtmlType, TYPESCENARIO.CMD.toString()));
+        } catch (final Exception e)
+        {
+            logger.info("Unknow typeScenario [" + MeteorToolbox.getParameterString(mapScenario, cstHtmlType, "") + "] use CMD (expected "
+                    + TYPESCENARIO.GRV.toString() + "," + TYPESCENARIO.CMD.toString() + "]");
+        }
     }
 
     public void addInScenario(final String oneSentence)

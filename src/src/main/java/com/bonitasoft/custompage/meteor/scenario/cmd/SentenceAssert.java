@@ -1,4 +1,4 @@
-package com.bonitasoft.custompage.meteor.scenario;
+package com.bonitasoft.custompage.meteor.scenario.cmd;
 
 import java.util.List;
 

@@ -73,6 +73,7 @@ public class CmdMeteor extends TenantCommand {
      * this process intance. Format is yyyyMMdd HH:MM:ss
      */
 
+    @Override
     public Serializable execute(final Map<String, Serializable> parameters, final TenantServiceAccessor serviceAccessor)
             throws SCommandParameterizationException, SCommandExecutionException {
         logger.info("Execute Command");
@@ -98,7 +99,7 @@ public class CmdMeteor extends TenantCommand {
         }
         else if (cstParamCommandNameStart.equals(commandName)) {
 
-            final StartParameters startParameters = StartParameters.getInstanceFromJsonSt((String) parameters.get(cstParamCommandNameStartParams));
+            final StartParameters startParameters = StartParameters.getInstanceFromJsonList((ArrayList<String>) parameters.get(cstParamCommandNameStartParams));
             logger.info("COMMANDMETEOR.Start params[" + startParameters.toString() + "]");
 
             result = MeteorOperation.start(startParameters, connectorAccessorAPI, tenantId).getMap();
@@ -241,8 +242,14 @@ public class CmdMeteor extends TenantCommand {
             listEvents.add(new BEvent(EventDeployedWithSuccess, message));
             return listEvents;
 
-        } catch (StopNodeException | StartNodeException e1) {
-            logger.severe("Can't stop or start [" + e1.toString() + "]");
+        } catch (final StopNodeException e1) {
+
+            logger.severe("Can't stop  [" + e1.toString() + "]");
+            message += e1.toString();
+            return null;
+        } catch (final StartNodeException e1) {
+
+            logger.severe("Can't  start [" + e1.toString() + "]");
             message += e1.toString();
             return null;
         } catch (final CommandNotFoundException e) {

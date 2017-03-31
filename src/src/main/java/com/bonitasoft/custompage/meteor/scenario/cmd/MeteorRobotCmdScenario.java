@@ -1,4 +1,4 @@
-package com.bonitasoft.custompage.meteor.scenario;
+package com.bonitasoft.custompage.meteor.scenario.cmd;
 
 import java.util.List;
 
@@ -7,15 +7,16 @@ import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEventFactory;
 
 import com.bonitasoft.custompage.meteor.MeteorRobot;
+import com.bonitasoft.custompage.meteor.scenario.Scenario;
 
-public class MeteorRobotScenario extends MeteorRobot {
+public class MeteorRobotCmdScenario extends MeteorRobot {
 
 
 
 
     public Scenario meteorScenario;
 
-    public MeteorRobotScenario(final APIAccessor apiAccessor) {
+    public MeteorRobotCmdScenario(final APIAccessor apiAccessor) {
         super(apiAccessor);
     }
 

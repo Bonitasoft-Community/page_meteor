@@ -50,20 +50,17 @@ public class MeteorProcessDefinitionList {
     public static String cstHtmlPrefixDocument = "DOC_";
     public static int cstCurrentSimulation = 2;
 
-    private static BEvent EventGetListProcesses = new BEvent("org.bonitasoft.custompage.meteor", 1, Level.ERROR,
+    private static BEvent EventGetListProcesses = new BEvent(MeteorProcessDefinitionList.class.getName(), 1, Level.ERROR,
             "Error while accessing information on process list", "Check Exception ",
             "The processes presented may be incomplete", "Check Exception");
 
-    private static BEvent EventCalculateListProcess = new BEvent("org.bonitasoft.custompage.meteor", 2, Level.SUCCESS,
+    private static BEvent EventCalculateListProcess = new BEvent(MeteorProcessDefinitionList.class.getName(), 2, Level.SUCCESS,
             "Collect of processes done with success", "");
 
-    private static BEvent EventCheckRobotCaseIncoherent = new BEvent("org.bonitasoft.custompage.meteor", 3, Level.APPLICATIONERROR,
+    private static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorProcessDefinitionList.class.getName(), 3, Level.APPLICATIONERROR,
             "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
             "If you set a number of robot, then set a number of case(or inverse)");
 
-    private static BEvent EventCheckNothingToStart = new BEvent("org.bonitasoft.custompage.meteor", 4, Level.APPLICATIONERROR,
-            "Nothing to start", "No robots can start", "No test can be done if all Robot and Case are equals to 0",
-            "If you set a number of robot, then set a number of case(or inverse)");
 
     private final  boolean mShowActivity=true;
 
@@ -734,7 +731,8 @@ public class MeteorProcessDefinitionList {
         }
         if (!somethingToStart)
         {
-            listEvents.add(new BEvent(EventCheckNothingToStart, "Nothing to start"));
+            // it's possible if we have a scenario
+            //  listEvents.add(new BEvent(EventCheckNothingToStart, "Nothing to start"));
         }
 
         logger.info("checkParameter : result nbEvents=" + listEvents.size());

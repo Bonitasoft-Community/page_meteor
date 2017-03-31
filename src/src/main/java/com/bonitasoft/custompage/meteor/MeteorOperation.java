@@ -20,8 +20,12 @@ import com.bonitasoft.custompage.meteor.scenario.Scenario;
 public class MeteorOperation {
 
 
-    private static BEvent EventNoSimulation = new BEvent("org.bonitasoft.custompage.meteor.Operation", 1, Level.APPLICATIONERROR,
+    private static BEvent EventNoSimulation = new BEvent(MeteorOperation.class.getName(), 1, Level.APPLICATIONERROR,
             "No simulation", "No simulation found with this ID", "No status can't be give because the simulation is not retrieved", "Check simulationId");
+
+    private static BEvent EventCheckNothingToStart = new BEvent(MeteorOperation.class.getName(), 2, Level.APPLICATIONERROR,
+            "Nothing to start", "No robots can start", "No test can be done if all Robot and Case are equals to 0",
+            "If you set a number of robot, then set a number of case(or inverse)");
 
     public static boolean simulation = false;
     public static int countRefresh=0;
@@ -48,9 +52,9 @@ public class MeteorOperation {
      * @param processAPI
      * @return
      */
-    public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor, long tenantId) {
+    public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor, final long tenantId) {
         final MeteorResult meteorResult= new MeteorResult();
-        logger.info("MeteorOperation.Start " + startParameters.toString());
+        logger.info("MeteorOperation.Start by [" + MeteorOperation.class.getName() + "] : " + startParameters.toString());
 
         // Decode here the Json
         startParameters.decodeFromJsonSt();
@@ -90,20 +94,22 @@ public class MeteorOperation {
         // Ok, now let's look on the processDefinition list, and for each robots defined, let's register it in the simulation
         meteorResult.listEvents.addAll(meteorProcessDefinitionList.registerInSimulation(meteorSimulation, apiAccessor));
 
-        // 2. Scenario
+        // 2. Scenario : cmd et groovy
         for (final Map<String, String> mapScenario : startParameters.listOfScenarii)
         {
             final Scenario meteorScenario = new Scenario(apiAccessor);
             meteorScenario.fromMap(mapScenario);
             meteorSimulation.addScenario(meteorScenario, apiAccessor);
         }
-        // 3. GroovyEmbeded
 
         logger.info("Update finish, let's start ?");
 
         if (meteorSimulation.getNumberOfRobots() == 0) {
             logger.info("*** Nothing to start ***");
                 // listEvents.add()
+            // it's possible if we have a scenario
+            meteorResult.listEvents.add(new BEvent(EventCheckNothingToStart, "Nothing to start"));
+
             meteorResult.status = MeteorSimulation.STATUS.NOROBOT;
         } else {
             meteorSimulation.runTheSimulation();

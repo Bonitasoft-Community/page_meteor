@@ -137,12 +137,20 @@ public class MeteorAccess {
 
         /**
          * keep the parameters as a JSON to sent it to the command
+         * - ArrayList to keep the serialization
          */
-        public String jsonSt;
+        public ArrayList<String> jsonListSt;
 
         public static StartParameters getInstanceFromJsonSt(final String jsonSt) {
             final StartParameters startParameters = new StartParameters();
-            startParameters.jsonSt = jsonSt;
+            startParameters.jsonListSt = new ArrayList<String>();
+            startParameters.jsonListSt.add(jsonSt);
+            return startParameters;
+        }
+
+        public static StartParameters getInstanceFromJsonList(final ArrayList<String> jsonList) {
+            final StartParameters startParameters = new StartParameters();
+            startParameters.jsonListSt = jsonList;
             return startParameters;
         }
 
@@ -150,24 +158,80 @@ public class MeteorAccess {
          *
          */
         public void decodeFromJsonSt() {
-            logger.info("JsonSt[" + jsonSt + "]");
-            if (jsonSt == null)
+            logger.info("MeteorAccess.decodeFromJsonSt : JsonSt[" + jsonListSt + "]");
+            listOfProcesses = new ArrayList<Map<String, String>>();
+            listOfScenarii = new ArrayList<Map<String, String>>();
+
+            if (jsonListSt == null)
             {
-                listOfProcesses = new ArrayList<Map<String, String>>();
-                listOfScenarii = new ArrayList<Map<String, String>>();
                 return;
             }
-            final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
+            for (final String jsonSt : jsonListSt)
+            {
 
-            listOfProcesses = (ArrayList<Map<String, String>>) jsonHash.get("processes");
-            listOfScenarii = (ArrayList<Map<String, String>>) jsonHash.get("scenarii");
+                // we can get 2 type of JSON :
+                // { 'processes' : [ {..}, {...} ], 'scenarii':[{...}, {...}, 'process' : {..}, 'scenario': {} ]  }
+                // or a list of order
+                // [ {  'process': {}, 'process': {}, 'scenario': {..}];
+
+                final Object jsonObject = JSONValue.parse(jsonSt);
+                logger.info("MeteorAccess.decodeFromJsonSt : line object [" + jsonObject.getClass().getName() + "] Map ? " + (jsonObject instanceof HashMap)
+                        + " line=[" + jsonSt + "] ");
+
+                if (jsonObject instanceof HashMap)
+                {
+                    logger.info("MeteorAccess.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a HASHMAP");
+
+                    final HashMap<String, Object> jsonHash = (HashMap<String, Object>) jsonObject;
+                    if (jsonHash.get("processes") != null) {
+                        listOfProcesses.addAll((ArrayList<Map<String, String>>) jsonHash.get("processes"));
+                    }
+
+                    if (jsonHash.get("process") != null) {
+                        listOfProcesses.add((Map<String, String>) jsonHash.get("process"));
+                    }
+
+                    if (jsonHash.get("scenarii") != null) {
+                        listOfScenarii.addAll((ArrayList<Map<String, String>>) jsonHash.get("scenarii"));
+                    }
+
+                    if (jsonHash.get("scenario") != null) {
+                        listOfScenarii.add((Map<String, String>) jsonHash.get("scenario"));
+                    }
+                }
+                else if (jsonObject instanceof List)
+                {
+                    logger.info("MeteorAccess.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a LIST");
+                    final List<Map<String, Map<String, String>>> jsonList = (List<Map<String, Map<String, String>>>) jsonObject;
+                    for (final Map<String, Map<String, String>> oneRecord : jsonList)
+                    {
+                        logger.info("MeteorAccess.decodeFromJsonSt : process [" + oneRecord.get("process") + "] scenario [" + oneRecord.get("scenario") + "]");
+
+                        if (oneRecord.containsKey("process")) {
+                            listOfProcesses.add(oneRecord.get("process"));
+                        }
+                        if (oneRecord.containsKey("scenario")) {
+                            listOfScenarii.add(oneRecord.get("scenario"));
+                        }
+                    }
+                }
+            }
+            logger.info("MeteorAccess.decodeFromJsonSt :  decodeFromJsonSt nbProcess="+listOfProcesses.size()+" nbScenarii="+listOfScenarii.size());
         }
 
 
         @Override
         public String toString()
         {
-            return "startParameters " + (jsonSt == null ? "null" : (jsonSt + "                          ").substring(0, 20)) + "...";
+            String value="";
+            if (jsonListSt != null) {
+                for (final String jsonSt : jsonListSt) {
+                    value+= " ["+jsonSt+" ], ";
+                }
+            }
+            return "startParameters "
+                    + (value + "                                                                                                      ").substring(0, 60)
+                    + "...";
         }
     }
 
@@ -220,7 +284,7 @@ public class MeteorAccess {
         }
 
         final HashMap<String, Serializable> parameters = new HashMap<String, Serializable>();
-        parameters.put( CmdMeteor.cstParamCommandNameStartParams, startParameters.jsonSt);
+        parameters.put(CmdMeteor.cstParamCommandNameStartParams, startParameters.jsonListSt);
         parameters.put( CmdMeteor.cstParamCommandName, CmdMeteor.cstParamCommandNameStart);
 
         try {

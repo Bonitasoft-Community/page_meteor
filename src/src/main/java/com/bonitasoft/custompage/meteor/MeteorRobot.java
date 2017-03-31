@@ -8,20 +8,28 @@ import java.util.logging.Logger;
 import org.bonitasoft.engine.api.APIAccessor;
 
 import com.bonitasoft.custompage.meteor.MeteorSimulation.CollectPerformance;
-import com.bonitasoft.custompage.meteor.scenario.MeteorRobotScenario;
+import com.bonitasoft.custompage.meteor.scenario.cmd.MeteorRobotCmdScenario;
+import com.bonitasoft.custompage.meteor.scenario.groovy.MeteorRobotGroovyScenario;
 
 public abstract class MeteorRobot implements Runnable {
 
     Logger logger = Logger.getLogger(MeteorRobot.class.getName());
 
     protected enum RobotType {
-        CREATECASE, PLAYACTIVITY, USERACTIVITY, SCENARIO
+        CREATECASE, PLAYACTIVITY, USERACTIVITY, CMDSCENARIO, GRVSCENARIO
     };
 
     // public RobotType mRobotType;
 
     protected enum RobotStatus {
         INACTIF, STARTED, DONE
+    };
+
+    /**
+     * for the test unit, the robot should give a final status
+     */
+    public enum FINALSTATUS {
+        SUCCESS, FAIL
     };
 
     public RobotStatus mStatus;
@@ -47,8 +55,10 @@ public abstract class MeteorRobot implements Runnable {
             return new MeteorRobotCreateCase(apiAccessor);
         } else if (robotType == RobotType.USERACTIVITY) {
             return new MeteorRobotUserActivity(apiAccessor);
-        } else if (robotType == RobotType.SCENARIO) {
-            return new MeteorRobotScenario(apiAccessor);
+        } else if (robotType == RobotType.CMDSCENARIO) {
+            return new MeteorRobotCmdScenario(apiAccessor);
+        } else if (robotType == RobotType.GRVSCENARIO) {
+            return new MeteorRobotGroovyScenario(apiAccessor);
         }
         return null;
 
@@ -77,6 +87,12 @@ public abstract class MeteorRobot implements Runnable {
         mCollectPerformance.mOperationIndex = indexOperation;
     }
 
+
+    public FINALSTATUS mFinalStatus;
+    public void setFinalStatus( final FINALSTATUS finalStatus )
+    {
+        mFinalStatus= finalStatus;
+    }
     /**
      * get the accessor
      *
