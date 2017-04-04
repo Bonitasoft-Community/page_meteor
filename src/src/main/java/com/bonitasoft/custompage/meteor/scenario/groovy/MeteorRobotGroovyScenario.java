@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bonitasoft.engine.api.APIAccessor;
@@ -14,15 +13,10 @@ import com.bonitasoft.custompage.meteor.MeteorSimulation;
 import com.bonitasoft.custompage.meteor.scenario.Scenario;
 import com.bonitasoft.scenario.accessor.configuration.ScenarioConfiguration;
 import com.bonitasoft.scenario.accessor.resources.InMemoryResource;
-import com.bonitasoft.scenario.accessor.resources.Resource;
 import com.bonitasoft.scenario.runner.RunListener;
-import com.bonitasoft.scenario.runner.Runner;
 import com.bonitasoft.scenario.runner.SingleRunner;
-import com.bonitasoft.scenario.runner.TestSuiteRunner;
 import com.bonitasoft.scenario.runner.context.ScenarioMainResourcesHelper;
-import com.bonitasoft.scenario.runner.context.ScenarioType;
 import com.bonitasoft.scenario.runner.context.SingleRunContext;
-import com.bonitasoft.scenario.runner.context.TestSuiteRunContext;
 
 
 public class MeteorRobotGroovyScenario extends MeteorRobot {
