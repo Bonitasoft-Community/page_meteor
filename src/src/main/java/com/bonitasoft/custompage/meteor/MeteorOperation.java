@@ -97,7 +97,7 @@ public class MeteorOperation {
         // 2. Scenario : cmd et groovy
         for (final Map<String, String> mapScenario : startParameters.listOfScenarii)
         {
-            final Scenario meteorScenario = new Scenario(apiAccessor);
+            final Scenario meteorScenario = new Scenario(apiAccessor, tenantId);
             meteorScenario.fromMap(mapScenario);
             meteorSimulation.addScenario(meteorScenario, apiAccessor);
         }

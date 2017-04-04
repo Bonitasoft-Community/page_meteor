@@ -42,10 +42,12 @@ public class Scenario {
     public List<Sentence> listSentences = new ArrayList<Sentence>();
 
     APIAccessor apiAccessor;
+    long tenantId;
 
-    public Scenario(final APIAccessor apiAccessor)
+    public Scenario(final APIAccessor apiAccessor, final long tenantId)
     {
         this.apiAccessor = apiAccessor;
+        this.tenantId = tenantId;
     }
 
 
