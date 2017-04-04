@@ -6,6 +6,11 @@
   <name>CustomPageMeteor</name>
    <dependencies>
   
+  	<dependency>
+  		<groupId>com.bonitasoft.scenario</groupId>
+		<artifactId>scenario-utils</artifactId>
+		<version>1.0_7.2.4</version>
+	</dependency>
   	 
   	<dependency>
   		<groupId>org.bonitasoft.engine</groupId>
