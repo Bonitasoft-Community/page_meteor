@@ -115,4 +115,9 @@ public class Scenario {
         return listEvents;
     }
 
+
+	public long getTenantId() {
+		return tenantId;
+	}
+
 }

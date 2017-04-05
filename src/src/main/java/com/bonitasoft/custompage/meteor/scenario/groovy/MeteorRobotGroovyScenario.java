@@ -23,7 +23,7 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 
     Logger logger = Logger.getLogger(MeteorSimulation.class.getName());
 
-    private String mContent;
+    private Scenario scenario = null;
     
     static private ScenarioConfiguration scenarioConfiguration = new ScenarioConfiguration();
     static private String scenarioName = "meteorGSScenario";
@@ -36,19 +36,18 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
     public void setScenario(final Scenario scenario)
     {
         logger.info(" ROBOT " + mRobotId + " Receive scenario[" + scenario.mScenario + "]");
-        mContent = scenario.mScenario;
+        this.scenario = scenario;
     }
 
     // public setRessource()
     @Override
     public void executeRobot() {
-        logger.info(" ROBOT " + mRobotId + " Execute scenario[" + mContent + "]");
+        logger.info(" ROBOT " + mRobotId + " Execute scenario[" + scenario.mScenario + "]");
         setNumberTotalOperation(100);
         
         // Create and launch the runner
-        // tenantId: TODO, 1L by default for now
         try {
-			SingleRunContext singleRunContext = new SingleRunContext(1L, scenarioConfiguration, new HashMap<String, Serializable>(), ScenarioMainResourcesHelper.generateSingleScenarioMainResourcesFromScriptContent(mContent), new InMemoryResource(), scenarioName);
+			SingleRunContext singleRunContext = new SingleRunContext(scenario.getTenantId(), scenarioConfiguration, new HashMap<String, Serializable>(), ScenarioMainResourcesHelper.generateSingleScenarioMainResourcesFromScriptContent(scenario.mScenario), new InMemoryResource(), scenarioName);
 			List<RunListener> runListeners = new ArrayList<RunListener>();
 			runListeners.add(new AdvancementListener(singleRunContext, this));
 			SingleRunner runner = new SingleRunner(singleRunContext, runListeners);
