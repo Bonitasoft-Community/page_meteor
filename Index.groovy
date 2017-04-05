@@ -153,6 +153,7 @@ public class Index implements PageController {
                 List jarDependencies = new ArrayList<>();
                 jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/CustomPageMeteor-1.0.0.jar")));
                 jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/bonita-event-1.0.0.jar")));
+                jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-1.0_7.2.4.jar", pageResourceProvider.getResourceAsStream("lib/scenario-utils-1.0_7.2.4.jar")));
                 
                 List<BEvent> listEventsDeploy = meteorAccess.deployCommand(true, "1.0", jarDependencies, commandAPI, null);
                     
