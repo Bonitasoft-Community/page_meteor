@@ -52,14 +52,13 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 			runListeners.add(new AdvancementListener(singleRunContext, this));
 			SingleRunner runner = new SingleRunner(singleRunContext, runListeners);
 			runner.run();
+	        setFinalStatus(FINALSTATUS.SUCCESS);
         } catch(Throwable e) {
             logger.info(" ROBOT " + mRobotId + " Scenario execution error[" + e.getCause() + " - " + e.getMessage() + "]");
             setFinalStatus(FINALSTATUS.FAIL);
         } finally {
             setOperationIndex(100);
         }
-        
-        setFinalStatus(FINALSTATUS.SUCCESS);
     }
 
 
