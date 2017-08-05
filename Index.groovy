@@ -1,7 +1,11 @@
+
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 import java.io.FileInputStream;
@@ -58,24 +62,35 @@ import org.bonitasoft.engine.command.CommandDescriptor;
 import org.bonitasoft.engine.command.CommandCriterion;
 import org.bonitasoft.engine.bpm.flownode.ActivityInstance;
 import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfo;
-import org.bonitasoft.log.event.BEvent;
-	
-import com.bonitasoft.custompage.meteor.MeteorAccess;
-import com.bonitasoft.custompage.meteor.MeteorAccess.StartParameters;
-import com.bonitasoft.custompage.meteor.MeteorAccess.StatusParameters;
-import com.bonitasoft.custompage.meteor.MeteorProcessDefinitionList.ListProcessParameter;
 
-import com.bonitasoft.custompage.meteor.cmd.CmdMeteor;
+import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.log.event.BEventFactory;
+import org.bonitasoft.log.event.BEvent.Level;
+
+import org.bonitasoft.ext.properties.BonitaProperties;
+
+import org.bonitasoft.meteor.MeteorAccess;
+import org.bonitasoft.meteor.MeteorAccess.StartParameters;
+import org.bonitasoft.meteor.MeteorAccess.StatusParameters;
+import org.bonitasoft.meteor.MeteorProcessDefinitionList.ListProcessParameter;
+
+import org.bonitasoft.meteor.cmd.CmdMeteor;
 
 public class Index implements PageController {
 
+  private static BEvent EventConfigurationSaved = new BEvent("org.bonitasoft.custompageMeteor", 1, Level.INFO,  "Configuration saved", "The configuration is saved with sucess");
+  private static BEvent EventConfigurationLoaded = new BEvent("org.bonitasoft.custompageMeteor", 2, Level.INFO, "Configuration loaded", "The configuration is loaded with sucess");
+  private static BEvent EventConfigurationRemoved = new BEvent("org.bonitasoft.custompageMeteor", 3, Level.INFO, "Configuration deleted", "The configuration is deleted");
+
+  Logger logger= Logger.getLogger("org.bonitasoft");
+  
+  
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
 	
-		Logger logger= Logger.getLogger("org.bonitasoft");
 		
-           Long staticInformation=null;
-		
+        Long staticInformation=null;
+		long timeBegin= System.currentTimeMillis();
 		try {
 			def String indexContent;
 			pageResourceProvider.getResourceAsStream("Index.groovy").withStream { InputStream s-> indexContent = s.getText() };
@@ -105,7 +120,8 @@ public class Index implements PageController {
 			IdentityAPI identityApi = TenantAPIAccessor.getIdentityAPI(apiSession);
             CommandAPI commandAPI = TenantAPIAccessor.getCommandAPI(apiSession);
             
-           
+            List<BEvent> listEvents=new ArrayList<BEvent>();
+            
 			HashMap<String,Object> answer = null;
             if ("ping".equals(action))
             {
@@ -122,27 +138,27 @@ public class Index implements PageController {
                 
             }
             
-			else if ("getlistprocesses".equals(action))
+			else if ("getListArtefacts".equals(action))
 			{
 				ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJson );
 				answer = meteorAccess.getListProcesses( listProcessParameter, processAPI);
 			}
             
-            /** POST is too big, so use the start_reset, [start_add] * , start to do the same as start */
-            else if ("start_reset".equals(action))
+            /** POST is too big, so use the collect_reset, [collect_add] * ,  and then start to do the same as start */
+            else if ("collect_reset".equals(action))
             {
                 HttpSession session = request.getSession();
-                 session.setAttribute("accumulate", new ArrayList<String> () );
+                session.setAttribute("accumulate", "" );
                 answer = new HashMap<String,Object>()
                 answer.put("status", "ok");
 
             }
-            else if ("start_add".equals(action))
+            else if ("collect_add".equals(action))
             {
-                HttpSession session = request.getSession();
-                List<String> listJson = session.getAttribute("accumulate" );
-                listJson.add(paramJson);
-                 session.setAttribute("accumulate", listJson );
+               HttpSession session = request.getSession();
+               String accumulateJson = (String) session.getAttribute("accumulate" );
+               accumulateJson+=paramJson;
+               session.setAttribute("accumulate", accumulateJson );
                answer = new HashMap<String,Object>()
                answer.put("status", "ok");
 
@@ -150,54 +166,125 @@ public class Index implements PageController {
           
 			else if ("start".equals(action))
 			{
-                List jarDependencies = new ArrayList<>();
-                jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/CustomPageMeteor-1.0.0.jar")));
-                jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/bonita-event-1.0.0.jar")));
-                jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-1.0_7.2.4.jar", pageResourceProvider.getResourceAsStream("lib/scenario-utils-1.0_7.2.4.jar")));
-                
-                List<BEvent> listEventsDeploy = meteorAccess.deployCommand(true, "1.0", jarDependencies, commandAPI, null);
-                    
-				// logger.info("Json=["+paramJson+"]");
-                HttpSession session = request.getSession();
-                List<String> listJson = ( List<String>) session.getAttribute("accumulate" );
-                
-                StartParameters startParameters; 
-                if (listJson!=null)
-                {
-                    logger.info(" We get a LIST JSON size=("+listJson.size()+" - first value =["+ (listJson.size()>0 ? listJson.get(0):"-empty-")+"]");
-                    startParameters = StartParameters.getInstanceFromJsonList( listJson );
-                }
-                else
-                {
-                    logger.info(" We get a STRING size=("+paramJson+"]");                    
-				    startParameters = StartParameters.getInstanceFromJsonSt( paramJson );
-                }
-				answer = meteorAccess.start(startParameters, processAPI, commandAPI);
-				
-				//Thread.sleep(1000);
+				 HttpSession session = request.getSession();
+			     String accumulateJson = (String) session.getAttribute("accumulate" );
+			     answer = new HashMap<String,Object>();
+			                   
+			    start( accumulateJson,  listEvents, answer, meteorAccess, processAPI, commandAPI, pageResourceProvider );
+
+			    //Thread.sleep(1000);
 				//HashMap<String,Object> statusexecution = meteorAccess.getStatus( processAPI, commandAPI);
 				//answer.putAll( statusexecution );
 			} 
-            else if ("refresh".equals(action))
+			else if ("loadandstart".equals(action))
+			{
+				answer = new HashMap<String,Object>();
+		        final Object jsonObject = JSONValue.parse(paramJson);
+		        String name= jsonObject.get("confname");
+
+				String accumulateJson= loadConfig(name, listEvents, answer, pageResourceProvider, apiSession);
+				if (accumulateJson!=null)
+					start( accumulateJson,  listEvents, answer, meteorAccess, processAPI, commandAPI, pageResourceProvider );
+				
+			}
+            else if ("status".equals(action))
             {
                 StatusParameters statusParameters = StatusParameters.getInstanceFromJsonSt( paramJson );
                 
                 answer = meteorAccess.getStatus(statusParameters, processAPI, commandAPI);
                 
             }
-			
+            // ------- config
+            else if ("initconfig".equals(action))
+            {
+                BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );
+                listEvents.addAll( bonitaProperties.load() );
+                logger.info("BonitaProperties.saveConfig: loadproperties done, events = "+listEvents.size() );
+                answer = new HashMap<String,Object>()
+                answer.put("configList", getListConfig( bonitaProperties ));
+            }
+            else if ("saveconfig".equals(action))
+            {
+            	List<BEvent> listEventsConfig = new ArrayList<BEvent>();
+               
+                HttpSession session = request.getSession();
+                String accumumlateJson = (String) session.getAttribute("accumulate" );
+                // then create a big JSON value
+                
+                
+                // get the name
+                final Object jsonObject = JSONValue.parse(paramJson);
+                String name= jsonObject.get("confname");
+                logger.info("BonitaProperties.saveConfig name=["+name+"]" );
+                
+                // save it 
+                BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );
+    
+                listEventsConfig.addAll( bonitaProperties.load() );
+                logger.info("BonitaProperties.saveConfig: loadproperties done, events = "+listEvents.size() );
+    
+                bonitaProperties.setProperty( "config_"+name, accumumlateJson );
+                listEventsConfig.addAll( bonitaProperties.store() );
+                if (! BEventFactory.isError( listEventsConfig ))
+                 	listEventsConfig.add( EventConfigurationSaved);
+                 
+                logger.info("BonitaProperties.saveConfig store properties  done, events = "+listEvents.size() );
+                answer = new HashMap<String,Object>()
+                answer.put("configList", getListConfig( bonitaProperties ));
+           		answer.put("listeventsconfig",  BEventFactory.getHtml( listEventsConfig));
+               	
+            }
+            else if ("loadconfig".equals(action))
+            {
+            	answer = new HashMap<String,Object>()
+        	    final Object jsonObject = JSONValue.parse(paramJson);
+            	String name= jsonObject.get("confname");
+                        
+            	loadConfig(name, listEvents, answer, pageResourceProvider, apiSession);
+
+            }
+            else if ("deleteconfig".equals(action))
+            {
+                List<BEvent> listEventsConfig = new ArrayList<BEvent>();
+                final Object jsonObject = JSONValue.parse(paramJson);
+                String name= jsonObject.get("confname");
+                logger.info("BonitaProperties.loadConfig name=["+name+"]" );
+                // Load is
+                BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );
+    
+                listEventsConfig.addAll( bonitaProperties.load() );
+                logger.info("BonitaProperties.saveConfig: loadproperties done, events = "+listEventsConfig.size() );
+    
+                bonitaProperties.remove( "config_"+name );
+
+                listEventsConfig.addAll( bonitaProperties.store() );
+                if (! BEventFactory.isError( listEventsConfig ))
+                 	listEventsConfig.add( new BEvent(EventConfigurationRemoved, "Configuration "+name));
+                 
+                 logger.info("BonitaProperties.saveConfig store properties  done, events = "+listEvents.size() );
+                 answer = new HashMap<String,Object>();
+               	 answer.put("listeventsconfig", BEventFactory.getHtml(listEventsConfig));
+               	 answer.put("configList", getListConfig( bonitaProperties ));
+               	 
+            }
+            
 			if (answer==null)
 			{
 				answer = new HashMap<String,Object> ();
 				answer.put("status", "Unknow command");
 			}
-			
+			if (! answer.containsKey("listevents"))
+				answer.put("listevents",BEventFactory.getHtml(listEvents));
+            
 			String jsonDetailsSt = JSONValue.toJSONString( answer );
-			logger.info("Meteor.goovy: Return["+jsonDetailsSt+"]");
+			long timeEnd= System.currentTimeMillis();
+			logger.info("###################################### EndMeteor ["+action+"] Return["+jsonDetailsSt+"] in "+(timeEnd-timeBegin)+" ms");
 			
 			out.write( jsonDetailsSt );
 			out.flush();
 			out.close();				
+			
+			
 			return;				
 			
 		} catch (Exception e) {
@@ -206,8 +293,28 @@ public class Index implements PageController {
 			String exceptionDetails = sw.toString();
 			logger.severe("Exception ["+e.toString()+"] at "+exceptionDetails);
 		}
+		
 	}
 
+    /*
+     * return all the different configuration detected
+     */
+    private List<String> getListConfig( BonitaProperties bonitaProperties )
+    {
+        List<String>listConfig = new ArrayList<String>();
+        for (String key : bonitaProperties.keySet() )
+        {
+            if (key.startsWith("config_"))
+            { 
+            	key=key.substring("config_".length());
+            	if (key.indexOf(BonitaProperties.cstMarkerSplitTooLargeKey)>0)
+            		key = key.substring(0,key.indexOf(BonitaProperties.cstMarkerSplitTooLargeKey));
+            		
+            	listConfig.add( key );
+            }
+        }
+        return listConfig;
+    }
 	
 	/** -------------------------------------------------------------------------
 	 *
@@ -235,6 +342,97 @@ public class Index implements PageController {
 						e.printStackTrace();
 				}
 		}
+	
+	/**
+	 * load the config.
+	 * @return null in case of error, else the JSON string configuration
+	 */
+	public String loadConfig(String name, List<BEvent> listEvents, Map<String,Object> answer, PageResourceProvider pageResourceProvider, APISession apiSession) {
+        List<BEvent> listEventsConfig = new ArrayList<BEvent>();
+        logger.info("BonitaProperties.loadConfig name=["+name+"]" );
+        // Load is
+        BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );
+
+        listEventsConfig.addAll( bonitaProperties.load() );
+        logger.info("BonitaProperties.load: loadproperties done, events = "+listEventsConfig.size() );
 		
+		bonitaProperties.traceInLog();
+         String jsonConfiguration = bonitaProperties.getProperty( "config_"+name );
+         
+         logger.info("BonitaProperties.load store properties  done, events = "+listEventsConfig.size() +" jsonConfiguration="+jsonConfiguration);
+         
+         // due to the split, we reload a list of MAP like
+          //  [
+		   // 		{ "processes" : {  "Variables" :"", ...} },
+		   // 		{ "processes" : {  "Variables" :"", ...} },
+		   // 		{ "processes" : {  "Variables" :"", ...} },
+		   // 		{ "scenarii"  : {  },
+
+			// RESULT expected:
+			// {  "processes" : [], "scenarii": [] }
+			/*
+         List< Map<String,Object>> listFromConfig = JSONValue.parse(jsonConfiguration);
+		   
+		   // then recreate one variable with processes and scenarii
+		   Map<String, Object> finalResult = new HashMap<String,Object>();
+		   for (Map<String,Object> mapSplited : listFromConfig)
+		   {
+		   		for (String key : mapSplited.keySet())
+		   		{
+		   			 List<Object> listKey = finalResult.get( key );
+		   			 if (listKey==null)
+		   			 	listKey = new ArrayList();
+		   			 listKey.add( mapSplited.get( key ));
+		   			 finalResult.put( key, listKey );
+		   		} 
+		   }                 
+		   */
+       	 answer.put("config", JSONValue.parse(jsonConfiguration) );
+       	 
+         if (! BEventFactory.isError( listEventsConfig ))
+           	 listEventsConfig.add( EventConfigurationLoaded);
+       	 answer.put("listeventsconfig", BEventFactory.getHtml(listEventsConfig));
+       	 if (BEventFactory.isError( listEventsConfig ))
+       		 return null;
+       	 else
+       		 return jsonConfiguration;
+	}
 		
+	/*
+	 * 
+	 */
+	public void start(String accumulateJson, List<BEvent> listEvents, Map<String,Object> answer, MeteorAccess meteorAccess, ProcessAPI processAPI, CommandAPI commandAPI, PageResourceProvider pageResourceProvider )
+	{
+
+        List jarDependencies = new ArrayList<>();
+        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bdm-jpql-query-executor-command-1.0.jar", pageResourceProvider.getResourceAsStream("lib/bdm-jpql-query-executor-command-1.0.jar")));
+        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "process-starter-command-1.0.jar", pageResourceProvider.getResourceAsStream("lib/process-starter-command-1.0.jar")));
+        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-2.0.jar", pageResourceProvider.getResourceAsStream("lib/scenario-utils-2.0.jar")));
+        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/CustomPageMeteor-1.0.0.jar")));
+        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/bonita-event-1.0.0.jar")));
+        
+        List<BEvent> listEventsDeploy = meteorAccess.deployCommand(true, "1.0", jarDependencies, commandAPI, null);
+        if (BEventFactory.isError( listEventsDeploy))
+        {
+            listEvents.addAll(listEventsDeploy );
+        }
+        
+        listEventsDeploy.addAll( meteorAccess.deployCommandGroovyScenario(true, "1.0", new ArrayList<>(), commandAPI, null));
+        
+        
+		// logger.info("Json=["+paramJson+"]");
+          StartParameters startParameters; 
+        if (accumulateJson!=null)
+        {
+            logger.info(" We get a LIST JSON size=("+accumulateJson.length()+" - first value =["+ (accumulateJson==null ? null :(accumulateJson.length()>100 ? accumulateJson.substring(0,100) :accumulateJson))+ "]");
+            startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
+        }
+        else
+        {
+            logger.info(" We get a STRING size=("+paramJson+"]");                    
+		    startParameters = StartParameters.getInstanceFromJsonSt( paramJson );
+        }
+		answer.putAll( meteorAccess.start(startParameters, processAPI, commandAPI));
+
+	}
 }

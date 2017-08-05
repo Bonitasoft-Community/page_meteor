@@ -6,12 +6,14 @@
   <name>CustomPageMeteor</name>
    <dependencies>
   
+  <!--  mvn install:install-file -Dfile=scenario-utils-2.0.jar -DgroupId=com.bonitasoft.scenario -DartifactId=scenario-utils -Dversion=2.0 -Dpackaging=jar -->
+  	
   	<dependency>
   		<groupId>com.bonitasoft.scenario</groupId>
 		<artifactId>scenario-utils</artifactId>
-		<version>1.0_7.2.4</version>
+		<version>2.0</version>
 	</dependency>
-  	 
+  	  
   	<dependency>
   		<groupId>org.bonitasoft.engine</groupId>
   		<artifactId>bonita-client</artifactId>
