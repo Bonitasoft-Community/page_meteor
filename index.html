@@ -17,6 +17,8 @@
 <link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/bootstrap.min.css">
 <link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/main.css">
 <link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/style.css">
+<link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/dropbox.css">
+<link rel="stylesheet" href="pageResource?page=custompage_meteor&location=style/ng-modal.css">
 
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript"
@@ -73,7 +75,29 @@
 		<div class="col-xs-12">
 			<div class="bs-component" ng-controller="MeteorControler as meteorctrl">
 
-
+				<modal-dialog show='meteorctrl.isshowExportDialog' dialog-title='Export' width='75%' height='80%' 	close="meteorctrl.isshowExportDialog=false"> 
+					<div class="modal-content" width='100%' height='100%'>
+						<h2>Export configuration</h2>
+						<p>
+						<p>
+						<table class="table">
+							<tr>
+							 
+								<th><button ng-click="meteorctrl.selectAll(meteorctrl.config.list)" class="btn btn-info btn-xs">Select all</button>Configuration</th>
+							</tr>
+							<tr ng-repeat="oneconf in meteorctrl.config.list">
+								<td><input type="checkbox" ng-model="oneconf.selected"></input>{{oneconf.name}}</td>
+							</tr>
+							</table>
+						<p>
+						<a class="btn btn-info" href="?page=custompage_meteor&action=exportconf&paramjson={{meteorctrl.getExportConfiguration()}}" >Export</a> 
+					
+					</div>
+				</modal-dialog>
+		
+		
+		
+		
 				<legend class="text-primary">
 					<span class="glyphicon glyphicon-th"></span>
 						<a href="#" ng-click="meteorctrl.showmainscenarii = ! meteorctrl.showmainscenarii" style="text-decoration:none">					
@@ -105,32 +129,49 @@
 										<h3 class="panel-title">Saved configurations</h3>
 									</div>
 									<div class="panel-body">
-										<table width="100%">
+										<table width="100%" style="border:3px">
 											<tr>
 												<td>Configuration name : <input ng-model="meteorctrl.config.newname" maxlength="30"/>
-													<button ng-click="meteorctrl.saveConfig()" class="btn btn-success">save</button>
+													<button ng-click="meteorctrl.saveConfig()" class="btn btn-success" ng-disabled="meteorctrl.configwait">Save</button><br>
+													
+													
 												</td><td colspan="2">
 													<select ng-model="meteorctrl.config.currentname" style="width: 150px;">
-														<option ng-repeat="name in meteorctrl.config.list" value="{{name}}">{{name}}</option>
+														<option ng-repeat="oneconf in meteorctrl.config.list" value="{{oneconf.name}}">{{oneconf.name}}</option>
 													</select>
 												</td>
 											</tr><tr>
-												<td></td>
 												<td>
-													<button ng-click="meteorctrl.loadConfig()" class="btn btn-info">Load</button>
+													<textarea ng-model="meteorctrl.config.newdescription" cols="50" rows="5"></textarea><br>
+													<input type="checkbox" ng-model="meteorctrl.showRestApiCall">Show RestCall</input>
+													<div ng-show="meteorctrl.showRestApiCall">
+														Start :<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=loadandstart&amp;scenario={{meteorctrl.config.newname}}</span> <br>
+														Status:<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=status&amp;simulationid=&lt;simulationId&gt;</span>
+													</div>
+												</td>
+												<td>
+													<button ng-click="meteorctrl.loadConfig()" class="btn btn-info" ng-disabled="meteor.config.list.length==0 || meteorctrl.configwait">Load</button>
 												</td><td>
-													<button ng-click="meteorctrl.loadAndStartConfig()" class="btn btn-primary">Load And Start</button>
+													<button ng-click="meteorctrl.loadAndStartConfig()" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || meteorctrl.configwait">Load And Start</button>
 												</td><td>
-													<button ng-click="meteorctrl.deleteConfig()" class="btn btn-danger">delete&nbsp;{{meteorctrl.config.currentname}}</button></td>
+													<button ng-click="meteorctrl.deleteConfig()" class="btn btn-danger" ng-disabled="(! meteorctrl.config.currentname) || meteorctrl.configwait">Delete&nbsp;{{meteorctrl.config.currentname}}</button></td>
 												</td>
 											</tr>
 											<tr><td coldspan="3">	
-												<span ng-show="meteorctrl.configwait"> <span class="Loading">.</span> Operation in progress {{meteorctrl.listUrlPercent}} %...</span>
+												<span ng-show="meteorctrl.configwait"> <span class="Loading">.</span> Operation in progress {{meteorctrl.listUrlPercent}}%...</span>
 												</td>
 											</tr>
 											<tr><td coldspan="3">
-												<div ng-bind-html="meteorctrl.getListEvents( meteorctrl.listeventsconfig )"></div>
+													<div ng-bind-html="meteorctrl.getListEvents( meteorctrl.listeventsconfig )"></div>
 												</td>
+												<td>
+													<button ng-click="meteorctrl.isshowExportDialog=true" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || meteorctrl.configwait">Export</button>													
+												</td><td colspan="2">
+													<div ng-file-drop ng-model="importfiles" class="drop-box ng-isolate-scope ng-valid ng-dirty"
+														drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
+														multiple="true" allow-dir="false">Drop Test.zip to be upload here</div>
+													<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>													
+												</td>			
 											</tr>											
 										</table>
 									</div>
@@ -156,7 +197,7 @@
 							<tr>
 								<th style="background-color: #f2dede; text-align: center;">Name</th>
 								<th style="background-color: #f2dede; text-align: center;"><span title="number or robots to start">Robots</span></th>
-								<th style="background-color: #f2dede; text-align: center;"><span title="number of execution (cases or tasks) PER robots">exec/rob</span></th>
+								<th style="background-color: #f2dede; text-align: center;" colspan="2"><span title="number of execution (cases or tasks) PER robots">exec/rob</span></th>
 								<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep between each execution, in millisecond">sleep (ms)</span></th>
 								<th style="background-color: #f2dede; text-align: center;">Contract</th>
 							</tr>
@@ -166,9 +207,9 @@
 									<td style="background-color: #D9EDF7;border-width: 1px 1px;text-align: center;"><input type="number"
 										ng-model="processinfo.nbrob" style="text-align: right; width: 80px;"
 										title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably"></td>
-									<td style="background-color: #D9EDF7; text-align: center;"><input type="number"
-										ng-model="processinfo.nbcases" style="text-align: right; width: 80px;"
-										title="Attention, the number of case created will be Nb robots*nbCases">({{processinfo.nbrob*processinfo.nbcases}})</td>
+									<td style="background-color: #D9EDF7; text-align: center;">
+										<input type="number" ng-model="processinfo.nbcases" style="text-align: right; width: 80px;"	title="Attention, the number of case created will be Nb robots*nbCases"></td>
+									<td style="background-color: #D9EDF7; text-align: right;width: 80px">({{processinfo.nbrob*processinfo.nbcases}})</td>
 									<td style="background-color: #D9EDF7; text-align: center"><input type="number"
 										ng-model="processinfo.timesleep" style="text-align: right; width: 80px;"
 										title="between each creation, robots will sleep this time (in ms)"></td>
@@ -176,17 +217,17 @@
 										<table>
 											<tr ng-repeat="input in processinfo.inputs track by $index">
 												<td>
-													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;"> %
+													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;">%
 												</td>
 												<td>
-													<textarea ng-model="input.content"></textarea>
+													<textarea cols="70" rows="5" ng-model="input.content"></textarea>
 												</td>
 												<td>
 													<button ng-click="meteorctrl.removeInput( processinfo, input) " class="btn btn-danger btn-xs">Remove</button>
 												</td>
 											</tr>
 										</table>
-										<button ng-click="meteorctrl.addInput( processinfo )" class="btn btn-success btn-xs">Add</button>
+										<button ng-click="meteorctrl.addInput( processinfo )" class="btn btn-info btn-xs">Add</button>
 									</td>
 								</tr>
 								<tr ng-repeat="activityinfo in processinfo.activities track by $index"
@@ -194,15 +235,17 @@
 									<td style="background-color: #fcf8e3">&nbsp;&nbsp;{{activityinfo.activityname}}</td>
 									<td style="background-color: #fcf8e3; text-align: center;"><input type="number"
 										ng-model="activityinfo.nbrob" style="text-align: right; width: 80px;"></td>
-									<td style="background-color: #fcf8e3; text-align: center;"><input type="number"
+									<td style="background-color: #fcf8e3; text-align: center;">
+										<input type="number"
 										ng-model="activityinfo.nbcases" style="text-align: right; width: 80px;"></td>
+									<td style="background-color: #fcf8e3;text-align: right;width: 80px">({{activityinfo.nbrob*activityinfo.nbcases}})</td>										
 									<td style="background-color: #fcf8e3; text-align: center;">
 										<input type="number" ng-model="activityinfo.timesleep" style="text-align: right; width: 80px;"></td>
 									<td style="background-color: #fcf8e3; text-align: center;; text-align: center">
 										<table>
 											<tr ng-repeat="input in activityinfo.inputs track by $index">
 												<td>
-													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;"> %
+													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;">%
 												</td>
 												<td>
 													<textarea ng-model="input.content"></textarea>
@@ -212,7 +255,7 @@
 												</td>
 											</tr>
 										</table>
-										<button ng-click="meteorctrl.addInput( activityinfo )" class="btn btn-success btn-xs">Add</button>
+										<button ng-click="meteorctrl.addInput( activityinfo )" class="btn btn-info btn-xs">Add</button>
 									</td>
 								</tr>
 							</tbody>
@@ -247,25 +290,35 @@
 											<option value="GRV">Groovy</option>
 											<option value="CMD">Command</option>
 									</select></td>
-									<td><input ng-model="scenarioinfo.nbrobots" type="number" style="text-align: right; width: 80px;"></td>
+									<td><input ng-model="scenarioinfo.nbrob" type="number" style="text-align: right; width: 80px;"></td>
 									<td><input ng-model="scenarioinfo.nbexec" type="number" style="text-align: right; width: 80px;"></td>
 									<td><textarea ng-model="scenarioinfo.scenario" rows="10" cols="80">  </textarea>
-									<div ng-show="scenarioinfo.type=='CMD'">
-										<br>
-										 Append one verb:<br>
-										<select ng-model="meteorctrl.scenarii.addsentence" style="width: 150px;" 
-											ng-change="meteorctrl.appendsentence(scenarioinfo, meteorctrl.scenarii.addsentence)">
-											<option ng-repeat="sentence in meteorctrl.configscenarii.cmd.sentences" value="{{sentence}}">{{sentence}}</option>
-										</select>
-										
+										<div ng-show="scenarioinfo.type=='CMD'">
+											<br>
+											 Append one verb:<br>
+											<select ng-model="meteorctrl.scenarii.addsentence" style="width: 150px;" 
+												ng-change="meteorctrl.appendsentence(scenarioinfo, meteorctrl.scenarii.addsentence)">
+												<option ng-repeat="sentence in meteorctrl.configscenarii.cmd.sentences" value="{{sentence}}">{{sentence}}</option>
+											</select>
+											
 										</div>
+										<div ng-show="scenarioinfo.type=='GRV'">
+											<br>
+											 Append one line:<br>
+											<select ng-model="meteorctrl.scenarii.addsentence" style="width: 150px;" 
+												ng-change="meteorctrl.appendsentence(scenarioinfo, meteorctrl.scenarii.addsentence)">
+												<option ng-repeat="sentence in meteorctrl.configscenarii.grv.sentences" value="{{sentence}}">{{sentence}}</option>
+											</select>
+											
+										</div>
+
 									</td>
 									<td><button ng-click="meteorctrl.removeScenarii( scenarioinfo )" class="btn btn-danger">Remove</button></td>
 								</tr>
 							</tbody>
 						</table>
 						<center>
-							<button ng-click="meteorctrl.addScenarii()" class="btn btn-success">Add</button>
+							<button ng-click="meteorctrl.addScenarii()" class="btn btn-info">Add</button>
 						</center>
 						
 						<!-- Scenario={{meteorctrl.scenarii}} -->
@@ -293,13 +346,13 @@
 					</legend>
 					
 					
-					<div class="panel panel-primary">
+					<div>
 						<center>
-							<button ng-click="meteorctrl.start()" class="btn btn-success" ng-disabled="meteorctrl.startwait">start</button>
+							<button ng-click="meteorctrl.start()" class="btn btn-success" ng-disabled="meteorctrl.startwait">Start</button>
 						</center>
 						
 						<span ng-show="meteorctrl.startwait"> 
-							<span class="Loading">.</span> {{meteorctrl.operation}} in progress {{meteorctrl.listUrlPercent}} %...<br>
+							<span class="Loading">.</span> {{meteorctrl.operation}} in progress {{meteorctrl.listUrlPercent}}%...<br>
 								<div class="progress">
 										<div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{meteorctrl.listUrlPercent}}" aria-valuemin="0" aria-valuemax="100" 
 											style="width: {{meteorctrl.listUrlPercent}}%;"><span class="sr-only"></span>
@@ -316,7 +369,7 @@
 								<th style="background-color: #99D9EA">Completion</th>
 								<th style="background-color: #99D9EA">Robot</th>
 								<th style="background-color: #99D9EA">State</th>
-								<th style="background-color: #99D9EA">Status Execution</th>								
+								<th style="background-color: #99D9EA">Nb errors</th>								
 								<th style="background-color: #99D9EA">Advance</th>
 								<th style="background-color: #99D9EA">Time(ms)</th>
 								<th style="background-color: #99D9EA">Average(ms)</th>
@@ -326,9 +379,9 @@
 									<td style="{{meteorctrl.getRobotStyle( robotinfo )}}">
 										<div class="progress">
 											<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{robotinfo.percent}}" aria-valuemin="0" aria-valuemax="100" 
-												style="width: {{robotinfo.percent}}%;"><span class="sr-only">({{robotinfo.percent}} %)</span></div>
+												style="width: {{robotinfo.percentAdvance}}%;"><span class="sr-only">({{robotinfo.percentAdvance}}%)</span></div>
 										</div>
-										({{robotinfo.percent}} %)
+										({{robotinfo.percentAdvance}}%)
 									
 									</td>
 									<td style="{{meteorctrl.getRobotStyle( robotinfo )}}">{{robotinfo.title}}</td>
@@ -357,7 +410,7 @@
 						<div class="well">
 							<table width="100%">
 								<tr><td>
-									<table>
+									<table class="table ">
 										<tr>
 											<td>Simulation Id</td>
 											<td>{{meteorctrl.simulationid}}</td>
@@ -371,8 +424,8 @@
 											<td>{{meteorctrl.execution.timeStarted}}</td>
 										</tr>
 										<tr>
-											<td>Delay to finish (estimation) ms</td>
-											<td>{{meteorctrl.execution.timeEstimatedRest}}</td>
+											<td>Delay to finish (estimation)</td>
+											<td>{{meteorctrl.execution.timeEstimatedDelay}}</td>
 										</tr>
 										<tr>
 											<td>Time end (estimation)</td>
@@ -384,23 +437,28 @@
 										</tr>								
 										<tr>
 											<td>Percent global</td>
-											<td>{{meteorctrl.execution.timeEstimatedPercent}}</td>
+											<td>{{meteorctrl.execution.percentAdvance}}%</td>
 										</tr>
 									</table>
 								</td>
 								<td  style="text-align: right;vertical-align: top;width:450px;">
 								<!--  all simulations -->
 									<table style=" border: 2px solid black;width:400px;">
-										<th style="background-color: #f2dede; text-align: center;">Simulations in progress</th>
+										<th style="background-color: #f2dede; text-align: center;" colspan="5">Simulations in progress</th>
 										<tr ng-repeat="simulation in meteorctrl.execution.listSimulations track by $index">
-											<td style="text-align: center;">{{simulation.id}} <button ng-click="meteorctrl.simulationid=simulation.id;meteorctrl.refresh()" class="btn btn-success btn-xs" ng-disabled="meteorctrl.refreshinprogress">Display</button></td>
+											
+											<td style="text-align: center;">{{simulation.id}}</td>
+											<td style="text-align: right;">{{simulation.percentAdvance}}%</td>
+											<td style="text-align: right;">{{simulation.timeEstimatedEnd}}</td>
+											<td style="text-align: right;">{{simulation.timeEstimatedDelay}}</td>
+											<td> <button ng-click="meteorctrl.simulationid=simulation.id;meteorctrl.refresh()" class="btn btn-info btn-xs" ng-disabled="meteorctrl.refreshinprogress">Display</button></td>
 										</tr>
 									</table>
 								</td>
 								</tr>
 							</table>
 							<center>
-								<span class="Loading" ng-show="meteorctrl.refreshinprogress">.</span> <button ng-click="meteorctrl.refresh()" class="btn btn-success" ng-disabled="meteorctrl.refreshinprogress">refresh</button>
+								<span class="Loading" ng-show="meteorctrl.refreshinprogress">.</span> <button ng-click="meteorctrl.refresh()" class="btn btn-success" ng-disabled="meteorctrl.refreshinprogress">Refresh</button>
 							</center>
 						
 							<!-- <p>Exe: {{meteorctrl.statusexecution}}
@@ -419,27 +477,33 @@
 					</legend>
 				</div>
 				
-			</div>
-
+				
+				
+			</div> <!--  end controler -->
+		</div> <!--  end col-xs-12 -->
+	</div> <!-- class="container-fluid" -->
 
 
 			<!-- Third party dependencies -->
 
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/jquery.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/jquery.min.js"></script>
 
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/angular.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/angular.min.js"></script>
 
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-resource.min.js"></script>
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-cookies.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-resource.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-cookies.min.js"></script>
 
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/bootstrap/js/bootstrap.min.js"></script>
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-bootstrap-tpls.min.js"></script>
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-file-upload.js"></script>
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/ng-google-chart.js"></script>
-			<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-sanitize.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/bootstrap/js/bootstrap.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-bootstrap-tpls.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-file-upload.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/ng-google-chart.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/angular-sanitize.min.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=3rd-party/ng-modal.min.js"></script> 
+	<script	src="pageResource?page=custompage_meteor&location=js/angular-file-upload-shim.min.js"></script>
+	<script	src="pageResource?page=custompage_meteor&location=js/angular-file-upload.min.js"></script>
 
 
-			<!-- Application dependencies -->
-			<script src="pageResource?page=custompage_meteor&location=meteormonitor.js"></script>
+	<!-- Application dependencies -->
+	<script src="pageResource?page=custompage_meteor&location=meteormonitor.js"></script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-'use strict';
 /**
  * 
  */
@@ -6,7 +5,7 @@
 (function() {
 
 
-var appCommand = angular.module('meteormonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize']);
+var appCommand = angular.module('meteormonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize','ngModal','angularFileUpload']);
 
 
 
@@ -35,7 +34,7 @@ appCommand.controller('TitleController',
 
 // Ping the server
 appCommand.controller('MeteorControler',
-	function ( $http, $scope,  $sce, $interval, $timeout ) {
+	function ( $http, $scope,  $sce, $interval, $timeout, $upload ) {
 
 	this.processes= [  ];
 	this.status="";
@@ -46,7 +45,7 @@ appCommand.controller('MeteorControler',
 	this.startwait=false;
 	this.showprocess=true;
 	this.showscenarii=true;
-	
+	this.isshowExportDialog=false;
 	
 	this.showmainscenarii=true;
 	// ------------------------------------------------------------------------------------------------------
@@ -62,8 +61,8 @@ appCommand.controller('MeteorControler',
 					showvariables:  true,
 					showdocuments:  true,
 			};
-		var json= angular.toJson(postMsg, true);
-		
+		var json= encodeURI( angular.toJson(postMsg, true));
+
 		$http.get( '?page=custompage_meteor&action=getListArtefacts&jsonparam='+json )
 				.success( function ( jsonResult ) {
 						console.log("history",jsonResult);
@@ -76,7 +75,7 @@ appCommand.controller('MeteorControler',
 					self.wait=false;
 					});
 	}
-	this.getListArtefacts();
+	// this.getListArtefacts();
 	
 	this.addInput = function( activityinfo ) {
 		if (! activityinfo.inputs)
@@ -104,7 +103,17 @@ appCommand.controller('MeteorControler',
 		"assert();",
 		"[{\"verb\":\"createCase\",\"processName\":\"MeteorStep\",\"processVersion\":\"1.0\"},{\"verb\":\"executeTask\",\"taskName\":\"Meteor_1\"},{\"verb\":\"executeTask\",\"taskName\":\"Meteor_2\"}]"
 		]
-	}};
+									},
+							'grv':{'sentences': [
+								"Long processDefinitionId = accessor.processAPI.getLatestProcessDefinitionId(\"ProcessName\");",
+								"processDefinition = accessor.processAPI.getProcessDefinition( processDefinitionId);",
+								"case = processDefinition.start();",
+								"task = wait { case.isHumanTaskAvailable process_instance:case, task_name:\"Step1\"};",
+								"assignee = task.assign assignee_name:defaultUser;",
+								"assignee = task.execute assignee_name:defaultUser;",
+								
+								]}
+	};
 	
 	 this.scenarii= [];
 	 // this.scenarii = [ { 'name':'Chigago', 'type':'GRV', 'nbrobots': 1,
@@ -146,7 +155,8 @@ appCommand.controller('MeteorControler',
 	this.startAllInOne = function() 
 	{
 		var param = { "processes": this.processes, "scenarii": this.scenarii};
-		var json= angular.toJson( param, false);
+		var json = encodeURI( angular.toJson( param, false));
+
  		console.log("Start : "+json);
 
 		$http.get( '?page=custompage_meteor&action=start&paramjson='+json )
@@ -177,12 +187,6 @@ appCommand.controller('MeteorControler',
 		return "";
 	}
 
-	// ------------------------------------------------------------------------------------------------------
-	<!-- Manage the event -->
-	this.getListEvents = function ( listevents ) {
-		return $sce.trustAsHtml(  listevents );
-	}
-
 	
 	// ------------------------------------------------------------------------------------------------------
 	// manage configuration
@@ -191,8 +195,9 @@ appCommand.controller('MeteorControler',
 	// Save the current config
 	this.saveConfig= function()
 	{
-		var param = { "confname": this.config.newname};
- 		var json= angular.toJson( param, false);
+		var param = { "confname": this.config.newname, "confdescription" : this.config.newdescription };
+		var json = encodeURI( angular.toJson( param, false));
+
  		this.listeventsconfig="";
 		this.configwait=true;
 
@@ -204,7 +209,8 @@ appCommand.controller('MeteorControler',
 	{
 		// load the config in the current process
 		var param = { "confname": this.config.currentname};
- 		var json= angular.toJson( param, false);
+		var json = encodeURI( angular.toJson( param, false));
+
 		var selfconfig=this;
 		selfconfig.listeventsconfig="";
 		selfconfig.listeventslistprocesses="";
@@ -214,10 +220,10 @@ appCommand.controller('MeteorControler',
 		$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json )
 		.success( function ( jsonResult ) {
 			selfconfig.configwait=false;
-			selfconfig.config.newname=selfconfig.config.currentname; // ready
-																		// to
-																		// save
-																		// it
+			// ready to save it
+			selfconfig.config.newname=selfconfig.config.currentname; 
+			selfconfig.config.newdescription=jsonResult.description; 
+			
 			selfconfig.processes = jsonResult.config.processes;
 			if (!selfconfig.processes)
 				selfconfig.processes=[];
@@ -240,7 +246,8 @@ appCommand.controller('MeteorControler',
 		{
 			var param = { "confname": this.config.currentname};
 
-			var json= angular.toJson( param, false);
+			var json = encodeURI( angular.toJson( param, false));
+
 			var selfconfig=this;
 			selfconfig.listeventsconfig="";
 			selfconfig.listeventslistprocesses="";
@@ -252,6 +259,8 @@ appCommand.controller('MeteorControler',
 			.success( function ( jsonResult ) {
 				selfconfig.configwait=false;
 				selfconfig.config.newname=""; // ready to save it
+				selfconfig.config.newdescription=""; // ready to save it
+				
 				selfconfig.config.currentname="";
 				selfconfig.listeventsconfig = jsonResult.listeventsconfig;
 				selfconfig.config.list = jsonResult.configList;
@@ -263,14 +272,28 @@ appCommand.controller('MeteorControler',
 				});
 		}
 	}
+	// -----------------------
 	// get the list of configuration
-	this.initConfig=function()
+	this.initPage=function()
 	{
 		var self=this;
+		var postMsg = {
+				showcreatecases: true,
+				showactivities: true,
+				showusers:  true,
+				showvariables:  true,
+				showdocuments:  true,
+		};
+		var json= encodeURI( angular.toJson(postMsg, true));
+
+
 		self.configwait=true;
-		$http.get( '?page=custompage_meteor&action=initconfig' )
+		$http.get( '?page=custompage_meteor&action=initpage&jsonparam='+json )
 		.success( function ( jsonResult ) {
-			self.config.list = jsonResult.configList;
+			self.config.list 				= jsonResult.configList;
+			self.processes 					= jsonResult.processes;
+			self.listeventslistprocesses 	= jsonResult.listevents;
+			
 			self.configwait=false;
 			self.listeventsconfig = jsonResult.listeventsconfig;
 		})
@@ -278,10 +301,41 @@ appCommand.controller('MeteorControler',
 			self.configwait=false;
 			});
 	}
-	this.initConfig();
+	this.initPage();
 	
+	//-----------------------
+	// export the configuration
+	this.getExportConfiguration=function()
+	{
+		var list=[];
+		for (var i in this.config.list)
+		{
+			console.log("One conf="+this.config.list[i]);
+			if (this.config.list[i].selected)
+				list.push( this.config.list[i].name );
+		}
 
+		var param = { "listconfname": list};
+		var json = encodeURI( angular.toJson( param, false));
+		return json;
+	}
 	
+	// import the configuratin
+	
+	this.fileIsDropped = function( testfileimported ) {
+		var self=this;
+		self.configwait=true;
+		$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported )
+		.success( function ( jsonResult ) {
+			self.config.list 			= jsonResult.configList;
+			self.listeventsconfig 		= jsonResult.listeventsconfig;
+			self.configwait=false;
+		})
+		.error( function ( jsonResult ) {
+			self.configwait=false});
+		
+	}
+
 	
 	// ------------------------------------------------------------------------------------------------------
 	// Start
@@ -305,11 +359,12 @@ appCommand.controller('MeteorControler',
 		
 		// prepare the string
 		var param = { "processes" :  this.processes, "scenarii":  this.scenarii};
-		var json= angular.toJson( param, false);
+		var json = angular.toJson( param, false);
+
 		// split the string by packet of 5000 
 		while (json.length>0)
 		{
-			var jsonFirst = json.substring(0,5000);
+			var jsonFirst = encodeURI( json.substring(0,5000));
 			this.listUrlCall.push( "action=collect_add&paramjson="+jsonFirst);
 			json =json.substring(5000);
 		}
@@ -328,18 +383,20 @@ appCommand.controller('MeteorControler',
 	this.loadAndStartConfig = function( )
 	{		
 		var param = { "confname": this.config.currentname};
-		var json= angular.toJson( param, false);
+		var json = encodeURI( angular.toJson( param, false));
+
 		var self=this;
 		self.listeventsconfig="";
 		self.listeventslistprocesses="";
 		self.listUrlPercent=0;
 		self.configwait=true;
-		self.config.newname=self.config.currentname;
+		self.config.newname			= self.config.currentname;
 		
 		$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json )
 		.success( function ( jsonResult ) {
 			self.configwait						= false;
-
+			self.config.newdescription	= jsonResult.description; 
+			
 			self.processes 						= jsonResult.config.processes;
 			if (!self.processes)
 				self.processes=[];
@@ -380,8 +437,8 @@ appCommand.controller('MeteorControler',
 		console.log(" RefreshInternal simulationId["+self.simulationid+"]");
 		
 		var param = { "simulationid": self.simulationid};
- 		var json= angular.toJson( param, false);
-		
+		var json = encodeURI( angular.toJson( param, false));
+
 		self.operation="Refresh";
 		self.refreshinprogress=true;
 
@@ -466,8 +523,50 @@ appCommand.controller('MeteorControler',
 				});	
 		};
 	
-
+		
+		
+		
+		
+		var me = this;
+		$scope.$watch('importfiles', function() {
+			
+			
+			for (var i = 0; i < $scope.importfiles.length; i++) {
+				me.configwait=true;
+				var file = $scope.importfiles[i];
+				
+				// V6 : url is fileUpload
+				// V7 : /bonita/portal/fileUpload
+				$scope.upload = $upload.upload({
+					url: '/bonita/portal/fileUpload',
+					method: 'POST',
+					data: {myObj: $scope.myModelObj},
+					file: file
+				}).progress(function(evt) {
+//					console.log('progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '% file :'+ evt.config.file.name);
+				}).success(function(data, status, headers, config) {
+				
+					console.log('file ' + config.file.name + 'is uploaded successfully. Response: ' + data);
+					me.fileIsDropped(data);
+				});
+			} // end $scope.importfiles
+		}); 
 	
+		// ------------------------------------------------------------------------------------------------------
+		// TOOLBOX
+		<!-- Manage the event -->
+		this.getListEvents = function ( listevents ) {
+			return $sce.trustAsHtml(  listevents );
+		}
+
+		this.selectAll = function ( list)
+		{
+			for (var i in list)
+			{
+				list[i].selected=true;
+			}
+		}
+
 });
 
 

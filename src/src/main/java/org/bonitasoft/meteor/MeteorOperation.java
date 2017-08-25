@@ -12,8 +12,9 @@ import java.util.logging.Logger;
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.meteor.MeteorAccess.StartParameters;
-import org.bonitasoft.meteor.MeteorAccess.StatusParameters;
+import org.bonitasoft.meteor.MeteorAPI.StartParameters;
+import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
+import org.bonitasoft.meteor.MeteorSimulation.Estimation;
 import org.bonitasoft.meteor.MeteorSimulation.STATUS;
 import org.bonitasoft.meteor.scenario.Scenario;
 import org.bonitasoft.log.event.BEventFactory;
@@ -35,7 +36,7 @@ public class MeteorOperation {
 		public MeteorSimulation.STATUS status;
 
 		public HashMap<String, Object> getMap() {
-			result.put(MeteorAccess.cstParamResultListEventsSt, BEventFactory.getHtml(listEvents));
+			result.put(MeteorAPI.cstParamResultListEventsSt, BEventFactory.getHtml(listEvents));
 			// result.put(MeteorAccess.cstParamResultStatus, status == null ? ""
 			// : status.toString());
 			return result;
@@ -72,7 +73,7 @@ public class MeteorOperation {
 			}
 
 			simulationInProgress.put(meteorSimulation.getId(), meteorSimulation);
-			meteorResult.result.put(MeteorAccess.cstParamResultSimulationId, String.valueOf(meteorSimulation.getId()));
+			meteorResult.result.put(MeteorAPI.cstParamResultSimulationId, String.valueOf(meteorSimulation.getId()));
 
 			// first, reexplore the list of process / activity
 			final MeteorProcessDefinitionList meteorProcessDefinitionList = new MeteorProcessDefinitionList();
@@ -151,12 +152,28 @@ public class MeteorOperation {
 	public static MeteorResult getStatus(final StatusParameters statusParameters, final APIAccessor apoAccessor) {
 		final MeteorResult meteorResult = new MeteorResult();
 		statusParameters.decodeFromJsonSt();
-
+		Long currentTime = System.currentTimeMillis();
+		
 		// return all simulation in progress
 		List<Map<String, Object>> listSimulations = new ArrayList<Map<String, Object>>();
 		for (final MeteorSimulation simulation : simulationInProgress.values()) {
 			Map<String, Object> oneSimulation = new HashMap<String, Object>();
 			oneSimulation.put("id", simulation.getId());
+			oneSimulation.put(MeteorSimulation.cstJsonStatus, simulation.getStatus().toString());
+			Estimation estimation = simulation.getEstimatedAdvance();
+			oneSimulation.put(MeteorSimulation.cstJsonPercentAdvance, estimation.percentAdvance);
+			if (estimation.percentAdvance==0)
+			{
+				// can't calculated any time
+			}
+			if (estimation.percentAdvance<100)
+			{
+				oneSimulation.put(MeteorSimulation.cstJsonTimeEstimatedDelay, MeteorToolbox.getHumanDelay( estimation.timeNeedInMs));
+				oneSimulation.put(MeteorSimulation.cstJsonTimeEstimatedEnd, MeteorToolbox.getHumanDate( new Date(currentTime + estimation.timeNeedInMs)));
+			}
+			else
+				oneSimulation.put(MeteorSimulation.cstJsonTimeEstimatedEnd, MeteorToolbox.getHumanDate( simulation.getDateEndSimulation()) );
+
 			listSimulations.add(oneSimulation);
 		}
 		meteorResult.result.put("listSimulations", listSimulations);
@@ -169,6 +186,7 @@ public class MeteorOperation {
 			}
 			meteorResult.listEvents.add(new BEvent(EventNoSimulation, "SimulationId[" + statusParameters.simulationId + "] allSimulation=[" + allSimulations + "]"));
 			meteorResult.status = MeteorSimulation.STATUS.NOSIMULATION;
+			meteorResult.result.put("status",MeteorSimulation.STATUS.NOSIMULATION.toString());
 			return meteorResult;
 		}
 

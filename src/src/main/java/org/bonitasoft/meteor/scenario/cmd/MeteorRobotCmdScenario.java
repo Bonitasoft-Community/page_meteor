@@ -51,7 +51,7 @@ public class MeteorRobotCmdScenario extends MeteorRobot {
 				listEvents = meteorScenario.listSentences.get(j).execute( mRobotId, mLogExecution );
 			}
 			final long timeEnd = System.currentTimeMillis();
-			mCollectPerformance.collectOneTime(timeEnd - timeStart);
+			mCollectPerformance.collectOneStep(timeEnd - timeStart);
 		}
 	}
 

@@ -74,7 +74,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 				final SearchResult<HumanTaskInstance> searchHumanTaskInstances = processAPI.searchPendingTasksForUser(userId, searchOptionBuilder.done());
 				final List<HumanTaskInstance> pendingTasks = searchHumanTaskInstances.getResult();
 				long timeEnd = System.currentTimeMillis();
-				mCollectPerformance.collectOneTime(timeEnd - timeStart);
+				mCollectPerformance.collectOneStep(timeEnd - timeStart);
 
 				HumanTaskInstance pendingTask = pendingTasks.size() > 0 ? pendingTasks.get(0) : null;
 				if (pendingTask != null && pendingTask.getProcessDefinitionId() != mMeteorUser.mProcessDefinitionId) {
@@ -85,7 +85,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 					timeStart = System.currentTimeMillis();
 					processAPI.assignUserTask(pendingTask.getId(), userId);
 					timeEnd = System.currentTimeMillis();
-					mCollectPerformance.collectOneTime(timeEnd - timeStart);
+					mCollectPerformance.collectOneStep(timeEnd - timeStart);
 
 					// update variable
 					for (final String variableName : mMeteorUser.mVariables.keySet()) {
@@ -101,7 +101,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 					timeStart = System.currentTimeMillis();
 					processAPI.executeFlowNode(pendingTask.getId());
 					timeEnd = System.currentTimeMillis();
-					mCollectPerformance.collectOneTime(timeEnd - timeStart);
+					mCollectPerformance.collectOneStep(timeEnd - timeStart);
 
 					mCollectPerformance.mOperationIndex++;
 				}

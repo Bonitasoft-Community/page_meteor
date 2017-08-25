@@ -11,6 +11,7 @@ import java.util.Map;
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.engine.api.IdentityAPI;
 import org.bonitasoft.engine.api.ProcessAPI;
+import org.bonitasoft.engine.bpm.contract.ContractViolationException;
 import org.bonitasoft.engine.bpm.document.DocumentValue;
 import org.bonitasoft.engine.bpm.flownode.HumanTaskInstance;
 import org.bonitasoft.engine.bpm.flownode.HumanTaskInstanceSearchDescriptor;
@@ -23,6 +24,7 @@ import org.bonitasoft.engine.operation.Operation;
 import org.bonitasoft.engine.operation.OperationBuilder;
 import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
+import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorActivity;
 import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorDocument;
 import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorInput;
@@ -81,7 +83,7 @@ public class MeteorRobotActivity extends MeteorRobot {
 				
 				
 				Long taskId = executeActivity(mMeteorActivity.mProcessDefinitionId, mMeteorActivity.mActivityName, meteorInput, mMeteorActivity.mTimeSleep, mRobotId,  mLogExecution, processAPI, identityAPI);
-				mLogExecution.addLog(String.valueOf(taskId));
+				
 				
 				
 				Thread.sleep( mMeteorActivity.mTimeSleep );
@@ -115,7 +117,7 @@ public class MeteorRobotActivity extends MeteorRobot {
 
 	}
 		final long timeEnd = System.currentTimeMillis();
-		mCollectPerformance.collectOneTime(timeEnd - timeStart);
+		mCollectPerformance.collectOneStep(timeEnd - timeStart);
 		
 		
 		
@@ -153,22 +155,24 @@ public class MeteorRobotActivity extends MeteorRobot {
 							final long timeStart = System.currentTimeMillis();
 							// variable
 							processAPI.executeUserTask(taskId, meteorInput.getContent());
-							
 							final long timeEnd = System.currentTimeMillis();
+							logExecution.addLog("Task:["+String.valueOf(taskId)+"]");
 							return taskId;
 							
 						}
+					} catch(ContractViolationException vc)
+					{
+						logExecution.addEvent( new BEvent( MeteorSimulation.EventContractViolationException, meteorInput==null ? "No input" : "With input["+meteorInput.index+"]"));
+						return null;
+				
 					} catch (Exception e) {						
 						final StringWriter sw = new StringWriter();
 						e.printStackTrace(new PrintWriter(sw));
 												
 						logger.severe("Robot #" + robotId + " exception " + e.toString() + " at " + sw.toString());
 						// not yet logged ? Add in the logExecution
-						if (! alreadyLoggedException.contains(e.toString()))
-						{
-							alreadyLoggedException.add( e.toString() );
-							logExecution.addLog("error:"+e.toString());
-						}
+						logExecution.addEvent( new BEvent( MeteorSimulation.EventLogExecution, ""));
+
 					}
 					if (countExecute != 0) {
 						// Ok, an error arrive or there are no task yet, we have
@@ -176,6 +180,7 @@ public class MeteorRobotActivity extends MeteorRobot {
 						try { Thread.sleep(1000); } catch(Exception e){};
 					}
 				}
+				logExecution.addEvent( new BEvent(MeteorSimulation.EventNoTaskToExecute, "Activity["+activityName+"]"));
 				return null;
 				
 

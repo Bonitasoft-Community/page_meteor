@@ -1,5 +1,7 @@
 package org.bonitasoft.meteor;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,5 +133,42 @@ public class MeteorToolbox {
 				}
 			
 		}
+	}
+	
+	public static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:MM:ss");
+
+	public static String getHumanDate( Date date)
+	{
+		if (date!=null)
+			return sdf.format( date);
+		return null;
+	}
+	public static String getHumanDelay( long delayMs)
+	{
+		String accumulate="";
+		long calculMs=delayMs;
+		if (calculMs > 1000*60*60)
+		{
+			accumulate += (calculMs / (1000*60*60))+" h ";
+			calculMs =  calculMs %  (1000*60*60);
+		}
+		if (calculMs > 1000*60)
+		{
+			accumulate += (calculMs / (1000*60))+" mn ";
+			calculMs =  calculMs %  (1000*60);
+		}
+		// display the MS only if delay are small
+		if (calculMs > 1000)
+		{
+			accumulate += (calculMs / 1000)+" s ";
+			calculMs =  calculMs % 1000;
+		}
+		if (calculMs>0 && delayMs < 60*1000)
+			accumulate+= calculMs +" ms ";
+		if (accumulate.length()==0)
+			accumulate="";
+		//else
+		//	accumulate+="("+delayMs+")";
+		return accumulate;
 	}
 }

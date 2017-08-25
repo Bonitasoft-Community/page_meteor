@@ -27,7 +27,7 @@ import org.bonitasoft.meteor.scenario.groovy.MeteorRobotGroovyScenario;
 import org.bonitasoft.log.event.BEventFactory;
 import org.json.simple.JSONValue;
 
-public class MeteorAccess {
+public class MeteorAPI {
 
 	/**
 	 * ********************************************************************************
@@ -47,10 +47,11 @@ public class MeteorAccess {
 	 * ********************************************************************************
 	 */
 
-	private static Logger logger = Logger.getLogger(MeteorAccess.class.getName());
+	private static Logger logger = Logger.getLogger(MeteorAPI.class.getName());
 
-	private static BEvent EventNotDeployed = new BEvent(MeteorAccess.class.getName(), 1, Level.ERROR, "Command not deployed", "The command is not deployed");
-	private static BEvent EventStartError = new BEvent(MeteorAccess.class.getName(), 2, Level.ERROR, "Error during starting the simulation", "Check the error", "No test are started", "See the error");
+	private static BEvent EventNotDeployed = new BEvent(MeteorAPI.class.getName(), 1, Level.ERROR, "Command not deployed", "The command is not deployed");
+	private static BEvent EventStartError = new BEvent(MeteorAPI.class.getName(), 2, Level.ERROR, "Error during starting the simulation", "Check the error", "No test are started", "See the error");
+	private static BEvent EventDeployCommandGroovyScenario = new BEvent(MeteorAPI.class.getName(),3, Level.ERROR, "Groovy Command can't be created", "The Groovy Scenario needs special command to be deployed. The deployment of the command failed", "The groovy scenario can't be executed", "Check the error");
 
 	MeteorProcessDefinitionList processDefinitionList = new MeteorProcessDefinitionList();
 
@@ -61,7 +62,7 @@ public class MeteorAccess {
 
 	MeteorSimulation meteorSimulation = new MeteorSimulation();
 
-	public MeteorAccess() {
+	public MeteorAPI() {
 	}
 
 	/**
@@ -69,12 +70,12 @@ public class MeteorAccess {
 	 *
 	 * @return
 	 */
-	public static MeteorAccess getMeteorAccess(final HttpSession httpSession) {
-		logger.info("----------- getMeteorAccess from Session");
+	public static MeteorAPI getMeteorAPI(final HttpSession httpSession) {
+		logger.info("MeteorAPI.getMeteorAPI -----------");
 		// in debug mode, BonitaEngine reload the JAR file every access : so any
 		// object saved in the httpSession will get a ClassCastException
 
-		return new MeteorAccess();
+		return new MeteorAPI();
 	}
 
 	/*
@@ -98,7 +99,7 @@ public class MeteorAccess {
 	 * @return
 	 */
 	public Map<String, Object> getListProcesses(final ListProcessParameter listProcessParameter, final ProcessAPI processAPI) {
-		logger.info("---------- GetListProcess");
+		logger.info("MeteorAPI---------- GetListProcess");
 		final Map<String, Object> result = new HashMap<String, Object>();
 		processDefinitionList.calculateListProcess(processAPI);
 
@@ -131,11 +132,36 @@ public class MeteorAccess {
 	 * @return
 	 */
 	public List<BEvent> deployCommand(final boolean forceDeploy, final String version, final List<JarDependencyCommand> jarDependencies, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
+		logger.info("MeteorAPI.deployCommandGroovyScenario ---------- Start deployCommand");
 		return CmdMeteor.deployCommand(forceDeploy, version, jarDependencies, commandAPI, platFormAPI);
 	}
+
+
 	public List<BEvent> deployCommandGroovyScenario(final boolean forceDeploy, final String version, final List<JarDependencyCommand> jarDependencies, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
-		return MeteorRobotGroovyScenario.deployCommandGroovyScenario(forceDeploy, version, jarDependencies, commandAPI, platFormAPI);
+		try {
+			logger.info("MeteorAPI.deployCommandGroovyScenario ---------- Start deployCommandGroovyScenario");
+			return MeteorRobotGroovyScenario.deployCommandGroovyScenario(forceDeploy, version, jarDependencies, commandAPI, platFormAPI);
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionDetails = sw.toString();
+			logger.info("MeteorAPI.deployCommandGroovyScenario Exception " + e.toString() + " at " + exceptionDetails);
+			List<BEvent> listEvents = new ArrayList<BEvent>();
+			listEvents.add(new BEvent( EventDeployCommandGroovyScenario, e, ""));
+
+			return listEvents;
+		} catch (Error er) {
+			StringWriter sw = new StringWriter();
+			er.printStackTrace(new PrintWriter(sw));
+			String exceptionDetails = sw.toString();
+			logger.info("MeteorAPI.deployCommandGroovyScenario Error " + er.toString() + " at " + exceptionDetails);
+			List<BEvent> listEvents = new ArrayList<BEvent>();
+			listEvents.add(new BEvent(EventDeployCommandGroovyScenario, "Error [" + er.toString() + "]"));
+
+			return listEvents;
+		}
 	}
+
 	/**
 		 *
 		 *
@@ -170,7 +196,7 @@ public class MeteorAccess {
 		 *
 		 */
 		public void decodeFromJsonSt() {
-			logger.info("MeteorAccess.decodeFromJsonSt : JsonSt[" + jsonListSt + "]");
+			logger.info("MeteorAPI.decodeFromJsonSt : JsonSt[" + jsonListSt + "]");
 			listOfProcesses = new ArrayList<Map<String, Object>>();
 			listOfScenarii = new ArrayList<Map<String, Object>>();
 
@@ -186,10 +212,10 @@ public class MeteorAccess {
 				// [ { 'process': {}, 'process': {}, 'scenario': {..}];
 
 				final Object jsonObject = JSONValue.parse(jsonSt);
-				logger.info("MeteorAccess.decodeFromJsonSt : line object [" + jsonObject.getClass().getName() + "] Map ? " + (jsonObject instanceof HashMap) + " line=[" + jsonSt + "] ");
+				logger.info("MeteorAPI.decodeFromJsonSt : line object [" + jsonObject.getClass().getName() + "] Map ? " + (jsonObject instanceof HashMap) + " line=[" + jsonSt + "] ");
 
 				if (jsonObject instanceof HashMap) {
-					logger.info("MeteorAccess.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a HASHMAP");
+					logger.info("MeteorAPI.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a HASHMAP");
 
 					final HashMap<String, Object> jsonHash = (HashMap<String, Object>) jsonObject;
 					if (jsonHash.get("processes") != null) {
@@ -208,10 +234,10 @@ public class MeteorAccess {
 						listOfScenarii.add((Map<String, Object>) jsonHash.get("scenario"));
 					}
 				} else if (jsonObject instanceof List) {
-					logger.info("MeteorAccess.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a LIST");
+					logger.info("MeteorAPI.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a LIST");
 					final List<Map<String, Map<String, Object>>> jsonList = (List<Map<String, Map<String, Object>>>) jsonObject;
 					for (final Map<String, Map<String, Object>> oneRecord : jsonList) {
-						logger.info("MeteorAccess.decodeFromJsonSt : process [" + oneRecord.get("process") + "] scenario [" + oneRecord.get("scenario") + "]");
+						logger.info("MeteorAPI.decodeFromJsonSt : process [" + oneRecord.get("process") + "] scenario [" + oneRecord.get("scenario") + "]");
 
 						if (oneRecord.containsKey("process")) {
 							listOfProcesses.add(oneRecord.get("process"));
@@ -222,7 +248,7 @@ public class MeteorAccess {
 					}
 				}
 			}
-			logger.info("MeteorAccess.decodeFromJsonSt :  decodeFromJsonSt nbProcess=" + listOfProcesses.size() + " nbScenarii=" + listOfScenarii.size());
+			logger.info("MeteorAPI.decodeFromJsonSt :  decodeFromJsonSt nbProcess=" + listOfProcesses.size() + " nbScenarii=" + listOfScenarii.size());
 		}
 
 		@Override
@@ -239,8 +265,8 @@ public class MeteorAccess {
 
 	public static class StatusParameters {
 
-		long simulationId;
-		public String jsonSt;
+		long simulationId = -1;
+		public String jsonSt = null;
 
 		public static StatusParameters getInstanceFromJsonSt(final String jsonSt) {
 			final StatusParameters statusParameters = new StatusParameters();
@@ -248,10 +274,28 @@ public class MeteorAccess {
 			return statusParameters;
 		}
 
+		public static StatusParameters getInstanceFromSimulationId(final String simulationId) {
+			final StatusParameters statusParameters = new StatusParameters();
+			try {
+				statusParameters.simulationId = Long.valueOf(simulationId);
+			} catch (final Exception e) {
+				statusParameters.simulationId = -1;
+			}
+			return statusParameters;
+		}
+
+		public String getJson() {
+			if (jsonSt != null)
+				return jsonSt;
+			if (simulationId != -1)
+				return "{\"simulationid\": " + simulationId + "}";
+			return null;
+		}
+
 		public void decodeFromJsonSt() {
-			logger.info("JsonSt[" + jsonSt + "]");
+			logger.info("MeteorAPI JsonSt[" + jsonSt + "] simulationId[" + simulationId + "]");
 			if (jsonSt == null) {
-				simulationId = -1;
+				// already set
 				return;
 			}
 			final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
@@ -271,14 +315,14 @@ public class MeteorAccess {
 	 */
 	public Map<String, Object> start(final StartParameters startParameters, final ProcessAPI processAPI, final CommandAPI commandAPI) {
 
-		logger.info("~~~~~~~~~~ MeteorAccess.start() parameter=" + startParameters.toString());
+		logger.info("~~~~~~~~~~ MeteorAPI.start() parameter=" + startParameters.toString());
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 
 		Map<String, Object> resultCommandHashmap = new HashMap<String, Object>();
 
 		final CommandDescriptor command = CmdMeteor.getCommandDescriptor(commandAPI);
 		if (command == null) {
-			logger.info("~~~~~~~~~~ MeteorAccess.start() No Command deployed, stop");
+			logger.info("~~~~~~~~~~ MeteorAPI.start() No Command deployed, stop");
 			listEvents.add(EventNotDeployed);
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 			return resultCommandHashmap;
@@ -291,7 +335,7 @@ public class MeteorAccess {
 		try {
 
 			// see the command in CmdMeteor
-			logger.info("~~~~~~~~~~ MeteorAccess.start() Call Command [" + command.getId() + "]");
+			logger.info("~~~~~~~~~~ MeteorAPI.start() Call Command [" + command.getId() + "]");
 			final Serializable resultCommand = commandAPI.execute(command.getId(), parameters);
 
 			resultCommandHashmap = (Map<String, Object>) resultCommand;
@@ -303,44 +347,44 @@ public class MeteorAccess {
 			 */
 
 		} catch (final CommandNotFoundException e) {
-			 StringWriter sw = new StringWriter();
-			  e.printStackTrace(new PrintWriter(sw));
-			  String exceptionDetails = sw.toString();
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionDetails = sw.toString();
 
-			logger.severe("~~~~~~~~~~ MeteorAccess.start() : ERROR " + e+" at "+exceptionDetails);
+			logger.severe("~~~~~~~~~~ MeteorAPI.start() : ERROR " + e + " at " + exceptionDetails);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 
 		} catch (final CommandExecutionException e) {
-			 StringWriter sw = new StringWriter();
-			  e.printStackTrace(new PrintWriter(sw));
-			  String exceptionDetails = sw.toString();
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionDetails = sw.toString();
 
-			logger.severe("~~~~~~~~~~ MeteorAccess.start() : ERROR " + e+" at "+exceptionDetails);
+			logger.severe("~~~~~~~~~~ MeteorAPI.start() : ERROR " + e + " at " + exceptionDetails);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 
 		} catch (final CommandParameterizationException e) {
-			 StringWriter sw = new StringWriter();
-			  e.printStackTrace(new PrintWriter(sw));
-			  String exceptionDetails = sw.toString();
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionDetails = sw.toString();
 
-			logger.severe("~~~~~~~~~~ MeteorAccess.start() : ERROR " + e+" at "+exceptionDetails);
+			logger.severe("~~~~~~~~~~ MeteorAPI.start() : ERROR " + e + " at " + exceptionDetails);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 
 		} catch (final Exception e) {
 
-			 StringWriter sw = new StringWriter();
-			  e.printStackTrace(new PrintWriter(sw));
-			  String exceptionDetails = sw.toString();
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionDetails = sw.toString();
 
-			logger.severe("~~~~~~~~~~ MeteorAccess.start() : ERROR " + e+" at "+exceptionDetails);
+			logger.severe("~~~~~~~~~~ MeteorAPI.start() : ERROR " + e + " at " + exceptionDetails);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 
 		}
-		logger.info("~~~~~~~~~~ MeteorAccess.start() : END " + resultCommandHashmap);
+		logger.info("~~~~~~~~~~ MeteorAPI.start() : END " + resultCommandHashmap);
 		return resultCommandHashmap;
 	}
 
@@ -361,7 +405,7 @@ public class MeteorAccess {
 	 * getStatus
 	 */
 	public Map<String, Object> getStatus(final StatusParameters statusSimulation, final ProcessAPI processAPI, final CommandAPI commandAPI) {
-		logger.info("MeteorAccess.getStatus()");
+		logger.info("MeteorAPI.getStatus()");
 		Map<String, Object> resultCommandHashmap = new HashMap<String, Object>();
 
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
@@ -373,7 +417,7 @@ public class MeteorAccess {
 		}
 
 		final HashMap<String, Serializable> parameters = new HashMap<String, Serializable>();
-		parameters.put(CmdMeteor.cstParamCommandNameStatusParams, statusSimulation.jsonSt);
+		parameters.put(CmdMeteor.cstParamCommandNameStatusParams, statusSimulation.getJson());
 
 		parameters.put(CmdMeteor.cstParamCommandName, CmdMeteor.cstParamCommandNameStatus);
 
@@ -387,17 +431,17 @@ public class MeteorAccess {
 			// }
 
 		} catch (final CommandNotFoundException e) {
-			logger.severe("MeteorAccess.start " + e);
+			logger.severe("MeteorAPI.getStatus " + e);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 
 		} catch (final CommandExecutionException e) {
-			logger.severe("MeteorAccess.start " + e);
+			logger.severe("MeteorAPI.getStatus " + e);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 
 		} catch (final CommandParameterizationException e) {
-			logger.severe("MeteorAccess.start " + e);
+			logger.severe("MeteorAPI.getStatus " + e);
 			listEvents.add(new BEvent(EventStartError, e, ""));
 			resultCommandHashmap.put("listevents", BEventFactory.getHtml(listEvents));
 		}

@@ -22,6 +22,21 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>custompage/7.2.3/Index.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/Index.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/7.2.3/index.html</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/index.html</locationURI>
+		</link>
+		<link>
+			<name>custompage/7.2.3/meteormonitor.js</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/resources/meteormonitor.js</locationURI>
+		</link>
+		<link>
 			<name>custompage/7.2.4/Index.groovy</name>
 			<type>1</type>
 			<location>C:/atelier/BPM-SP-7.2.4/workspace/Auckland/bonita_home/client/tenants/1/work/pages/custompage_meteor/Index.groovy</location>

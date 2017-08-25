@@ -256,14 +256,22 @@ public abstract class MeteorRobot implements Runnable {
 		resultRobot.put("id", mRobotId); // mProcessDefinition.getInformation()+"
 											// #"+mRobotId+" ";
 		int percent = 0;
-		resultRobot.put("status", mStatus.toString());
+		resultRobot.put(MeteorSimulation.cstJsonStatus, mStatus.toString());
 		resultRobot.put("finalstatus", mFinalStatus==null ? "": mFinalStatus.toString());
 		resultRobot.put("log", mLogExecution.getLogExecution());
-		resultRobot.put("nbErrors", mLogExecution.getNbErrors());
+		resultRobot.put(MeteorSimulation.cstJsonNbErrors, mLogExecution.getNbErrors());
 
 		if (mCollectPerformance.mOperationTotal == -1) {
-			resultRobot.put("adv", "0/0");
-			percent = mStatus == RobotStatus.DONE ? 100 : 0;
+			if (mStatus == RobotStatus.DONE)
+			{
+				resultRobot.put("adv", "0/0");
+				percent = 0;
+			}
+			else
+			{
+				resultRobot.put("adv", "100/100");
+				percent = 100;
+			}	
 		} else if (mCollectPerformance.mOperationIndex < mCollectPerformance.mOperationTotal) {
 			resultRobot.put("adv", mCollectPerformance.mOperationIndex + " / " + mCollectPerformance.mOperationTotal);
 			percent = (int) (100 * mCollectPerformance.mOperationIndex / mCollectPerformance.mOperationTotal);
@@ -272,12 +280,12 @@ public abstract class MeteorRobot implements Runnable {
 			percent = 100;
 		}
 
-		resultRobot.put("percent", percent);
+		resultRobot.put( MeteorSimulation.cstJsonPercentAdvance, percent);
 		// status.append("<td><progress max=\"100\"
 		// value=\""+percent+"\"></progress>("+percent+" %)</td>");
-		resultRobot.put("time", mCollectPerformance.mCollectTime + " ms for " + mCollectPerformance.mOperationIndex + " ope.");
-		if (mCollectPerformance.mOperationIndex > 0) {
-			resultRobot.put("timeavg", mCollectPerformance.mCollectTime / mCollectPerformance.mOperationIndex + " ms/ope.");
+		resultRobot.put("time", MeteorToolbox.getHumanDelay( mCollectPerformance.mCollectTimeSteps )+ " for " + mCollectPerformance.getNbSteps() + " step");
+		if (mCollectPerformance.getNbSteps() > 0) {
+			resultRobot.put("timeavg", mCollectPerformance.mCollectTimeSteps / mCollectPerformance.getNbSteps() + " ms/step");
 		}
 
 		logger.info("STATUS Robot " + resultRobot);
@@ -285,6 +293,10 @@ public abstract class MeteorRobot implements Runnable {
 		return resultRobot;
 	}
 
+	public int getNbErrors()
+	{
+		return mLogExecution.getNbErrors();
+	}
 	/**
 	 * return the time per step
 	 *

@@ -71,8 +71,7 @@ public class SentenceCreateCase extends Sentence {
 		try {
 			for (int i=0;i<nbExecution;i++)
 			{
-				ProcessInstance processInstance = MeteorRobotCreateCase.createACase(processDefinitionId, false, meteorInput, listDocuments, apiAccessor.getProcessAPI());
-				logExecution.addLog("Case("+String.valueOf(processInstance.getId())+")");
+				ProcessInstance processInstance = MeteorRobotCreateCase.createACase(processDefinitionId, false, meteorInput, listDocuments, logExecution, apiAccessor.getProcessAPI());				
 			}
 
 		} catch (final Exception e) {

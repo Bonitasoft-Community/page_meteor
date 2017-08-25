@@ -89,6 +89,10 @@ public class MeteorProcessDefinitionList {
 	 * ***********************************************************************	 */
 	public static class MeteorInput
 	{
+		/**
+		 * multiple input can be created. keep the index only for log
+		 */
+		int index=1;
 		// in fact, not a percent but a weigh
 		// total may not be 100.
 		public long nbSteps;  
@@ -180,7 +184,7 @@ public class MeteorProcessDefinitionList {
 					// transform all Object "Long to 
 					MeteorToolbox.transformJsonContentForBonitaInput( oneItem.content  );
 				}
-
+				oneItem.index = listInputs.size()+1;
 				listInputs.add( oneItem);
 			}
 		}

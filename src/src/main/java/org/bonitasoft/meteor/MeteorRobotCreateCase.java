@@ -26,6 +26,7 @@ import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorDocument;
 import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorInput;
 import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorProcess;
+import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
 
 public class MeteorRobotCreateCase extends MeteorRobot {
 
@@ -74,11 +75,11 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 				
 				// -------------------------------------- create
 				final long timeStart = System.currentTimeMillis();
-				ProcessInstance processInstance = createACase(mMeteorProcessDefinition.mProcessDefinitionId, false, meteorInput, mListDocuments, processAPI);
-				mLogExecution.addLog(String.valueOf(processInstance.getId()));
+				
+				ProcessInstance processInstance = createACase(mMeteorProcessDefinition.mProcessDefinitionId, false, meteorInput, mListDocuments, mLogExecution, processAPI);
 
 				final long timeEnd = System.currentTimeMillis();
-				mCollectPerformance.collectOneTime(timeEnd - timeStart);
+				mCollectPerformance.collectOneStep(timeEnd - timeStart);
 				if (mTimeEndOfTheSimulationInMs != null) {
 					if (System.currentTimeMillis() > mTimeEndOfTheSimulationInMs) {
 						return;
@@ -92,6 +93,8 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 			e.printStackTrace(new PrintWriter(sw));
 
 			logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
+			mLogExecution.addLog("Error during create case "+e.toString());
+
 			setFinalStatus( FINALSTATUS.FAIL);
 			mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "ProcessDefinitionId=" + mMeteorProcessDefinition.mProcessDefinitionId));
 		}
@@ -101,6 +104,7 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 
 	/**
 	 * create a case
+	 * basic log information are done : Case created, or Contract Violation
 	 * 
 	 * @param processDefinitionId
 	 * @param variables
@@ -111,8 +115,10 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 	 * @throws ProcessActivationException
 	 * @throws ProcessExecutionException
 	 */
-	public static ProcessInstance createACase(final Long processDefinitionId, boolean isVariable, final MeteorInput input, final List<MeteorDocument> listDocuments, final ProcessAPI processAPI)
-			throws InvalidExpressionException, ProcessDefinitionNotFoundException, ProcessActivationException, ProcessExecutionException, ContractViolationException {
+	public static ProcessInstance createACase(final Long processDefinitionId, boolean isVariable, final MeteorInput meteorInput, final List<MeteorDocument> listDocuments,
+			LogExecution logExecution,
+			final ProcessAPI processAPI)
+			throws InvalidExpressionException, ProcessDefinitionNotFoundException, ProcessActivationException, ProcessExecutionException {
 
 		final List<Operation> listOperations = new ArrayList<Operation>();
 		final Map<String, Serializable> ListExpressionsContext = new HashMap<String, Serializable>();
@@ -120,13 +126,13 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 		// variable ? 
 		if (isVariable)
 		{
-			if (input.getContent()!=null)
-				for (String variableName : input.getContent().keySet()) {
+			if (meteorInput.getContent()!=null)
+				for (String variableName : meteorInput.getContent().keySet()) {
 	
-					if (input.getContent().get(variableName) == null || !(input.getContent().get(variableName) instanceof Serializable)) {
+					if (meteorInput.getContent().get(variableName) == null || !(meteorInput.getContent().get(variableName) instanceof Serializable)) {
 						continue;
 					}
-					final Object value = input.getContent().get(variableName);
+					final Object value = meteorInput.getContent().get(variableName);
 					final Serializable valueSerializable = (Serializable) value;
 		
 					variableName = variableName.toLowerCase();
@@ -145,14 +151,24 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 			ListExpressionsContext.put(meteorDocument.mDocumentName + "Reference", documentValue);
 		}
 
-		if (isVariable)
+		try
 		{
-			ProcessInstance processInstance = processAPI.startProcess(processDefinitionId, listOperations, ListExpressionsContext);
+			if (isVariable)
+			{
+				ProcessInstance processInstance = processAPI.startProcess(processDefinitionId, listOperations, ListExpressionsContext);
+				logExecution.addLog("Case:"+String.valueOf(processInstance.getId()));
+				return processInstance;
+			}
+			
+			ProcessInstance processInstance = processAPI.startProcessWithInputs(processDefinitionId, meteorInput==null ? null : meteorInput.getContent());
+			logExecution.addLog("Case:"+String.valueOf(processInstance.getId()));
 			return processInstance;
 		}
-		
-		ProcessInstance processInstance = processAPI.startProcessWithInputs(processDefinitionId, input==null ? null : input.getContent());
-		return processInstance;
+		catch( ContractViolationException e)
+		{
+			logExecution.addEvent( new BEvent( MeteorSimulation.EventContractViolationException, meteorInput==null ? "No input" : "With input["+meteorInput.index+"]"));
+			return null;
+		}
 			
 	}
 }

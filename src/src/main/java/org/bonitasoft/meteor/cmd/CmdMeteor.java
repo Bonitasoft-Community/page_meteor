@@ -30,8 +30,8 @@ import org.bonitasoft.engine.service.TenantServiceAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.meteor.MeteorOperation;
-import org.bonitasoft.meteor.MeteorAccess.StartParameters;
-import org.bonitasoft.meteor.MeteorAccess.StatusParameters;
+import org.bonitasoft.meteor.MeteorAPI.StartParameters;
+import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 
 public class CmdMeteor extends TenantCommand {
 
@@ -192,6 +192,8 @@ public class CmdMeteor extends TenantCommand {
 				if (commandName.equals(command.getName())) {
 					final String description = command.getDescription();
 					if (!forceDeploy && description.startsWith("V " + version)) {
+						logger.info("Meteor.cmdMeteor >>>>>>>>>>>>>>>>>>>>>>>>> No deployment Command ["+commandName+"] Version[V " + version+"]");
+						
 						listEvents.add(new BEvent(EventAlreadyDeployed, "V " + version));
 						return listEvents;
 					}
@@ -199,7 +201,7 @@ public class CmdMeteor extends TenantCommand {
 					commandAPI.unregister(command.getId());
 				}
 			}
-
+			logger.info("Meteor.cmdMeteor >>>>>>>>>>>>>>>>>>>>>>>>> DEPLOIEMENT Command ["+commandName+"] Version[V " + version+"]");
 			/*
 			 * File commandFile = new File(jarFileServer); FileInputStream fis =
 			 * new FileInputStream(commandFile); byte[] fileContent = new
