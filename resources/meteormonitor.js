@@ -96,21 +96,21 @@ appCommand.controller('MeteorControler',
 	
 	
 	this.configscenarii = {'cmd':  { 'sentences': [ 
-		"createCase( \"processName\": \"myProcess\", \"processVersion\": \"1.0\", \"input\": {\"firstname\":\"walter\", \"lastname\":\"bates\"});", 
-		"executeTask( \"processName\": \"myProcess\", \"processVersion\": \"1.0\", \"taskName\": \"validate\", \"input\": {\"status\":\"accepted\"});", 
-		"executeTask( \"taskName\": \"validate\", \"input\": {\"status\":\"accepted\"});",
-		"sleep( \"sleepInMs\" : 4000)",
-		"assert();",
-		"[{\"verb\":\"createCase\",\"processName\":\"MeteorStep\",\"processVersion\":\"1.0\"},{\"verb\":\"executeTask\",\"taskName\":\"Meteor_1\"},{\"verb\":\"executeTask\",\"taskName\":\"Meteor_2\"}]"
-		]
-									},
+								"createCase( \"processName\": \"myProcess\", \"processVersion\": \"1.0\", \"input\": {\"firstname\":\"walter\", \"lastname\":\"bates\"});", 
+								"executeTask( \"processName\": \"myProcess\", \"processVersion\": \"1.0\", \"taskName\": \"validate\", \"input\": {\"status\":\"accepted\"});", 
+								"executeTask( \"taskName\": \"validate\", \"input\": {\"status\":\"accepted\"});",
+								"sleep( \"sleepInMs\" : 4000)",
+								"assert();",
+								"[{\"verb\":\"createCase\",\"processName\":\"MeteorStep\",\"processVersion\":\"1.0\"},{\"verb\":\"executeTask\",\"taskName\":\"Meteor_1\"},{\"verb\":\"executeTask\",\"taskName\":\"Meteor_2\"}]"
+								]
+							},
 							'grv':{'sentences': [
 								"Long processDefinitionId = accessor.processAPI.getLatestProcessDefinitionId(\"ProcessName\");",
-								"processDefinition = accessor.processAPI.getProcessDefinition( processDefinitionId);",
-								"case = processDefinition.start();",
-								"task = wait { case.isHumanTaskAvailable process_instance:case, task_name:\"Step1\"};",
-								"assignee = task.assign assignee_name:defaultUser;",
-								"assignee = task.execute assignee_name:defaultUser;",
+								"ProcessDefinition processDefinition = accessor.processAPI.getProcessDefinition( processDefinitionId);",
+								"ProcessInstance processInstance = processDefinition.start();",
+								"TaskInstance taskInstance = wait { case.isHumanTaskAvailable process_instance:processInstance, task_name:\"Step1\"};",
+								"Long assignee = taskInstance.assign assignee_name:defaultUser;",
+								"Long assignee = taskInstance.execute assignee_name:defaultUser;",
 								
 								]}
 	};
@@ -324,11 +324,22 @@ appCommand.controller('MeteorControler',
 	
 	this.fileIsDropped = function( testfileimported ) {
 		var self=this;
+		self.listeventsconfig ='';
 		self.configwait=true;
 		$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported )
 		.success( function ( jsonResult ) {
 			self.config.list 			= jsonResult.configList;
 			self.listeventsconfig 		= jsonResult.listeventsconfig;
+			
+			self.config.newname=jsonResult.name; 
+			self.config.newdescription=jsonResult.description; 
+			
+			self.processes = jsonResult.config.processes;
+			if (!self.processes)
+				self.processes=[];
+			self.scenarii  = jsonResult.config.scenarii;
+			if (!self.scenarii)
+				self.scenarii=[];
 			self.configwait=false;
 		})
 		.error( function ( jsonResult ) {
@@ -389,6 +400,7 @@ appCommand.controller('MeteorControler',
 		self.listeventsconfig="";
 		self.listeventslistprocesses="";
 		self.listUrlPercent=0;
+		self.listeventsconfig ='';
 		self.configwait=true;
 		self.config.newname			= self.config.currentname;
 		

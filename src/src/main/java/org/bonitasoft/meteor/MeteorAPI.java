@@ -1,5 +1,6 @@
 package org.bonitasoft.meteor;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -131,9 +132,9 @@ public class MeteorAPI {
 	 * @param platFormAPI
 	 * @return
 	 */
-	public List<BEvent> deployCommand(final boolean forceDeploy, final String version, final List<JarDependencyCommand> jarDependencies, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
+	public List<BEvent> deployCommand(final boolean forceDeploy, final String version, File pageDirectory, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
 		logger.info("MeteorAPI.deployCommandGroovyScenario ---------- Start deployCommand");
-		return CmdMeteor.deployCommand(forceDeploy, version, jarDependencies, commandAPI, platFormAPI);
+		return CmdMeteor.deployCommand(forceDeploy, version,  pageDirectory, commandAPI, platFormAPI);
 	}
 
 

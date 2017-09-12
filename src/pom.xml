@@ -17,12 +17,12 @@
 		<dependency>
 			<groupId>org.bonitasoft.engine</groupId>
 			<artifactId>bonita-client</artifactId>
-			<version>7.2.4</version>
+			<version>7.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bonitasoft.engine</groupId>
 			<artifactId>bonita-server</artifactId>
-			<version>7.2.4</version>
+			<version>7.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bonitasoft.log.event</groupId>

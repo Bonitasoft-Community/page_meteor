@@ -1,6 +1,8 @@
 package org.bonitasoft.meteor.cmd;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -11,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+
 
 import org.bonitasoft.engine.api.CommandAPI;
 import org.bonitasoft.engine.api.PlatformAPI;
@@ -160,25 +164,42 @@ public class CmdMeteor extends TenantCommand {
 	 */
 	public static class JarDependencyCommand {
 		public String jarName;
-		public InputStream inputStreamJarFiles;
+		public File pageDirectory;
 
-		public JarDependencyCommand(final String name, final InputStream inputStream) {
-			jarName = name;
-			inputStreamJarFiles = inputStream;
+		public JarDependencyCommand(final String name, File pageDirectory) {
+			this.jarName = name;
+			this.pageDirectory = pageDirectory;
+		}
+		public String getCompleteFileName()
+		{
+			return pageDirectory.getAbsolutePath()+"/lib/"+jarName;
 		}
 	}
 
-	public static JarDependencyCommand getInstanceJarDependencyCommand(final String name, final InputStream inputStream) {
-		return new JarDependencyCommand(name, inputStream);
+	public static JarDependencyCommand getInstanceJarDependencyCommand(final String name, File pageDirectory) {
+		return new JarDependencyCommand(name, pageDirectory);
 	}
 
-	public static List<BEvent> deployCommand(final boolean forceDeploy, final String version, final List<JarDependencyCommand> jarDependency, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
+	public static List<BEvent> deployCommand(final boolean forceDeploy, final String version, File pageDirectory, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
 		// String commandName, String commandDescription, String className,
 		// InputStream inputStreamJarFile, String jarName, ) throws IOException,
 		// AlreadyExistsException, CreationException, CommandNotFoundException,
 		// DeletionException {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 
+		
+		   List<JarDependencyCommand> jarDependencies = new ArrayList<JarDependencyCommand>();
+		   // execute the groovy scenario
+		   /*
+	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bdm-jpql-query-executor-command-1.0.jar", pageDirectory));
+	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "process-starter-command-1.0.jar", pageDirectory));
+	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-2.0.jar", pageDirectory));
+	        */
+	        // execute the meteor command
+	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageDirectory));
+	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageDirectory));
+	        
+		
 		String message = "";
 
 		try {
@@ -207,20 +228,28 @@ public class CmdMeteor extends TenantCommand {
 			 * new FileInputStream(commandFile); byte[] fileContent = new
 			 * byte[(int) commandFile.length()]; fis.read(fileContent);
 			 * fis.close();
-			 */
-			for (final JarDependencyCommand onejar : jarDependency) {
+			 */			
+			for (final JarDependencyCommand onejar : jarDependencies) {
 				final ByteArrayOutputStream fileContent = new ByteArrayOutputStream();
 				final byte[] buffer = new byte[10000];
 				int nbRead = 0;
-				while ((nbRead = onejar.inputStreamJarFiles.read(buffer)) > 0) {
-					fileContent.write(buffer, 0, nbRead);
-				}
-
-				try {
+				InputStream fileJar=null;
+				try
+				{
+					fileJar= new FileInputStream( onejar.getCompleteFileName() );
+				
+					while ((nbRead = fileJar.read(buffer)) > 0) {
+						fileContent.write(buffer, 0, nbRead);
+					}
+				
 					commandAPI.removeDependency(onejar.jarName);
 				} catch (final Exception e) {
 				}
-				;
+				finally
+				{
+					if (fileJar!=null)
+						fileJar.close();
+				};
 
 				message += "Adding jarName [" + onejar.jarName + "] size[" + fileContent.size() + "]...";
 				commandAPI.addDependency(onejar.jarName, fileContent.toByteArray());
@@ -238,12 +267,10 @@ public class CmdMeteor extends TenantCommand {
 			return listEvents;
 
 		} catch (final StopNodeException e1) {
-
 			logger.severe("Can't stop  [" + e1.toString() + "]");
 			message += e1.toString();
 			return null;
 		} catch (final StartNodeException e1) {
-
 			logger.severe("Can't  start [" + e1.toString() + "]");
 			message += e1.toString();
 			return null;

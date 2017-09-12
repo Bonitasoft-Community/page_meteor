@@ -95,8 +95,8 @@ public class Index implements PageController {
         Long staticInformation=null;
 		long timeBegin= System.currentTimeMillis();
 		try {
-			def String indexContent;
-			pageResourceProvider.getResourceAsStream("Index.groovy").withStream { InputStream s-> indexContent = s.getText() };
+			//def String indexContent;
+			//pageResourceProvider.getResourceAsStream("Index.groovy").withStream { InputStream s-> indexContent = s.getText() };
 			response.setCharacterEncoding("UTF-8");
 			
 			String action=request.getParameter("action");
@@ -345,6 +345,13 @@ public class Index implements PageController {
             	MeteorDAO.StatusDAO statusDao= meteorDAO.importConfs( filename, true, pageResourceProvider.getPageDirectory(), pageResourceProvider.getPageName(), apiSession.getTenantId());
             	answer.put("listeventsconfig", BEventFactory.getHtml(statusDao.listEvents));
                	answer.put("configList", statusDao.listNamesAllConfigurations);
+               	if (statusDao.configuration!=null)
+               	{
+               		answer.put("description",statusDao.configuration.description ); 
+               		answer.put("config", JSONValue.parse(statusDao.configuration.content) );
+               		answer.put("name", statusDao.configuration.name);
+               	}
+         
 			}
             
 			if (answer==null)
@@ -426,79 +433,26 @@ public class Index implements PageController {
     }
     */
 	
-	/**
-	 * load the config.
-	 * @return null in case of error, else the JSON string configuration
-	 *
-	public String loadConfig(String name, List<BEvent> listEvents, Map<String,Object> answer, PageResourceProvider pageResourceProvider, APISession apiSession) {
-        List<BEvent> listEventsConfig = new ArrayList<BEvent>();
-        logger.info("BonitaProperties.loadConfig name=["+name+"]" );
-        // Load is
-        BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );
-
-        listEventsConfig.addAll( bonitaProperties.load() );
-        logger.info("BonitaProperties.load: loadproperties done, events = "+listEventsConfig.size() );
-		
-		bonitaProperties.traceInLog();
-        String jsonConfiguration = bonitaProperties.getProperty( "config_"+name );
-         
-        logger.info("BonitaProperties.load store properties  done, events = "+listEventsConfig.size() +" jsonConfiguration="+jsonConfiguration);
-         
-         // due to the split, we reload a list of MAP like
-          //  [
-		   // 		{ "processes" : {  "Variables" :"", ...} },
-		   // 		{ "processes" : {  "Variables" :"", ...} },
-		   // 		{ "processes" : {  "Variables" :"", ...} },
-		   // 		{ "scenarii"  : {  },
-
-			// RESULT expected:
-			// {  "processes" : [], "scenarii": [] }
-			/*
-         List< Map<String,Object>> listFromConfig = JSONValue.parse(jsonConfiguration);
-		   
-		   // then recreate one variable with processes and scenarii
-		   Map<String, Object> finalResult = new HashMap<String,Object>();
-		   for (Map<String,Object> mapSplited : listFromConfig)
-		   {
-		   		for (String key : mapSplited.keySet())
-		   		{
-		   			 List<Object> listKey = finalResult.get( key );
-		   			 if (listKey==null)
-		   			 	listKey = new ArrayList();
-		   			 listKey.add( mapSplited.get( key ));
-		   			 finalResult.put( key, listKey );
-		   		} 
-		   }                 
-		   *
-       	 answer.put("config", JSONValue.parse(jsonConfiguration) );
-       	 
-         if (! BEventFactory.isError( listEventsConfig ))
-           	 listEventsConfig.add( EventConfigurationLoaded);
-       	 answer.put("listeventsconfig", BEventFactory.getHtml(listEventsConfig));
-       	 if (BEventFactory.isError( listEventsConfig ))
-       		 return null;
-       	 else
-       		 return jsonConfiguration;
-	}
-		*/
+	
 	/*
 	 * 
 	 */
 	public void start(String accumulateJson, List<BEvent> listEvents, Map<String,Object> answer, MeteorAPI meteorAPI, ProcessAPI processAPI, CommandAPI commandAPI, PageResourceProvider pageResourceProvider )
 	{
 
+		/*
         List jarDependencies = new ArrayList<>();
         jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bdm-jpql-query-executor-command-1.0.jar", pageResourceProvider.getResourceAsStream("lib/bdm-jpql-query-executor-command-1.0.jar")));
         jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "process-starter-command-1.0.jar", pageResourceProvider.getResourceAsStream("lib/process-starter-command-1.0.jar")));
         jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-2.0.jar", pageResourceProvider.getResourceAsStream("lib/scenario-utils-2.0.jar")));
         jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/CustomPageMeteor-1.0.0.jar")));
         jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/bonita-event-1.0.0.jar")));
-        
+        */
         File fileJar = pageResourceProvider.getResourceAsFile("lib/CustomPageMeteor-1.0.0.jar");
         long timeFile=fileJar.lastModified();
         
         // so no need to have a force deploy here.
-        List<BEvent> listEventsDeploy = meteorAPI.deployCommand(false, String.valueOf(timeFile), jarDependencies, commandAPI, null);
+        List<BEvent> listEventsDeploy = meteorAPI.deployCommand(false, String.valueOf(timeFile), pageResourceProvider.getPageDirectory(),  commandAPI, null);
         if (BEventFactory.isError( listEventsDeploy))
         {
             listEvents.addAll(listEventsDeploy );

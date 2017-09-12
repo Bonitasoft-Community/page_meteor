@@ -263,6 +263,9 @@ public class MeteorSimulation {
 	public STATUS getStatus() {
 		return mStatus;
 	}
+	public void setStatus( STATUS status) {
+		mStatus = status;;
+	}
 
 	/**
 	 * calculate a HTML information on the running system
@@ -442,10 +445,13 @@ public class MeteorSimulation {
 		if (estimation.percentAdvance==0)
 			return estimation;
 		
-		final long currentTime = System.currentTimeMillis();
-		final long executionTime = currentTime - mDateBeginSimulation.getTime();
-		estimation.timeNeedInMs = (long) ( (100.0 - estimation.percentAdvance) * executionTime / estimation.percentAdvance);
-		estimation.dateEnd= new Date(currentTime + estimation.timeNeedInMs);
+		if (mDateBeginSimulation!=null)
+		{
+			final long currentTime = System.currentTimeMillis();
+			final long executionTime = currentTime - mDateBeginSimulation.getTime();
+			estimation.timeNeedInMs = (long) ( (100.0 - estimation.percentAdvance) * executionTime / estimation.percentAdvance);
+			estimation.dateEnd= new Date(currentTime + estimation.timeNeedInMs);
+		}
 		return estimation;
 	}
 	

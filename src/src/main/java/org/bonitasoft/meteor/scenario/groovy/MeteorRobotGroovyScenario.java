@@ -106,11 +106,12 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 		logger.info("MeteorRobotGroovyScenario.deployCommandGroovyScenario ---------- Start deployCommandGroovyScenario" );
 		
 		List<BEvent> listEvents = new ArrayList<BEvent>();
-		try {
-			commandAPI.removeDependency("process-starter-command-1.0.jar");
-			commandAPI.removeDependency("bdm-jpql-query-executor-command-1.0.jar");
-			commandAPI.removeDependency("scenario-utils-2.0.jar");
-			
+		// remove fail ? No worry
+		removeDependency("process-starter-command-1.0.jar", commandAPI);
+		removeDependency("bdm-jpql-query-executor-command-1.0.jar", commandAPI);
+		removeDependency("scenario-utils-2.0.jar", commandAPI);
+		try
+		{
 			CommandsAdministration.registerCommands(commandAPI, false);
 		} catch (SSessionException e) {
 			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : "+e.toString());
@@ -121,14 +122,24 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 		} catch (DeletionException e) {
 			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : "+e.toString());
 			listEvents.add( new BEvent( EventLoadGroovyScenarioCommand, e, ""));
-		} catch (DependencyNotFoundException e) {
-			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : "+e.toString());
-			listEvents.add( new BEvent( EventLoadGroovyScenarioCommand, e, ""));
 		}
 		return listEvents;
+		
 
 	}
-		
+	
+	private static void removeDependency(String depencencyName, CommandAPI commandAPI)
+	{
+		try {
+			commandAPI.removeDependency(depencencyName);
+		}
+		catch(Exception e)
+		{
+			logger.info("MeteorRobotGroovyScenario.Can't remove dependancy  command : "+e.toString());
+
+		};
+
+	}
 		
 		
 }

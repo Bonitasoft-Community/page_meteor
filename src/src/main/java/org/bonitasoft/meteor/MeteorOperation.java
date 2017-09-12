@@ -129,6 +129,8 @@ public class MeteorOperation {
 			StringWriter sw = new StringWriter();
 			er.printStackTrace(new PrintWriter(sw));
 			String exceptionDetails = sw.toString();
+			meteorSimulation.setStatus( STATUS.DONE);
+		
 			meteorResult.listEvents.add(new BEvent(MeteorSimulation.EventLogBonitaException, er.toString()));
 			logger.severe("meteorOperation.Error " + er + " at " + exceptionDetails);
 			meteorResult.status = MeteorSimulation.STATUS.DONE;
@@ -137,6 +139,8 @@ public class MeteorOperation {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionDetails = sw.toString();
+			meteorSimulation.setStatus( STATUS.DONE);
+
 			meteorResult.listEvents.add(new BEvent(MeteorSimulation.EventLogBonitaException, e, ""));
 			logger.severe("meteorOperation.Error " + e + " at " + exceptionDetails);
 			meteorResult.status = MeteorSimulation.STATUS.DONE;

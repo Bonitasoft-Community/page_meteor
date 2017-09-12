@@ -342,6 +342,13 @@ public class MeteorDAO {
                     	bonitaProperties.setProperty(cstPropertiesConfig + name, content);
                     	bonitaProperties.setProperty(cstPropertiesDescription + name, description);
                     	configurationImported+=name+",";
+                    
+                    	// return the last one directly on the screen
+                    	statusDAO.configuration = new Configuration();
+                    	statusDAO.configuration.name = name;
+                		statusDAO.configuration.content = content;
+                		statusDAO.configuration.description = description;
+                	
             		}
 
                     statusDAO.listEvents.addAll(bonitaProperties.store());

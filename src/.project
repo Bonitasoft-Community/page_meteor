@@ -22,19 +22,19 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>custompage/7.2.3/Index.groovy</name>
+			<name>custompage/7.2.3-c/Index.groovy</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/Index.groovy</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3-c/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/Index.groovy</locationURI>
 		</link>
 		<link>
-			<name>custompage/7.2.3/index.html</name>
+			<name>custompage/7.2.3-c/index.html</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/index.html</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3-c/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/index.html</locationURI>
 		</link>
 		<link>
-			<name>custompage/7.2.3/meteormonitor.js</name>
+			<name>custompage/7.2.3-c/meteormonitor.js</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/resources/meteormonitor.js</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3-c/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/resources/meteormonitor.js</locationURI>
 		</link>
 		<link>
 			<name>custompage/7.2.4/Index.groovy</name>
