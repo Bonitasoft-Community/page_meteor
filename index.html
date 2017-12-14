@@ -54,13 +54,14 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V1.0</a></td>
+					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V2.0</a></td>
 				</tr>
 				<tr>
 					<td>
 						<div id="showHistory" ng-show="titlectrl.isshowhistory"
 							style="border-width: 2px; border-style: ridge; border-color: blue">
 							1.0 First version<br>
+							2.0 Contract proposition and transformation, Cover result calculation
 					</td>
 				</tr>
 				</div>
@@ -68,12 +69,11 @@
 		</center>
 	</div>
 
-
-
 	<div class="container-fluid" id="accordion">
 
 		<div class="col-xs-12">
 			<div class="bs-component" ng-controller="MeteorControler as meteorctrl">
+						
 
 				<modal-dialog show='meteorctrl.isshowExportDialog' dialog-title='Export' width='75%' height='80%' 	close="meteorctrl.isshowExportDialog=false"> 
 					<div class="modal-content" width='100%' height='100%'>
@@ -95,9 +95,13 @@
 					</div>
 				</modal-dialog>
 		
+		<!-- 	
+			<div>
+  				testChar={{meteorctrl.testChart}}
+					<div google-chart chart="{{meteorctrl.testChart}}"  style="height: 400px; width: 100%; position: relative; "></div>
+			</div>
 		
-		
-		
+		 -->
 				<legend class="text-primary">
 					<span class="glyphicon glyphicon-th"></span>
 						<a href="#" ng-click="meteorctrl.showmainscenarii = ! meteorctrl.showmainscenarii" style="text-decoration:none">					
@@ -169,7 +173,7 @@
 												</td><td colspan="2">
 													<div ng-file-drop ng-model="importfiles" class="drop-box ng-isolate-scope ng-valid ng-dirty"
 														drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
-														multiple="true" allow-dir="false">Drop Test.zip to be upload here</div>
+														multiple="true" allow-dir="false">Drop your saved scenario zip to be upload here</div>
 													<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>													
 												</td>			
 											</tr>											
@@ -198,21 +202,23 @@
 								<th style="background-color: #f2dede; text-align: center;">Name</th>
 								<th style="background-color: #f2dede; text-align: center;"><span title="number or robots to start">Robots</span></th>
 								<th style="background-color: #f2dede; text-align: center;" colspan="2"><span title="number of execution (cases or tasks) PER robots">exec/rob</span></th>
+								<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep before the start">Delay start (ms)</span></th>
 								<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep between each execution, in millisecond">sleep (ms)</span></th>
 								<th style="background-color: #f2dede; text-align: center;">Contract</th>
 							</tr>
 							<tbody ng-repeat="processinfo in meteorctrl.processes track by $index">
 								<tr style="background-color: ##D9EDF7;border-width: 1px 1px" ng-show="! meteorctrl.showonlyactive  || processinfo.nbrob>0">
-									<td style="background-color: #D9EDF7;border-width: 1px 1px">Process {{processinfo.information}}</td>
+									<td style="background-color: #D9EDF7;border-width: 1px 1px"><span title="Process name and version">{{processinfo.information}}</span></td>
 									<td style="background-color: #D9EDF7;border-width: 1px 1px;text-align: center;"><input type="number"
 										ng-model="processinfo.nbrob" style="text-align: right; width: 80px;"
 										title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably"></td>
 									<td style="background-color: #D9EDF7; text-align: center;">
 										<input type="number" ng-model="processinfo.nbcases" style="text-align: right; width: 80px;"	title="Attention, the number of case created will be Nb robots*nbCases"></td>
 									<td style="background-color: #D9EDF7; text-align: right;width: 80px">({{processinfo.nbrob*processinfo.nbcases}})</td>
-									<td style="background-color: #D9EDF7; text-align: center"><input type="number"
-										ng-model="processinfo.timesleep" style="text-align: right; width: 80px;"
-										title="between each creation, robots will sleep this time (in ms)"></td>
+									<td style="background-color: #D9EDF7; text-align: center">
+										<input type="number" ng-model="processinfo.delaysleep" style="text-align: right; width: 80px;" title="Before start, robots will sleep this time (in ms)"></td>
+									<td style="background-color: #D9EDF7; text-align: center">
+										<input type="number" ng-model="processinfo.timesleep" style="text-align: right; width: 80px;" title="Between each creation, robots will sleep this time (in ms)"></td>
 									<td style="background-color: #D9EDF7; text-align: center;">
 										<table>
 											<tr ng-repeat="input in processinfo.inputs track by $index">
@@ -220,7 +226,17 @@
 													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;">%
 												</td>
 												<td>
-													<textarea cols="70" rows="5" ng-model="input.content"></textarea>
+													<table>
+														<tr><td>
+															<button ng-click="meteorctrl.formatInput( processinfo, input)" class="btn btn-info btn-xs" style="width: 100%;">Format</button>
+														</td></tr>														
+														<tr><td>
+															<textarea cols="70" rows="5" ng-model="input.content"></textarea>
+														</td></tr>
+														<tr><td>
+															<button ng-click="meteorctrl.proposeInput( processinfo, input)" class="btn btn-default btn-xs" style="width: 100%;">Propose</button>
+														</td></tr>														
+													</table>
 												</td>
 												<td>
 													<button ng-click="meteorctrl.removeInput( processinfo, input) " class="btn btn-danger btn-xs">Remove</button>
@@ -240,6 +256,8 @@
 										ng-model="activityinfo.nbcases" style="text-align: right; width: 80px;"></td>
 									<td style="background-color: #fcf8e3;text-align: right;width: 80px">({{activityinfo.nbrob*activityinfo.nbcases}})</td>										
 									<td style="background-color: #fcf8e3; text-align: center;">
+										<input type="number" ng-model="activityinfo.delaysleep" style="text-align: right; width: 80px;"></td>
+									<td style="background-color: #fcf8e3; text-align: center;">
 										<input type="number" ng-model="activityinfo.timesleep" style="text-align: right; width: 80px;"></td>
 									<td style="background-color: #fcf8e3; text-align: center;; text-align: center">
 										<table>
@@ -248,7 +266,15 @@
 													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;">%
 												</td>
 												<td>
-													<textarea ng-model="input.content"></textarea>
+													<table>
+														<tr><td>
+															<textarea ng-model="input.content"></textarea>
+														</td></tr>
+														<tr><td>
+														<button ng-click="meteorctrl.proposeInput( activityinfo, input)" class="btn btn-default btn-xs" style="width: 100%;">Propose</button>
+														</td></tr>
+													</table>
+
 												</td>
 												<td>
 													<button ng-click="meteorctrl.removeInput( activityinfo, input) " class="btn btn-danger btn-xs">Remove</button>
@@ -460,22 +486,38 @@
 							<center>
 								<span class="Loading" ng-show="meteorctrl.refreshinprogress">.</span> <button ng-click="meteorctrl.refresh()" class="btn btn-success" ng-disabled="meteorctrl.refreshinprogress">Refresh</button>
 							</center>
-						
-							<!-- <p>Exe: {{meteorctrl.statusexecution}}
-							<p>
-								SimulationId{{meteorctrl.simulationid}}
-								<!-- <div google-chart chart="graph.createcase" style="height: 200px; width: 100%; position: relative; "></div> -->
-							
 						</div>
+							
+						<h3>Cover</h3>
+						This section give the percent of each running scenario
+						<table class="table table-striped table-hover table-condensed" width="100%">
+							<tr>
+								<th>Process</th>
+								<th>General cover</th>
+								<th>Happy path cover</th>
+								<th>Error</th>
+								<th>Activities not covered</th>
+							</tr>		
+							<tr ng-repeat="processinfo in meteorctrl.execution.cover track by $index">
+								<td>{{processinfo.processname}} ({{processinfo.processversion}})</td>
+								<td>{{processinfo.coverpercent}} %</td>
+								<td>{{processinfo.coverhappypathpercent}} %</td>
+								<td><div ng-bind-html="meteorctrl.getListEvents( processinfo.listevents )"></div></td>
+								<<td>{{processinfo.activitiesnotcovered}}</td>
+								<td>
+								<!-- 
+								Chart: {{processinfo.piechart}}<br>
+									<div google-chart chart="{{processinfo.piechart}}"  style="height: 400px; width: 100%; position: relative; "></div>
+									<div google-chart chart="{{processinfo.columChart}}"  style="height: 400px; width: 100%; position: relative; "></div>
+									
+								 -->
+								 </td>
+							</tr>
+						</table>
+					
 					</div>
 				</div>
 
-
-				<div class="panel panel-primary">
-					<legend class="text-primary">
-						<span class="glyphicon glyphicon-th"></span>Unit Test
-					</legend>
-				</div>
 				
 				
 				

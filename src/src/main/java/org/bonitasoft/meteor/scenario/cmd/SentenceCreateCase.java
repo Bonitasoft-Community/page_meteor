@@ -10,10 +10,10 @@ import org.bonitasoft.engine.bpm.process.ProcessDefinitionNotFoundException;
 import org.bonitasoft.engine.bpm.process.ProcessInstance;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.meteor.MeteorRobotCreateCase;
 import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorDocument;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorInput;
+import org.bonitasoft.meteor.scenario.process.MeteorRobotCreateCase;
+import org.bonitasoft.meteor.scenario.process.MeteorDefInputs;
+import org.bonitasoft.meteor.scenario.process.MeteorDocument;
 
 public class SentenceCreateCase extends Sentence {
 
@@ -28,56 +28,54 @@ public class SentenceCreateCase extends Sentence {
 
 	public static String Verb = "CREATECASE";
 
-	public SentenceCreateCase(final Map<String,Object> mapParam, final APIAccessor apiAccessor) {
+	public SentenceCreateCase(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
 		super(mapParam, apiAccessor);
 	}
 
 	String processName;
 	String processVersion;
 	Long processDefinitionId;
-	long nbExecution=1;
-	MeteorInput meteorInput = new MeteorInput();
+	long nbExecution = 1;
+	MeteorDefInputs meteorInput = new MeteorDefInputs();
 	List<MeteorDocument> listDocuments = new ArrayList<MeteorDocument>();
 
 	@Override
-	public List<BEvent> decodeSentence( int lineNumber ) {
+	public List<BEvent> decodeSentence(int lineNumber) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 		try {
-			processName = getParam( cstParamProcessName );
-			processVersion = getParam( cstParamProcessVersion );
-			nbExecution = getParamLong(cstParamNbExecution,1L);
+			processName = getParam(cstParamProcessName);
+			processVersion = getParam(cstParamProcessVersion);
+			nbExecution = getParamLong(cstParamNbExecution, 1L);
 			if (processName == null) {
 				listEvents.add(EventCreateCaseNoProcessname);
 			} else {
-				if (processVersion==null || processVersion.trim().length()==0)
+				if (processVersion == null || processVersion.trim().length() == 0)
 					processDefinitionId = apiAccessor.getProcessAPI().getLatestProcessDefinitionId(processName);
 				else
 					processDefinitionId = apiAccessor.getProcessAPI().getProcessDefinitionId(processName, processVersion);
 			}
 
-			 
-			meteorInput.setContent( getJsonVariables( cstParamInput ));
+			meteorInput.addContent(getJsonVariables(cstParamInput));
 
 		} catch (final ProcessDefinitionNotFoundException pe) {
-			listEvents.add(new BEvent(EventCreateCaseNoProcessFound, "process[" + processName + "] version[" + processVersion + "] at line "+lineNumber));
+			listEvents.add(new BEvent(EventCreateCaseNoProcessFound, "process[" + processName + "] version[" + processVersion + "] at line " + lineNumber));
 		}
 		return listEvents;
 	}
 
 	@Override
-	public List<BEvent> execute( int robotId, LogExecution logExecution) {
+	public List<BEvent> execute(int robotId, LogExecution logExecution) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 
 		try {
-			for (int i=0;i<nbExecution;i++)
-			{
-				ProcessInstance processInstance = MeteorRobotCreateCase.createACase(processDefinitionId, false, meteorInput, listDocuments, logExecution, apiAccessor.getProcessAPI());				
+			for (int i = 0; i < nbExecution; i++) {
+				ProcessInstance processInstance = MeteorRobotCreateCase.createACase(processDefinitionId, false, meteorInput.getInputAtStep(0), listDocuments, logExecution, apiAccessor.getProcessAPI());
 			}
 
 		} catch (final Exception e) {
-			BEvent event=new BEvent(EventCreateCaseError, e, "process[" + processName + "] version[" + processVersion + "] processDefinitionId[" + processDefinitionId + "]");
-			logExecution.addEvent( event );
-			listEvents.add( event );
+			BEvent event = new BEvent(EventCreateCaseError, e, "process[" + processName + "] version[" + processVersion + "] processDefinitionId[" + processDefinitionId + "]");
+			logExecution.addEvent(event);
+			listEvents.add(event);
 		}
 
 		return listEvents;

@@ -21,7 +21,6 @@ import org.bonitasoft.meteor.MeteorSimulation;
 import org.bonitasoft.meteor.cmd.CmdMeteor.JarDependencyCommand;
 import org.bonitasoft.meteor.scenario.Scenario;
 
-
 import com.bonitasoft.scenario.accessor.configuration.ScenarioConfiguration;
 import com.bonitasoft.scenario.accessor.resource.InMemoryResource;
 import com.bonitasoft.scenario.accessor.resource.Resource;
@@ -39,25 +38,26 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 
 	static Logger logger = Logger.getLogger(MeteorSimulation.class.getName());
 
-	public static BEvent EventLoadGroovyScenarioCommand = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotGroovyScenario", 1, Level.ERROR, "Groovy Command can't be created", "The Groovy Scenario needs special command to be deployed. The deployment of the command failed", "The groovy scenario can't be executed", "Check the error");
+	public static BEvent EventLoadGroovyScenarioCommand = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotGroovyScenario", 1, Level.ERROR, "Groovy Command can't be created", "The Groovy Scenario needs special command to be deployed. The deployment of the command failed",
+			"The groovy scenario can't be executed", "Check the error");
 
 	private Scenario scenario = null;
 
 	static private String scenarioName = "meteorGSScenario";
 
-	public MeteorRobotGroovyScenario(MeteorSimulation meteorSimulation,final APIAccessor apiAccessor) {
-		super( meteorSimulation,apiAccessor);
+	public MeteorRobotGroovyScenario(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+		super(meteorSimulation, apiAccessor);
 	}
 
 	public void setScenario(final Scenario scenario) {
-		logger.info("MeteorRobotGroovyScenario.setScenario SID["+meteorSimulation.getId()+"] ROBOT[" + mRobotId + "] Receive scenario[" + scenario.mScenario + "]");
+		logger.info("MeteorRobotGroovyScenario.setScenario SID[" + meteorSimulation.getId() + "] ROBOT[" + mRobotId + "] Receive scenario[" + scenario.mScenario + "]");
 		this.scenario = scenario;
 	}
 
 	// public setRessource()
 	@Override
 	public void executeRobot() {
-		logger.info("MeteorRobotGroovyScenario.executeScenario SID["+meteorSimulation.getId()+"] ROBOT[" + mRobotId + "] Execute scenario[" + scenario.mScenario + "]");
+		logger.info("MeteorRobotGroovyScenario.executeScenario SID[" + meteorSimulation.getId() + "] ROBOT[" + mRobotId + "] Execute scenario[" + scenario.mScenario + "]");
 		setOperationTotal(100);
 
 		// Create and launch the runner
@@ -85,13 +85,11 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 			SingleRunner runner = new SingleRunner(singleRunContext, runListeners);
 			runner.run();
 			ScenarioResult scenarioResult = runner.getScenarioResult();
-			if (scenarioResult.getErrors().size()>0 || scenarioResult.getWarns().size()>0)
-			{
-				String msg= scenarioResult.generateVisualResult().toString();
+			if (scenarioResult.getErrors().size() > 0 || scenarioResult.getWarns().size() > 0) {
+				String msg = scenarioResult.generateVisualResult().toString();
 				mLogExecution.addLog(msg);
 				setFinalStatus(FINALSTATUS.FAIL);
-			}
-			else
+			} else
 				setFinalStatus(FINALSTATUS.SUCCESS);
 		} catch (Throwable e) {
 			logger.info(" ROBOT " + mRobotId + " Scenario execution error[" + e.getCause() + " - " + e.getMessage() + "]");
@@ -101,45 +99,39 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
 		}
 	}
 
-	
 	public static List<BEvent> deployCommandGroovyScenario(final boolean forceDeploy, final String version, final List<JarDependencyCommand> jarDependencies, final CommandAPI commandAPI, final PlatformAPI platFormAPI) {
-		logger.info("MeteorRobotGroovyScenario.deployCommandGroovyScenario ---------- Start deployCommandGroovyScenario" );
-		
+		logger.info("MeteorRobotGroovyScenario.deployCommandGroovyScenario ---------- Start deployCommandGroovyScenario");
+
 		List<BEvent> listEvents = new ArrayList<BEvent>();
 		// remove fail ? No worry
 		removeDependency("process-starter-command-1.0.jar", commandAPI);
 		removeDependency("bdm-jpql-query-executor-command-1.0.jar", commandAPI);
 		removeDependency("scenario-utils-2.0.jar", commandAPI);
-		try
-		{
+		try {
 			CommandsAdministration.registerCommands(commandAPI, false);
 		} catch (SSessionException e) {
-			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : "+e.toString());
-			listEvents.add( new BEvent( EventLoadGroovyScenarioCommand, e, ""));
+			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : " + e.toString());
+			listEvents.add(new BEvent(EventLoadGroovyScenarioCommand, e, ""));
 		} catch (CreationException e) {
-			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : "+e.toString());
-			listEvents.add( new BEvent( EventLoadGroovyScenarioCommand, e, ""));
+			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : " + e.toString());
+			listEvents.add(new BEvent(EventLoadGroovyScenarioCommand, e, ""));
 		} catch (DeletionException e) {
-			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : "+e.toString());
-			listEvents.add( new BEvent( EventLoadGroovyScenarioCommand, e, ""));
+			logger.severe("MeteorRobotGroovyScenario.Can't deploy correctly the GroovyScenario command : " + e.toString());
+			listEvents.add(new BEvent(EventLoadGroovyScenarioCommand, e, ""));
 		}
 		return listEvents;
-		
 
 	}
-	
-	private static void removeDependency(String depencencyName, CommandAPI commandAPI)
-	{
+
+	private static void removeDependency(String depencencyName, CommandAPI commandAPI) {
 		try {
 			commandAPI.removeDependency(depencencyName);
-		}
-		catch(Exception e)
-		{
-			logger.info("MeteorRobotGroovyScenario.Can't remove dependancy  command : "+e.toString());
+		} catch (Exception e) {
+			logger.info("MeteorRobotGroovyScenario.Can't remove dependancy  command : " + e.toString());
 
-		};
+		}
+		;
 
 	}
-		
-		
+
 }

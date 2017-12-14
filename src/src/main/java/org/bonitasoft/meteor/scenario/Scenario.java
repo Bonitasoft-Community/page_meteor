@@ -29,15 +29,14 @@ public class Scenario {
 	private static Logger logger = Logger.getLogger(Scenario.class.getName());
 
 	private static BEvent EventSyntaxMissingParenthese = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 1, Level.APPLICATIONERROR, "A parenthesis is expected", "Check the sentence", "This sentence will not be executed", "Check the sentence");
-	private static BEvent EventUnknowSentence = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 2, Level.APPLICATIONERROR, "The sentence is unknow", 
-			"Check the sentence. Accepted are "+SentenceCreateCase.Verb+", "+ SentenceExecuteTask.Verb+", "+SentenceAssert.Verb+", "+SentenceSleep.Verb, 
-			"This sentence will not be executed", "Check the sentence");
-	private static BEvent EventJsonScenarioMapExpected = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 3, Level.APPLICATIONERROR, "A Map is expected in JSON", 
-			"The JSON object must be a JSON map, like { \"verb\":\""+SentenceCreateCase.Verb+"\" }", "This sentence is not accepted", "Check your scenario"); 
-	
-	private static BEvent EventJsonScenarioMapOrListExpected = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 4, Level.APPLICATIONERROR, "A Map or a LIST is expected in JSON", 
-			"The JSON object must be a JSON map, like { \"verb\":\""+SentenceCreateCase.Verb+"\"] or a List of Map, like [{...};{...}]", "This sentence is not accepted", "Check your scenario"); 
-	
+	private static BEvent EventUnknowSentence = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 2, Level.APPLICATIONERROR, "The sentence is unknow",
+			"Check the sentence. Accepted are " + SentenceCreateCase.Verb + ", " + SentenceExecuteTask.Verb + ", " + SentenceAssert.Verb + ", " + SentenceSleep.Verb, "This sentence will not be executed", "Check the sentence");
+	private static BEvent EventJsonScenarioMapExpected = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 3, Level.APPLICATIONERROR, "A Map is expected in JSON", "The JSON object must be a JSON map, like { \"verb\":\"" + SentenceCreateCase.Verb + "\" }",
+			"This sentence is not accepted", "Check your scenario");
+
+	private static BEvent EventJsonScenarioMapOrListExpected = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotScenario", 4, Level.APPLICATIONERROR, "A Map or a LIST is expected in JSON",
+			"The JSON object must be a JSON map, like { \"verb\":\"" + SentenceCreateCase.Verb + "\"] or a List of Map, like [{...};{...}]", "This sentence is not accepted", "Check your scenario");
+
 	public static String cstHtmlScenario = "scenario";
 	public static String cstHtmlName = "name";
 	public static String cstHtmlNumberOfRobots = "nbrob";
@@ -70,7 +69,7 @@ public class Scenario {
 		// STRING else JSON will do an error
 		mNumberOfRobots = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfRobots, 0);
 		mNumberOfExecutions = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfExecutions, 1);
-		
+
 		mName = MeteorToolbox.getParameterString(mapScenario, cstHtmlName, "");
 		mScenario = MeteorToolbox.getParameterString(mapScenario, cstHtmlScenario, "");
 		try {
@@ -91,122 +90,102 @@ public class Scenario {
 	 */
 	public List<BEvent> decodeScenario() {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
-		Map<String,Object> collectMapParams=new HashMap<String,Object>();
-		int lineNumber=1;
-		
-		
+		Map<String, Object> collectMapParams = new HashMap<String, Object>();
+		int lineNumber = 1;
+
 		final StringTokenizer st = new StringTokenizer(mScenario, ";");
 		while (st.hasMoreTokens()) {
-			
+
 			final String sentenceSt = st.nextToken();
-			
-			String sentenceStWithoutReturn= sentenceSt.replaceAll("\\n", "").trim();
-			
-			
-			//---------------- verb or JSON ?  decode the parameter
-			Object jsonScenario=null;
-			try
-			{
-				jsonScenario= JSONValue.parse(sentenceSt);
-				
-			} catch (Exception e)
-			{
+
+			String sentenceStWithoutReturn = sentenceSt.replaceAll("\\n", "").trim();
+
+			// ---------------- verb or JSON ? decode the parameter
+			Object jsonScenario = null;
+			try {
+				jsonScenario = JSONValue.parse(sentenceSt);
+
+			} catch (Exception e) {
 				// not a JSON scenario
-				jsonScenario=null;
+				jsonScenario = null;
 			}
-			if (jsonScenario!= null)
-			{
-				// listOf 
-				if (jsonScenario instanceof Map)
-				{
-					listEvents.addAll( decodeJsonSentence( (Map) jsonScenario, lineNumber ));
-					
-				}
-				else if (jsonScenario instanceof List)
-				{
-					for (Object item : (List) jsonScenario)
-					{
+			if (jsonScenario != null) {
+				// listOf
+				if (jsonScenario instanceof Map) {
+					listEvents.addAll(decodeJsonSentence((Map) jsonScenario, lineNumber));
+
+				} else if (jsonScenario instanceof List) {
+					for (Object item : (List) jsonScenario) {
 						if (item instanceof Map)
-							listEvents.addAll( decodeJsonSentence( (Map) item, lineNumber ));
+							listEvents.addAll(decodeJsonSentence((Map) item, lineNumber));
 						else
-							listEvents.add( new BEvent( EventJsonScenarioMapExpected, "line "+lineNumber));
+							listEvents.add(new BEvent(EventJsonScenarioMapExpected, "line " + lineNumber));
 					}
-				}
-				else 
-					listEvents.add( new BEvent( EventJsonScenarioMapOrListExpected, "line "+lineNumber));
+				} else
+					listEvents.add(new BEvent(EventJsonScenarioMapOrListExpected, "line " + lineNumber));
 
-
-			}
-			else
-			{
+			} else {
 				// ------------------------------------ One Sentence
 				// format : createCase( p1,p2,p3 );
 				final int startPar = sentenceStWithoutReturn.indexOf("(");
 				if (startPar == -1) {
-					listEvents.add(new BEvent(EventSyntaxMissingParenthese, "missing ( at line "+lineNumber+" " + sentenceStWithoutReturn));
+					listEvents.add(new BEvent(EventSyntaxMissingParenthese, "missing ( at line " + lineNumber + " " + sentenceStWithoutReturn));
 					continue;
 				}
 				final String verb = sentenceStWithoutReturn.substring(0, startPar);
-					
-				
+
 				String param = sentenceStWithoutReturn.substring(startPar + 1);
 				if (!param.endsWith(")")) {
-					listEvents.add(new BEvent(EventSyntaxMissingParenthese, "expected ) : at line "+lineNumber+" " + sentenceStWithoutReturn));
+					listEvents.add(new BEvent(EventSyntaxMissingParenthese, "expected ) : at line " + lineNumber + " " + sentenceStWithoutReturn));
 					continue;
 				}
 				param = param.substring(0, param.length() - 1);
-				// so, we have to split on the , BUT some parameters are JSON and will contains , so we have to build a new StringTokenizer
-				 Map<String,Object> mapParams  = decomposeParam( "{"+ param +"}" );
+				// so, we have to split on the , BUT some parameters are JSON
+				// and will contains , so we have to build a new StringTokenizer
+				Map<String, Object> mapParams = decomposeParam("{" + param + "}");
 				// overwirte the collectMapParams
-				if (mapParams!=null)
-				{
+				if (mapParams != null) {
 					for (String key : mapParams.keySet())
-						collectMapParams.put(key,  mapParams.get( key ));
+						collectMapParams.put(key, mapParams.get(key));
 				}
 				// now complete the current mapParam
-				if (mapParams==null)
-					mapParams=new HashMap<String,Object>();
+				if (mapParams == null)
+					mapParams = new HashMap<String, Object>();
 				for (String key : collectMapParams.keySet())
-					if (! mapParams.containsKey(key))
-						mapParams.put(key,  collectMapParams.get( key ));
-				
+					if (!mapParams.containsKey(key))
+						mapParams.put(key, collectMapParams.get(key));
+
 				final Sentence sentence = Sentence.getInstance(verb, mapParams, apiAccessor);
-				if (sentence==null)
-				{
-					listEvents.add(new BEvent(EventUnknowSentence, "line "+lineNumber+" " + verb));
-				}
-				else
-				{
-					listEvents.addAll(sentence.decodeSentence( lineNumber ));
+				if (sentence == null) {
+					listEvents.add(new BEvent(EventUnknowSentence, "line " + lineNumber + " " + verb));
+				} else {
+					listEvents.addAll(sentence.decodeSentence(lineNumber));
 					listSentences.add(sentence);
 				}
 			}
-			
-			// how many lines return in this sentence ? 
-			StringTokenizer stLine= new StringTokenizer("\\n", sentenceSt);
-			lineNumber+= stLine.countTokens();
+
+			// how many lines return in this sentence ?
+			StringTokenizer stLine = new StringTokenizer("\\n", sentenceSt);
+			lineNumber += stLine.countTokens();
 		}
 		return listEvents;
 	}
-	
+
 	/**
 	 * decode the JSON Sentence
+	 * 
 	 * @param jsonSentence
 	 * @param lineNumber
 	 * @return
 	 */
-	private List<BEvent> decodeJsonSentence( Map<String,Object> jsonSentence, int lineNumber )
-	{
+	private List<BEvent> decodeJsonSentence(Map<String, Object> jsonSentence, int lineNumber) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
-		String verb = MeteorToolbox.getParameterString( jsonSentence, "verb", "");
+		String verb = MeteorToolbox.getParameterString(jsonSentence, "verb", "");
 		final Sentence sentence = Sentence.getInstance(verb, jsonSentence, apiAccessor);
-		if (sentence==null)
-		{
-			listEvents.add(new BEvent(EventUnknowSentence, "line "+lineNumber+" " + verb));
-		}
-		else
-		{
-			listEvents.addAll(sentence.decodeSentence( lineNumber ));
+		if (sentence == null) {
+			listEvents.add(new BEvent(EventUnknowSentence, "line " + lineNumber + " " + verb));
+		} else {
+			listEvents.addAll(sentence.decodeSentence(lineNumber));
 			listSentences.add(sentence);
 		}
 		return listEvents;
@@ -217,71 +196,58 @@ public class Scenario {
 	}
 
 	/**
-	 * input is " a,b,  "  this is, a school isn't ?", e
-	 * return is an array of 4:
-	 *     a
-	 *     b
-	 *     "this is, a school isn't ?"
-	 *     e
+	 * input is " a,b, " this is, a school isn't ?", e return is an array of 4:
+	 * a b "this is, a school isn't ?" e
 	 * 
 	 * @param param
 	 * @return
 	 */
-	public Map<String,Object> decomposeParam( String param )
-	{
-		Object json= JSONValue.parse(param);
+	public Map<String, Object> decomposeParam(String param) {
+		Object json = JSONValue.parse(param);
 		if (json instanceof Map)
-			return (Map<String,Object>) json;
+			return (Map<String, Object>) json;
 		return null;
 	}
 
-	public List<String> decomposeParam2( String param)
-	{
+	public List<String> decomposeParam2(String param) {
 		final List<String> listParams = new ArrayList<String>();
-		int index=0;
-		while (index < param.length())
-		{
-			int nextComma = param.indexOf(",",index);
-			if (nextComma==-1)
-			{ // this is the last param in fact !
-				listParams.add( param.substring(index));
+		int index = 0;
+		while (index < param.length()) {
+			int nextComma = param.indexOf(",", index);
+			if (nextComma == -1) { // this is the last param in fact !
+				listParams.add(param.substring(index));
 				return listParams;
-				
+
 			}
-			int nextQuot = param.indexOf("'",index);
-			if (nextQuot==-1 || nextQuot > nextComma)
-			{
+			int nextQuot = param.indexOf("'", index);
+			if (nextQuot == -1 || nextQuot > nextComma) {
 				// simple situation here
-				listParams.add( param.substring(index,  nextComma).trim());
-				index=nextComma+1;
-			}
-			else
-			{
+				listParams.add(param.substring(index, nextComma).trim());
+				index = nextComma + 1;
+			} else {
 				// search the end of the nextQuot
-				int endQuot = param.indexOf("'",nextQuot+1);
+				int endQuot = param.indexOf("'", nextQuot + 1);
 				// and then, the next comma after the endQuot
-				if (endQuot==-1)
-				{
+				if (endQuot == -1) {
 					// syntaxe error : miss the last quot
-					listParams.add( param.substring(index));
+					listParams.add(param.substring(index));
 					return listParams;
 				}
-				nextComma = param.indexOf(",",endQuot);
-				if (nextComma==-1)
-				{ // this is the last param in fact !
-					listParams.add( param.substring(index));
+				nextComma = param.indexOf(",", endQuot);
+				if (nextComma == -1) { // this is the last param in fact !
+					listParams.add(param.substring(index));
 					return listParams;
-					
+
 				}
-				listParams.add( param.substring(index, nextComma));
-				index = nextComma+1;
+				listParams.add(param.substring(index, nextComma));
+				index = nextComma + 1;
 			}
-			
+
 		}
 
 		return listParams;
 	}
- 
+
 	/**
 	 * register this scenario to the simulation
 	 * 

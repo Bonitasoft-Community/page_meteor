@@ -51,7 +51,7 @@ public class TestScenario {
 			fail("Not yet implemented");
 			return;
 		}
-		 LogExecution logExecution = new LogExecution();
+		LogExecution logExecution = new LogExecution();
 		for (int i = 0; i < scenario.listSentences.size(); i++) {
 			scenario.listSentences.get(i).execute(1, logExecution);
 		}

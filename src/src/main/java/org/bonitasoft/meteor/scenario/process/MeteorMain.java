@@ -1,4 +1,4 @@
-package org.bonitasoft.meteor;
+package org.bonitasoft.meteor.scenario.process;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.apache.commons.fileupload.FileItem;
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.engine.api.ProcessAPI;
+import org.bonitasoft.engine.bpm.contract.ContractDefinition;
 import org.bonitasoft.engine.bpm.flownode.ActivityDefinition;
 import org.bonitasoft.engine.bpm.flownode.FlowElementContainerDefinition;
 import org.bonitasoft.engine.bpm.flownode.HumanTaskDefinition;
@@ -24,14 +25,26 @@ import org.bonitasoft.engine.bpm.process.ProcessDefinitionNotFoundException;
 import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfo;
 import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfoCriterion;
 import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.log.event.BEventFactory;
 import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.meteor.MeteorSimulation;
+import org.bonitasoft.meteor.MeteorToolbox;
+import org.bonitasoft.meteor.MeteorTransformInputs;
 import org.json.simple.JSONValue;
 
-public class MeteorProcessDefinitionList {
 
-	private final Logger logger = Logger.getLogger(MeteorProcess.class.getName());
+/* ******************************************************************** */
+/*                                                                      */
+/* Main class for the Process execution (list of processes / activities)*/
+/*                                                                      */
+/* ******************************************************************** */
 
-	public static String cstHtmlNumberOfCases = "nbcases";
+public class MeteorMain {
+
+	private final Logger logger = Logger.getLogger(MeteorMain.class.getName());
+
+	// todo : rename html => json
+	public static String cstJsonNumberOfCases = "nbcases";
 	public static String cstHtmlType = "type";
 	public static String cstHtmlTypeProcess = "pro";
 	public static String cstHtmlTypeActivity = "act";
@@ -40,32 +53,41 @@ public class MeteorProcessDefinitionList {
 	public static String cstHtmlId = "id";
 	public static String cstHtmlNumberOfRobots = "nbrob";
 	public static String cstHtmlTimeSleep = "timesleep";
+	public static String cstHtmlDelaySleep = "delaysleep";
 	public static String cstHtmlInputPercent = "percent";
 	public static String cstHtmlInputContent = "content";
+	public static String cstHtmlInputProposeContent = "proposecontent";
+
 
 	public static String cstHtmlInputs = "inputs";
 	public static String cstHtmlUserName = "username";
 	public static String cstHtmlUserPassword = "userpassword";
 	public static String cstHtmlDocumentName = "documentname";
 	public static String cstHtmlDocumentValue = "documentvalue";
-	public static String cstHtmlProcessName = "processname";
+	public static String cstJsonProcessName = "processname";
 	public static String cstHtmlProcessVersion = "processversion";
 	public static String cstHtmlActivityName = "activityname";
 	public static String cstHtmlProcessDefId = "processid";
+	public static String cstHtmlCoverAll = "coverall";
+	public static String cstHtmlCoverPercent = "coverpercent";
+	public static String cstHtmlCoverHappyPathPercent = "coverhappypathpercent";
+	public static String cstJsonActivitiesNotCovered ="activitiesnotcovered";
+
+	public static String cstJsonListEvents ="listevents";
 
 	
 	public static String cstHtmlPrefixActivity = "ACT_";
 	public static String cstHtmlPrefixDocument = "DOC_";
 	public static int cstCurrentSimulation = 2;
 
-	private static BEvent EventGetListProcesses = new BEvent(MeteorProcessDefinitionList.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
+	private static BEvent EventGetListProcesses = new BEvent(MeteorMain.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
 
-	private static BEvent EventCalculateListProcess = new BEvent(MeteorProcessDefinitionList.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
+	private static BEvent EventCalculateListProcess = new BEvent(MeteorMain.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
 
-	private static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorProcessDefinitionList.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
+	private static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorMain.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
 			"If you set a number of robot, then set a number of case(or inverse)");
 
-	private static BEvent EventInitializeJson = new BEvent(MeteorProcessDefinitionList.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
+	private static BEvent EventInitializeJson = new BEvent(MeteorMain.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
 
 	private final boolean mShowActivity = true;
 
@@ -75,304 +97,14 @@ public class MeteorProcessDefinitionList {
 	 */
 	final List<BEvent> listEventsCalculation = new ArrayList<BEvent>();
 	public long performanceCalcul = 0;
-	private final HashMap<Long, MeteorProcess> mListProcessDefinition = new HashMap<Long, MeteorProcess>();
+	private final HashMap<Long, MeteorDefProcess> mListProcessDefinition = new HashMap<Long, MeteorDefProcess>();
 
-	/*
-	 * *************************************************************************
-	 * *******
-	 */
-	/*                                                                                  */
-	/* Internal class */
-	/*                                                                                  */
-	/*                                                                                  */
-	/*
-	 * ***********************************************************************	 */
-	public static class MeteorInput
-	{
-		/**
-		 * multiple input can be created. keep the index only for log
-		 */
-		int index=1;
-		// in fact, not a percent but a weigh
-		// total may not be 100.
-		public long nbSteps;  
-		public double ratioSteps=0;
-		/*
-		 * Bonita input is a little special. So, be sure that we transform it correctly
-		 */
-		private Map<String,Serializable> content;
-		public void setContent( Map<String,Serializable> content)
-		{
-			this.content = content;
-			MeteorToolbox.transformJsonContentForBonitaInput( this.content );
-		}
-		public Map<String,Serializable>getContent()
-		{
-			return this.content;
-		}
-	}
-
-	public static class MeteorInputs
-	{		
-		public List<MeteorInput> listInputs = new ArrayList<MeteorInput>();
-		public long nbSteps;
-		public double ratioStepsToInput;
-		public void loadFromString( String listSt)
-		{
-			List<Object> listToLoad= (List<Object>) JSONValue.parse(listSt);
-			loadFromList( listToLoad);
-		}
-		
-		
-		public void setInputSteps(long nbSteps )
-		{
-			this.nbSteps=nbSteps;
-			
-			int totalInputSteps =0;
-			for (MeteorInput input : listInputs)
-				totalInputSteps += input.nbSteps;
-			// we have totalInputStep declared for a nbSteps : calculated the ratio now
-			if (nbSteps==0)
-				return;
-			// in that situation, we have no input in fact
-			if (totalInputSteps==0)
-			{
-				return;
-			}
-			ratioStepsToInput = ((double) totalInputSteps) / ((double) nbSteps);
-			
-		}
-		/**
-		 * 
-		 * @param step the current execution step. Start at 0.
-		 * @return
-		 */
-		public MeteorInput getInputAtStep( long step)
-		{
-			if (listInputs.size()==0)
-				return null;
-			int inputStep =(int) (step * ratioStepsToInput);
-			// search now the input relative to this one
-			int sumInputStep=0;
-			for (MeteorInput meteorInput : listInputs)
-			{
-				sumInputStep += meteorInput.nbSteps;
-				if (inputStep < sumInputStep)
-					return meteorInput;
-			}
-			// still not find one at this moment ? Ok, return the last one
-			return listInputs.get( listInputs.size()-1);
-		}
-		
-		@SuppressWarnings("unchecked")
-		public void loadFromList(List<Object> listToLoad)
-		{
-			if (listToLoad==null)
-				return;
-			
-			for (Object itemLoad:listToLoad)
-			{
-				MeteorInput oneItem =new MeteorInput();
-				oneItem.nbSteps = MeteorToolbox.getParameterLong((Map<String,Object>) itemLoad, cstHtmlInputPercent, 1);
-				if (oneItem.nbSteps<1)
-					oneItem.nbSteps=1;
-				
-				String contentSt = MeteorToolbox.getParameterString( (Map<String,Object>) itemLoad, cstHtmlInputContent, "");
-				if ((contentSt!=null) && (contentSt.length()>0))
-				{
-					oneItem.content =  (Map<String,Serializable>) JSONValue.parse(contentSt);
-					// transform all Object "Long to 
-					MeteorToolbox.transformJsonContentForBonitaInput( oneItem.content  );
-				}
-				oneItem.index = listInputs.size()+1;
-				listInputs.add( oneItem);
-			}
-		}
-	}
-	
-	/**
-	 * describe a user
-	 *
-	 */
-	public static class MeteorProcessDefinitionUser {
-
-		public Long mProcessDefinitionId;
-		public long mNumberOfThread;
-		public long mTimeSleep;
-		public long mNumberOfCase;
-		public String mVariablesString = "";
-		public String mUserName = "";
-		public String mUserPassword = "";
-		public int mDefinitionId = 0;
-		public HashMap<String, Object> mVariables = new HashMap<String, Object>();
-		public ArrayList<MeteorDocument> mListDocuments = new ArrayList<MeteorDocument>();
-
-		public MeteorProcessDefinitionUser(final int definitionId, final Long processDefinitionId) {
-			mDefinitionId = definitionId;
-			mProcessDefinitionId = processDefinitionId;
-		}
-
-		public String getHtmlId() {
-			return cstHtmlPrefixActivity + mProcessDefinitionId.toString() + mDefinitionId;
-		}
-	}
-
-	public static class MeteorDocument {
-
-		public Long mProcessDefinitionId;
-
-		public Long mActivityDefinitionId;
-
-		public String mDocumentName = "";
-		public int mIndice;
-		public String mFileName = "";
-		public ByteArrayOutputStream mContent;
-
-		public MeteorDocument(final Long processDefinitionId, final Long activityDefinitionId, final int indice) {
-			mProcessDefinitionId = processDefinitionId;
-			mActivityDefinitionId = activityDefinitionId;
-			mIndice = indice;
-		}
-
-		public String getHtmlId() {
-			return cstHtmlPrefixDocument + (mProcessDefinitionId == null ? "" : mProcessDefinitionId.toString()) + "_" + (mActivityDefinitionId == null ? "" : mActivityDefinitionId.toString()) + "_" + mIndice;
-
-		}
-	}
-
-	/**
-	 * describe a Human activity Inside a process. Then, this human activity can
-	 * be process by one or multiple robot.
-	 */
-
-	public static class MeteorActivity {
-
-		// attention, the processDefinitionID must be recalculated each time: it may change
-		public Long mProcessDefinitionId;
-		public Long mActivityDefinitionId;
-		
-		public String mProcessName;
-		public String mProcessVersion;
-		
-		public String mActivityName;
-		// this is the robot part : how many robot do we have to start on this
-		// activity ?
-		public long mNumberOfRobots;
-		public long mTimeSleep;
-		public long mNumberOfCases;
-
-		public MeteorInputs mInputs  = new MeteorInputs();
-		public ArrayList<MeteorDocument> mListDocuments = new ArrayList<MeteorDocument>();
-
-		public String getHtmlId() {
-			return cstHtmlPrefixActivity + (mActivityDefinitionId == null ? "#" : mActivityDefinitionId.toString());
-		}
-
-		public String getInformation() {
-			return mActivityName;
-		}
-
-
-		public void fromMap(final Map<String, Object> oneProcess) {
-
-			// attention : the processdefinitionId is very long it has to be set
-			// in STRING else JSON will do an error
-			mActivityDefinitionId = MeteorToolbox.getParameterLong(oneProcess, cstHtmlId, -1);
-			mProcessDefinitionId = MeteorToolbox.getParameterLong(oneProcess, cstHtmlProcessDefId, -1);
-			mProcessName = MeteorToolbox.getParameterString(oneProcess, cstHtmlProcessName, "");
-			mProcessVersion = MeteorToolbox.getParameterString(oneProcess, cstHtmlProcessVersion, "");
-			mActivityName = MeteorToolbox.getParameterString(oneProcess, cstHtmlActivityName, "");
-			
-			mNumberOfRobots = MeteorToolbox.getParameterLong(oneProcess, cstHtmlNumberOfRobots, 0);
-			mNumberOfCases = MeteorToolbox.getParameterLong(oneProcess, cstHtmlNumberOfCases, 0);
-			mTimeSleep = MeteorToolbox.getParameterLong(oneProcess, cstHtmlTimeSleep, 0);
-			mInputs.loadFromList(MeteorToolbox.getParameterList(oneProcess, cstHtmlInputs, null));
-			
-
-		}
-	}
-
-	/**
-	 * Keep information on a process A MeteorProcessDefinition will create one
-	 * or multiple robot.
-	 *
-	 * 
-	 */
-	public static class MeteorProcess {
-		// Attention, the processDefinitionID must be recalculated each time: process may be redeployed
-		public Long mProcessDefinitionId;
-		public String mProcessName;
-		public String mProcessVersion;
-
-		public long mNumberOfRobots;
-		public long mNumberOfCases;
-		public long mTimeSleep;
-
-		public String mVariablesString = "";
-
-		public List<MeteorDocument> mListDocuments = new ArrayList<MeteorDocument>();
-		public List<MeteorActivity> mListActivities = new ArrayList<MeteorActivity>();
-		public List<MeteorProcessDefinitionUser> mListUsers = new ArrayList<MeteorProcessDefinitionUser>();
-
-		public MeteorInputs mInputs = new MeteorInputs();	
-		
-		public String getInformation() {
-			return mProcessName + "(" + mProcessVersion + ")";
-		}
-
-		/** return an activity */
-		public MeteorActivity getActivity(final String activityName) {
-			for (final MeteorActivity meteorActivity : mListActivities) {
-				if (meteorActivity.mActivityName.equals(activityName)) {
-					return meteorActivity;
-				}
-			}
-			return null;
-		}
-
-		public Map<String, Object> getMap() {
-			final Map<String, Object> oneProcess = new HashMap<String, Object>();
-
-			// attention : the processdefinitionId is very long it has to be set
-			// in STRING else JSON will do an error
-			oneProcess.put(cstHtmlId, mProcessDefinitionId.toString());
-			oneProcess.put(cstHtmlNumberOfRobots, mNumberOfRobots);
-			oneProcess.put(cstHtmlNumberOfCases, mNumberOfCases);
-			oneProcess.put(cstHtmlTimeSleep, mTimeSleep);
-			oneProcess.put(cstHtmlProcessName, mProcessName);
-			oneProcess.put(cstHtmlProcessVersion, mProcessVersion);
-			return oneProcess;
-		}
-
-		public void fromMap(final Map<String, Object> oneProcess) {
-
-			// attention : the processdefinitionId is very long it has to be set
-			// in STRING else JSON will do an error
-			mProcessDefinitionId = MeteorToolbox.getParameterLong(oneProcess, cstHtmlId, -1);
-			mNumberOfRobots = MeteorToolbox.getParameterLong(oneProcess, cstHtmlNumberOfRobots, 0);
-			mNumberOfCases = MeteorToolbox.getParameterLong(oneProcess, cstHtmlNumberOfCases, 0);
-			mTimeSleep = MeteorToolbox.getParameterLong(oneProcess, cstHtmlTimeSleep, 0);
-			mProcessName = MeteorToolbox.getParameterString(oneProcess, cstHtmlProcessName, "");
-			mProcessVersion = MeteorToolbox.getParameterString(oneProcess, cstHtmlProcessVersion, "");
-					
-			mInputs.loadFromList(MeteorToolbox.getParameterList(oneProcess, cstHtmlInputs, null));
-			
-		}
-
-	}
-
-	/*
-	 * *************************************************************************
-	 * *******
-	 */
-	/*                                                                                  */
-	/* operation on the content */
-	/*                                                                                  */
-	/*                                                                                  */
-	/*
-	 * *************************************************************************
-	 * *******
-	 */
+	/* ******************************************************************** */
+	/*                                                                      */
+	/* operation on the content 											*/
+	/*                                                                      */
+	/*                                                                      */
+	/* ******************************************************************** */
 
 	/**
 	 * Calculate the list of process. Update the current list
@@ -400,29 +132,14 @@ public class MeteorProcessDefinitionList {
 						continue;
 					}
 
-					final MeteorProcess meteorProcessDefinition = new MeteorProcess();
-
 					try {
-						meteorProcessDefinition.mProcessDefinitionId = processAPI.getProcessDefinitionId(processDeploymentInfos.getName(), processDeploymentInfos.getVersion());
-						meteorProcessDefinition.mProcessName = processDeploymentInfos.getName();
-						meteorProcessDefinition.mProcessVersion = processDeploymentInfos.getVersion();
-
-						// search all human activity
-
-						// ProcessDefinition processDefinition =
-						// processAPI.getProcessDefinition(processDefinitionId)
-						// ;
-						// bon, le processDefinition ne sert a rien
-						/*
-						 * FileOutputStream file = new
-						 * FileOutputStream("c:/tmp/ee.rar");
-						 * file.write(barOnByte); file.close();
-						 */
-						final MeteorProcessDefinitionUser toolHatProcessDefinitionUser = new MeteorProcessDefinitionUser(meteorProcessDefinition.mListUsers.size(), meteorProcessDefinition.mProcessDefinitionId);
-						meteorProcessDefinition.mListUsers.add(toolHatProcessDefinitionUser);
-
-						// get documents
-
+						final MeteorDefProcess meteorProcess = new MeteorDefProcess(processDeploymentInfos.getProcessId());
+						meteorProcess.mProcessDefinitionId = processAPI.getProcessDefinitionId(processDeploymentInfos.getName(), processDeploymentInfos.getVersion());
+						meteorProcess.mProcessName = processDeploymentInfos.getName();
+						meteorProcess.mProcessVersion = processDeploymentInfos.getVersion();
+						meteorProcess.calculContractDefinition( processAPI );
+						
+						
 						/*
 						 * String classPath =
 						 * System.getProperty("java.class.path"); String
@@ -464,20 +181,20 @@ public class MeteorProcessDefinitionList {
 							 */
 							logger.info("ProcessDeployment [" + processDeploymentInfos.getName() + "] state[" + processDeploymentInfos.getActivationState() + "]");
 
-							final DesignProcessDefinition designProcessDefinition = processAPI.getDesignProcessDefinition(meteorProcessDefinition.mProcessDefinitionId);
+							final DesignProcessDefinition designProcessDefinition = processAPI.getDesignProcessDefinition(meteorProcess.mProcessDefinitionId);
 							final FlowElementContainerDefinition flowElement = designProcessDefinition.getFlowElementContainer();
-							final List<ActivityDefinition> listActivity = flowElement.getActivities();
-							logger.info("listActivities [" + listActivity.size() + "]");
+							final List<ActivityDefinition> listActivities = flowElement.getActivities();
+							logger.info("listActivities [" + listActivities.size() + "]");
 
-							for (final ActivityDefinition activityDefinition : listActivity) {
+							for (final ActivityDefinition activityDefinition : listActivities) {
+						
 								if (activityDefinition instanceof HumanTaskDefinition) {
-									final MeteorActivity meteorProcessDefinitionActivity = new MeteorActivity();
-									meteorProcessDefinitionActivity.mProcessName = meteorProcessDefinition.mProcessName;
-									meteorProcessDefinitionActivity.mProcessVersion = meteorProcessDefinition.mProcessVersion;
-									meteorProcessDefinitionActivity.mActivityName = activityDefinition.getName();
-									meteorProcessDefinitionActivity.mActivityDefinitionId = activityDefinition.getId();
-									meteorProcessDefinitionActivity.mProcessDefinitionId = meteorProcessDefinition.mProcessDefinitionId;
-									meteorProcessDefinition.mListActivities.add(meteorProcessDefinitionActivity);
+									final MeteorDefActivity meteorActivity = new MeteorDefActivity(meteorProcess, activityDefinition.getId());
+									
+									meteorActivity.mActivityName = activityDefinition.getName();
+									meteorActivity.mActivityDefinitionId = activityDefinition.getId();
+									meteorActivity.calculContractDefinition( processAPI );
+									meteorProcess.addActivity(meteorActivity);
 								}
 							}
 							/*
@@ -511,7 +228,7 @@ public class MeteorProcessDefinitionList {
 						}
 
 						// already exist ?
-						mListProcessDefinition.put(meteorProcessDefinition.mProcessDefinitionId, meteorProcessDefinition);
+						mListProcessDefinition.put(meteorProcess.mProcessDefinitionId, meteorProcess);
 
 					} catch (final ProcessDefinitionNotFoundException e) {
 						listEventsCalculation.add(new BEvent(EventGetListProcesses, e, ""));
@@ -566,11 +283,11 @@ public class MeteorProcessDefinitionList {
 		mListProcessDefinition.clear();
 	}
 
-	public HashMap<Long, MeteorProcess> getListProcessCalculation() {
+	public HashMap<Long, MeteorDefProcess> getListProcessCalculation() {
 		return mListProcessDefinition;
 	}
 
-	final List<BEvent> getListEventCalculation() {
+	final public List<BEvent> getListEventCalculation() {
 		return listEventsCalculation;
 	}
 
@@ -603,18 +320,18 @@ public class MeteorProcessDefinitionList {
 			return result;
 		}
 
-		for (final MeteorProcess meteorProcessDefinition : mListProcessDefinition.values()) {
-			final Map<String, Object> oneProcess = meteorProcessDefinition.getMap();
+		for (final MeteorDefProcess meteorProcess : mListProcessDefinition.values()) {
+			final Map<String, Object> oneProcess = meteorProcess.getMap();
 			result.add(oneProcess);
 			oneProcess.put(cstHtmlType, cstHtmlTypeProcess);
-			oneProcess.put("information", meteorProcessDefinition.getInformation());
+			oneProcess.put("information", meteorProcess.getInformation());
 			if (listProcessParameters.mShowCreateCases) {
 
 				if (listProcessParameters.mShowDocuments) {
 					final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<HashMap<String, Object>>();
 					oneProcess.put("listdocuments", listDocuments);
 
-					for (final MeteorDocument toolHatProcessDefinitionDocument : meteorProcessDefinition.mListDocuments) {
+					for (final MeteorDocument toolHatProcessDefinitionDocument : meteorProcess.mListDocuments) {
 						final HashMap<String, Object> oneDocument = new HashMap<String, Object>();
 						listDocuments.add(oneDocument);
 						oneDocument.put("documentname", toolHatProcessDefinitionDocument.mDocumentName);
@@ -626,28 +343,18 @@ public class MeteorProcessDefinitionList {
 			if (listProcessParameters.mShowActivity) {
 				final List<Map<String, Object>> listActivities = new ArrayList<Map<String, Object>>();
 				oneProcess.put("activities", listActivities);
-				for (final MeteorActivity meteorActivity : meteorProcessDefinition.mListActivities) {
-					final HashMap<String, Object> oneActivity = new HashMap<String, Object>();
+				for (final MeteorDefActivity meteorActivity : meteorProcess.getListActivities() ) {
+					final Map<String, Object> oneActivity = meteorActivity.getMap();
 					// oneActivity.put(cstHtmlType, cstHtmlTypeActivity);
 					listActivities.add(oneActivity);
-					oneActivity.put(cstHtmlActivityName, meteorActivity.mActivityName);
-					// attention, the activityId is very long it has to be
-					// transform in STRING else JSON will mess it
-					oneActivity.put(cstHtmlId, meteorActivity.mActivityDefinitionId.toString());
-					oneActivity.put(cstHtmlProcessDefId, meteorActivity.mProcessDefinitionId.toString());
-					oneActivity.put(cstHtmlProcessName, meteorActivity.mProcessName);
-					oneActivity.put(cstHtmlProcessVersion, meteorActivity.mProcessVersion);
-					oneActivity.put(cstHtmlNumberOfRobots, meteorActivity.mNumberOfRobots);
-					oneActivity.put(cstHtmlNumberOfCases, meteorActivity.mNumberOfCases);
-					oneActivity.put(cstHtmlTimeSleep, meteorActivity.mTimeSleep);
 
 					if (listProcessParameters.mShowDocuments) {
 						final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<HashMap<String, Object>>();
 						oneProcess.put("listdocuments", listDocuments);
-						for (final MeteorDocument toolHatProcessDefinitionDocument : meteorActivity.mListDocuments) {
+						for (final MeteorDocument meteorDocument : meteorActivity.mListDocuments) {
 							final HashMap<String, Object> oneDocument = new HashMap<String, Object>();
 							listDocuments.add(oneDocument);
-							oneDocument.put("documentname", toolHatProcessDefinitionDocument.mDocumentName);
+							oneDocument.put("documentname", meteorDocument.mDocumentName);
 						}
 					}
 				}
@@ -777,12 +484,13 @@ public class MeteorProcessDefinitionList {
 	}
 
 	/**
-	 * update the list to get what the user ask to simulate
+	 * update the list to get what the user ask to simulate.
+	 * ATTENTION : no processAPI can be done here, we have to wait the robot execution
 	 * 
 	 * @param listOfFlatInformation
 	 * @param listRequestMultipart
 	 */
-	public List<BEvent> fromList(final List<Map<String, Object>> listOfFlatInformation, final List<FileItem> listRequestMultipart) {
+	public List<BEvent> fromList(final List<Map<String, Object>> listOfFlatInformation, final List<FileItem> listRequestMultipart, ProcessAPI processAPI) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 		if (listOfFlatInformation == null) {
 			logger.severe("no Update information (listOfProcess is null");
@@ -794,26 +502,23 @@ public class MeteorProcessDefinitionList {
 			final String type = MeteorToolbox.getParameterString(oneProcess, cstHtmlType, null);
 			if (cstHtmlTypeProcess.equals(type)) {
 
-				final MeteorProcess meteorProcessDefinition = new MeteorProcess();
-				meteorProcessDefinition.fromMap(oneProcess);
+				final MeteorDefProcess meteorProcess = MeteorDefProcess.getInstanceFromMap(oneProcess, processAPI);
 
-				mListProcessDefinition.put(meteorProcessDefinition.mProcessDefinitionId, meteorProcessDefinition);
+				mListProcessDefinition.put(meteorProcess.mProcessDefinitionId, meteorProcess);
 
 				// update document
 				if (listRequestMultipart != null) {
-					uploadDocuments(listRequestMultipart, meteorProcessDefinition.mListDocuments);
+					uploadDocuments(listRequestMultipart, meteorProcess.mListDocuments);
 				}
-				logger.info("Update processId[" + meteorProcessDefinition.mProcessDefinitionId + "] ProcessName[" + meteorProcessDefinition.mProcessName + "-" + meteorProcessDefinition.mProcessVersion + "] nbThread[" + meteorProcessDefinition.mNumberOfRobots + "] nbCase["
-						+ meteorProcessDefinition.mNumberOfCases + "]");
+				logger.info("Update processId[" + meteorProcess.mProcessDefinitionId + "] ProcessName[" + meteorProcess.mProcessName + "-" + meteorProcess.mProcessVersion + "] nbThread[" + meteorProcess.mNumberOfRobots + "] nbCase[" + meteorProcess.mNumberOfCases + "]");
 
 				// upload each activity
 				List<Map<String, Object>> listActivities = (List<Map<String, Object>>) oneProcess.get("activities");
 				if (listActivities == null)
 					continue;
 				for (Map<String, Object> oneActivity : listActivities) {
-					final MeteorActivity meteorActivity = new MeteorActivity();
-					meteorActivity.fromMap(oneActivity);
-					meteorProcessDefinition.mListActivities.add(meteorActivity);
+					final MeteorDefActivity meteorActivity = MeteorDefActivity.getInstanceFromMap(meteorProcess, oneActivity, processAPI);
+					meteorProcess.addActivity( meteorActivity);
 				}
 
 			}
@@ -834,7 +539,7 @@ public class MeteorProcessDefinitionList {
 		String analysis = "";
 		boolean somethingToStart = false;
 
-		for (final MeteorProcess meteorProcessDefinition : mListProcessDefinition.values()) {
+		for (final MeteorDefProcess meteorProcessDefinition : mListProcessDefinition.values()) {
 			try {
 				analysis += "Process[" + meteorProcessDefinition.mProcessName + "]-[" + meteorProcessDefinition.mProcessVersion + "] ID[" + meteorProcessDefinition.mProcessDefinitionId + "] :";
 				// the processDefition is just a container, do the job now
@@ -848,9 +553,8 @@ public class MeteorProcessDefinitionList {
 				}
 
 				// Activity Part
-				for (final MeteorActivity meteorDefinitionActivity : meteorProcessDefinition.mListActivities) {
+				for (final MeteorDefActivity meteorDefinitionActivity : meteorProcessDefinition.getListActivities()) {
 					analysis = "On Process [" + meteorProcessDefinition.mProcessName + "] [" + meteorProcessDefinition.mProcessVersion + "], Activity[" + meteorDefinitionActivity.mActivityName + "]";
-					
 
 					if (meteorDefinitionActivity.mNumberOfRobots == 0 && meteorDefinitionActivity.mNumberOfCases > 0 || meteorDefinitionActivity.mNumberOfRobots > 0 && meteorDefinitionActivity.mNumberOfCases == 0) {
 						listEvents.add(new BEvent(EventCheckRobotCaseIncoherent, "Process Name[" + meteorProcessDefinition.mProcessName + "] Version[" + meteorProcessDefinition.mProcessVersion + "] " + "] Activity[" + meteorDefinitionActivity.mActivityName + "] NumberOfRobots["
@@ -896,13 +600,13 @@ public class MeteorProcessDefinitionList {
 	 */
 	public List<BEvent> registerInSimulation(final MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
-		for (final MeteorProcess meteorProcessDefinition : mListProcessDefinition.values()) {
-			if (meteorProcessDefinition.mNumberOfRobots > 0) {
-				logger.info("Add process[" + meteorProcessDefinition.mProcessName + "] in the startCase");
-				meteorSimulation.addProcess(meteorProcessDefinition, apiAccessor);
+		for (final MeteorDefProcess meteorProcess : mListProcessDefinition.values()) {
+			if (meteorProcess.mNumberOfRobots > 0) {
+				logger.info("Add process[" + meteorProcess.mProcessName + "] in the startCase");
+				meteorSimulation.addProcess(meteorProcess, apiAccessor);
 			}
 			// check activity
-			for (final MeteorActivity meteorActivity : meteorProcessDefinition.mListActivities) {
+			for (final MeteorDefActivity meteorActivity : meteorProcess.getListActivities()) {
 				if (meteorActivity.mNumberOfRobots > 0) {
 					meteorSimulation.addActivity(meteorActivity, apiAccessor);
 				}

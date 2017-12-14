@@ -11,12 +11,12 @@ public class SentenceAssert extends Sentence {
 
 	public static String Verb = "ASSERT";
 
-	public SentenceAssert(final Map<String,Object> mapParam, final APIAccessor apiAccessor) {
+	public SentenceAssert(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
 		super(mapParam, apiAccessor);
 	}
 
 	@Override
-	public List<BEvent> decodeSentence( int lineNumber) {
+	public List<BEvent> decodeSentence(int lineNumber) {
 		return null;
 	}
 

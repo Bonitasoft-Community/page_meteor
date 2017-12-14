@@ -16,15 +16,14 @@ import org.bonitasoft.engine.service.TenantServiceAccessor;
 public class ProcessStarterCommand extends CommandWithParameters {
 	public static final String NAME = ProcessStarterCommand.class.getSimpleName();
 	public static final String SUMMARY = "Provide a complete function to start a process in any way";
-	
+
 	public static final String STARTED_BY = "started_by";
 	public static final String PROCESS_DEFINITION_ID = "process_definition_id";
 	public static final String OPERATIONS = "operations";
 	public static final String CONTEXT = "context";
 	public static final String PROCESS_CONTRACT_INPUTS = "process_contract_inputs";
-    public static final String ACTIVITY_NAMES = "activity_names";
+	public static final String ACTIVITY_NAMES = "activity_names";
 
-    
 	public Serializable execute(final Map<String, Serializable> parameters, final TenantServiceAccessor serviceAccessor) throws SCommandParameterizationException, SCommandExecutionException {
 		// get parameters
 		final long startedBy = getStartedBy(parameters);
@@ -64,10 +63,10 @@ public class ProcessStarterCommand extends CommandWithParameters {
 
 	private Long getStartedBy(final Map<String, Serializable> parameters) throws SCommandParameterizationException {
 		Long startedBy = 0L;
-		if(parameters.containsKey(STARTED_BY)) {
+		if (parameters.containsKey(STARTED_BY)) {
 			startedBy = Long.parseLong(parameters.get(STARTED_BY).toString());
 		}
-		
+
 		return startedBy;
 	}
 
@@ -86,8 +85,8 @@ public class ProcessStarterCommand extends CommandWithParameters {
 	private Map<String, Serializable> getProcessContractInputs(final Map<String, Serializable> parameters) throws SCommandParameterizationException {
 		return getParameter(parameters, PROCESS_CONTRACT_INPUTS);
 	}
-	
+
 	private List<String> getActivityNames(final Map<String, Serializable> parameters) throws SCommandParameterizationException {
-        return getParameter(parameters, ACTIVITY_NAMES);
-    }
+		return getParameter(parameters, ACTIVITY_NAMES);
+	}
 }

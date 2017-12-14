@@ -23,8 +23,8 @@ public class InMemoryResource extends Resource {
 	@Override
 	public Object getResource(ResourceType resourceType, String name) throws FunctionUnvalidParameterException {
 		// Handle default value
-		if(DEFAULT_RESOURCE.equals(name)) {
-			if(resourceType == ResourceType.ORGANIZATION) {
+		if (DEFAULT_RESOURCE.equals(name)) {
+			if (resourceType == ResourceType.ORGANIZATION) {
 				return defaultOrganizationResource;
 			} else {
 				return null;
@@ -35,26 +35,26 @@ public class InMemoryResource extends Resource {
 		String resourceName = getResourceName(resourceType, name);
 
 		// Return the resource in the right format
-		if(resources.containsKey(resourceName)) {
+		if (resources.containsKey(resourceName)) {
 			try {
-				if(resourceType.equals(ResourceType.ORGANIZATION)) {
+				if (resourceType.equals(ResourceType.ORGANIZATION)) {
 					return new String(resources.get(resourceName));
-				} else if(resourceType.equals(ResourceType.PROCESS)) {
+				} else if (resourceType.equals(ResourceType.PROCESS)) {
 					return BusinessArchiveFactory.readBusinessArchive(new ByteArrayInputStream(resources.get(resourceName)));
-				} else if(resourceType.equals(ResourceType.PROCESS_ACTORS)) {
+				} else if (resourceType.equals(ResourceType.PROCESS_ACTORS)) {
 					return new String(resources.get(resourceName));
-				} else if(resourceType.equals(ResourceType.PROFILES)) {
+				} else if (resourceType.equals(ResourceType.PROFILES)) {
 					return resources.get(resourceName);
-				} else if(resourceType.equals(ResourceType.PROCESS_PARAMETERS)) {
+				} else if (resourceType.equals(ResourceType.PROCESS_PARAMETERS)) {
 					return resources.get(resourceName);
-				} else if(resourceType.equals(ResourceType.BDM)) {
+				} else if (resourceType.equals(ResourceType.BDM)) {
 					return resources.get(resourceName);
-				} else if(resourceType.equals(ResourceType.JSON)) {
+				} else if (resourceType.equals(ResourceType.JSON)) {
 					return parseJSON(new String(resources.get(resourceName)));
-				} else if(resourceType.equals(ResourceType.CONNECTOR_IMPLEMENTATION)) {
+				} else if (resourceType.equals(ResourceType.CONNECTOR_IMPLEMENTATION)) {
 					return resources.get(resourceName);
 				}
-			} catch(Exception e) {
+			} catch (Exception e) {
 				handleError(resourceName, e);
 			}
 		} else {

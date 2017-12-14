@@ -7,8 +7,10 @@ public class FunctionMandatoryParameterException extends Exception {
 	public FunctionMandatoryParameterException(String parameter) {
 		super("Impossible to retrieve " + parameter);
 	}
-	
+
 	public FunctionMandatoryParameterException(List<String> parameters) {
-		super("Impossible to retrieve at least one "); // of these: " + parameters.stream().map(Object::toString).collect(Collectors.joining(", ")));
+		super("Impossible to retrieve at least one "); // of these: " +
+														// parameters.stream().map(Object::toString).collect(Collectors.joining(",
+														// ")));
 	}
 }

@@ -20,9 +20,9 @@ public abstract class Sentence {
 	public APIAccessor apiAccessor;
 
 	public String verb;
-	public Map<String,Object> mapParam;
+	public Map<String, Object> mapParam;
 
-	public Sentence(final Map<String,Object> mapParam, final APIAccessor apiAccessor) {
+	public Sentence(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
 		this.mapParam = mapParam;
 		this.apiAccessor = apiAccessor;
 	}
@@ -57,7 +57,7 @@ public abstract class Sentence {
 	 * 
 	 * @param listParam
 	 */
-	public static Sentence getInstance(final String verb, final Map<String,Object> mapParam, final APIAccessor apiAccessor) {
+	public static Sentence getInstance(final String verb, final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
 		if (SentenceCreateCase.Verb.equalsIgnoreCase(verb)) {
 			return new SentenceCreateCase(mapParam, apiAccessor);
 
@@ -66,7 +66,7 @@ public abstract class Sentence {
 
 		} else if (SentenceExecuteTask.Verb.equalsIgnoreCase(verb)) {
 			return new SentenceExecuteTask(mapParam, apiAccessor);
-		
+
 		} else if (SentenceSleep.Verb.equalsIgnoreCase(verb)) {
 			return new SentenceSleep(mapParam, apiAccessor);
 		}
@@ -74,24 +74,22 @@ public abstract class Sentence {
 	}
 
 	/**
-	 * Decode the sentence. Any error should be collected in a event in 
+	 * Decode the sentence. Any error should be collected in a event in
+	 * 
 	 * @param lineNumber
 	 * @return
 	 */
 	public abstract List<BEvent> decodeSentence(int lineNumber);
 
-	public abstract List<BEvent> execute( int robotId, LogExecution logExecution );
+	public abstract List<BEvent> execute(int robotId, LogExecution logExecution);
 
-	
-	
-	protected final static String cstParamProcessName ="processName";
-	protected final static String cstParamProcessVersion ="processVersion";
-	protected final static String cstParamInput ="input";
-	protected final static String cstParamTaskName ="taskName";
-	protected final static String cstParamSleepInMs ="sleepInMs";
-	protected final static String cstParamNbExecution ="nbExecution";
-	
-	
+	protected final static String cstParamProcessName = "processName";
+	protected final static String cstParamProcessVersion = "processVersion";
+	protected final static String cstParamInput = "input";
+	protected final static String cstParamTaskName = "taskName";
+	protected final static String cstParamSleepInMs = "sleepInMs";
+	protected final static String cstParamNbExecution = "nbExecution";
+
 	/**
 	 * get the param
 	 *
@@ -99,7 +97,7 @@ public abstract class Sentence {
 	 * @return
 	 */
 	public String getParam(final String paramName) {
-		return mapParam.get( paramName)==null ? "" : mapParam.get( paramName ).toString();
+		return mapParam.get(paramName) == null ? "" : mapParam.get(paramName).toString();
 	}
 
 	/**
@@ -107,7 +105,7 @@ public abstract class Sentence {
 	 * @return
 	 */
 	public Long getParamLong(final String paramName, Long defaultValue) {
-		final String param = getParam( paramName);
+		final String param = getParam(paramName);
 		if (param == null) {
 			return defaultValue;
 		}
@@ -118,9 +116,8 @@ public abstract class Sentence {
 		}
 	}
 
-
 	public Map<String, Serializable> getJsonVariables(String paramName) {
-		return mapParam.get( paramName )==null ? null : (Map<String, Serializable>) mapParam.get( paramName );
+		return mapParam.get(paramName) == null ? null : (Map<String, Serializable>) mapParam.get(paramName);
 	}
 
 	/**

@@ -25,8 +25,6 @@ import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.log.event.BEventFactory;
 import org.json.simple.JSONValue;
 
-
-
 public class MeteorDAO {
 	/**
 	 * ********************************************************************************
@@ -43,18 +41,17 @@ public class MeteorDAO {
 	private static BEvent EventConfigurationRemoved = new BEvent(MeteorDAO.class.getName(), 3, Level.INFO, "Configuration deleted", "The configuration is deleted");
 	private static BEvent EventExportFailed = new BEvent(MeteorDAO.class.getName(), 4, Level.APPLICATIONERROR, "Export failed", "The export failed", "The zip file is not delivered", "check the exception");
 	private static BEvent EventPageDirectoryExportFailed = new BEvent(MeteorDAO.class.getName(), 5, Level.ERROR, "Export failed", "The export failed", "The zip file is not delivered", "check the exception");
-	private static BEvent EventFileUploadedNotFound = new BEvent(MeteorDAO.class.getName(), 6, Level.ERROR, "Temporary file not found", "The temporary file updloaded is not found", "The import failed", "Search where the temporary file is and updload the software (it seem that the Bonita Portal choose a different path again ? )");
+	private static BEvent EventFileUploadedNotFound = new BEvent(MeteorDAO.class.getName(), 6, Level.ERROR, "Temporary file not found", "The temporary file updloaded is not found", "The import failed",
+			"Search where the temporary file is and updload the software (it seem that the Bonita Portal choose a different path again ? )");
 	private static BEvent EventConfigurationStructureFailed = new BEvent(MeteorDAO.class.getName(), 7, Level.APPLICATIONERROR, "Import file incorrect", "The import file has an incorrect structure", "The import failed", "Check the file");
 	private static BEvent EventConfigurationImported = new BEvent(MeteorDAO.class.getName(), 8, Level.INFO, "Import done", "The import is done with success");
-	
-	
+
 	private static String cstPropertiesConfig = "config_";
 	private static String cstPropertiesDescription = "description_";
-	
-	
+
 	private static String cstZipNameEntry = "meteortest.txt";
-	
-	public static  MeteorDAO getInstance() {
+
+	public static MeteorDAO getInstance() {
 		return new MeteorDAO();
 	}
 
@@ -65,8 +62,9 @@ public class MeteorDAO {
 	}
 
 	public class StatusDAO {
-		public List<BEvent> listEvents =new ArrayList<BEvent>();
+		public List<BEvent> listEvents = new ArrayList<BEvent>();
 		public ByteArrayOutputStream containerZip;
+		public String containerName;
 		Configuration configuration;
 		public List<Map<String, Object>> listNamesAllConfigurations = null;
 
@@ -79,7 +77,7 @@ public class MeteorDAO {
 			return answer;
 		}
 	}
-	
+
 	public StatusDAO getListNames(String pageName, long tenantId) {
 		StatusDAO statusDAO = new StatusDAO();
 		// save it
@@ -87,11 +85,9 @@ public class MeteorDAO {
 
 		statusDAO.listEvents.addAll(bonitaProperties.load());
 
-
-			statusDAO.listNamesAllConfigurations = getListConfig(bonitaProperties);
-			return statusDAO;
+		statusDAO.listNamesAllConfigurations = getListConfig(bonitaProperties);
+		return statusDAO;
 	}
-		
 
 	public StatusDAO save(Configuration configuration, boolean getListNameConfiguration, String pageName, long tenantId) {
 		StatusDAO statusDAO = new StatusDAO();
@@ -103,7 +99,7 @@ public class MeteorDAO {
 		logger.info("MeteorDAO.saveConfig: loadproperties done, events = " + statusDAO.listEvents.size());
 
 		bonitaProperties.setProperty(cstPropertiesConfig + configuration.name, configuration.content);
-		bonitaProperties.setProperty(cstPropertiesDescription + configuration.name, configuration.description==null ? "" : configuration.description);
+		bonitaProperties.setProperty(cstPropertiesDescription + configuration.name, configuration.description == null ? "" : configuration.description);
 
 		statusDAO.listEvents.addAll(bonitaProperties.store());
 		if (!BEventFactory.isError(statusDAO.listEvents))
@@ -192,21 +188,25 @@ public class MeteorDAO {
 		return statusDAO;
 	}
 
+	/*
+	 * *************************************************************************
+	 * *******
+	 */
+	/*                                                                                  */
+	/* Import/export */
+	/*                                                                                  */
+	/*                                                                                  */
+	/*
+	 * *************************************************************************
+	 * *******
+	 */
+	private static String cstExportMapListConf = "conf";
+	private static String cstExportMapDateExport = "dateexport";
+	private static String cstExportMapUser = "user";
 
-	/* ******************************************************************************** */
-	/*                                                                                  */
-	/*                         Import/export                                           */
-	/*                                                                                  */
-	/*                                                                                  */
-	/* ******************************************************************************** */
-	private static String cstExportMapListConf="conf";
-	private static String cstExportMapDateExport="dateexport";
-	private static String cstExportMapUser="user";
-
-	private static String cstExportConfContent="content";
-	private static String cstExportConfName="name";
-	private static String cstExportConfDescription="description";
-	
+	private static String cstExportConfContent = "content";
+	private static String cstExportConfName = "name";
+	private static String cstExportConfDescription = "description";
 
 	/**
 	 * Export
@@ -220,7 +220,6 @@ public class MeteorDAO {
 
 		StatusDAO statusDAO = new StatusDAO();
 
-
 		BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
 
 		statusDAO.listEvents.addAll(bonitaProperties.load());
@@ -231,8 +230,12 @@ public class MeteorDAO {
 		exportMap.put(cstExportMapDateExport, sdf.format(new Date()));
 		exportMap.put(cstExportMapUser, userName);
 		exportMap.put(cstExportMapListConf, listConfResult);
-
+		statusDAO.containerName= "";
+		
 		for (String name : listNames) {
+			if (statusDAO.containerName.length()>0)
+				statusDAO.containerName+="_";
+			statusDAO.containerName += name;
 			Map<String, Object> oneExport = new HashMap<String, Object>();
 			String jsonConfiguration = bonitaProperties.getProperty(cstPropertiesConfig + name);
 			oneExport.put(cstExportConfContent, jsonConfiguration);
@@ -240,6 +243,10 @@ public class MeteorDAO {
 			oneExport.put(cstExportConfDescription, bonitaProperties.getProperty(cstPropertiesDescription + name));
 			listConfResult.add(oneExport);
 		}
+		if (statusDAO.containerName.length()==0)
+			statusDAO.containerName = "MeteorTest";
+
+		statusDAO.containerName += ".zip";
 
 		String exportSentence = JSONValue.toJSONString(exportMap);
 
@@ -270,125 +277,118 @@ public class MeteorDAO {
 	 * @param tenantId
 	 * @return
 	 */
-	public StatusDAO importConfs(String fileName,  boolean getListNameConfiguration, File pageDirectory, String pageName, long tenantId) {
+	public StatusDAO importConfs(String fileName, boolean getListNameConfiguration, File pageDirectory, String pageName, long tenantId) {
 		StatusDAO statusDAO = new StatusDAO();
-		
+
 		BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
 
 		statusDAO.listEvents.addAll(bonitaProperties.load());
-		
-		if ( BEventFactory.isError(statusDAO.listEvents))
+
+		if (BEventFactory.isError(statusDAO.listEvents))
 			return statusDAO;
-		String configurationImported="";
-		
+		String configurationImported = "";
+
 		List<String> listParentTmpFile = new ArrayList<String>();
-		try
-		{
-			listParentTmpFile.add( pageDirectory.getCanonicalPath()+"/../../../tmp/");
-			listParentTmpFile.add( pageDirectory.getCanonicalPath()+"/../../");
-		}
-		catch (Exception e)
-		{
-			statusDAO.listEvents.add( new BEvent(EventPageDirectoryExportFailed, e,""));
-			logger.info("SnowMobileAccess : error get CanonicalPath of pageDirectory["+e.toString()+"]");					
+		try {
+			listParentTmpFile.add(pageDirectory.getCanonicalPath() + "/../../../tmp/");
+			listParentTmpFile.add(pageDirectory.getCanonicalPath() + "/../../");
+		} catch (Exception e) {
+			statusDAO.listEvents.add(new BEvent(EventPageDirectoryExportFailed, e, ""));
+			logger.info("SnowMobileAccess : error get CanonicalPath of pageDirectory[" + e.toString() + "]");
 			return statusDAO;
 		}
-		File completefileName=null;
-		String allPathChecked="";
-		for (String pathTemp : listParentTmpFile)
-		{
-			allPathChecked+=pathTemp+fileName+";";
-			if (fileName.length() > 0 && (new File(pathTemp+fileName)).exists()) {
-				completefileName=(new File(pathTemp+fileName)).getAbsoluteFile() ;
-				logger.info("meteorDAO.importConfs : FOUND ["+completefileName+"]");					
+		File completefileName = null;
+		String allPathChecked = "";
+		for (String pathTemp : listParentTmpFile) {
+			allPathChecked += pathTemp + fileName + ";";
+			if (fileName.length() > 0 && (new File(pathTemp + fileName)).exists()) {
+				completefileName = (new File(pathTemp + fileName)).getAbsoluteFile();
+				logger.info("meteorDAO.importConfs : FOUND [" + completefileName + "]");
 			}
 		}
 
-		if (!completefileName.exists())
-        {
-			statusDAO.listEvents.add( new BEvent(EventFileUploadedNotFound, "File["+fileName+"] not found in path["+allPathChecked+"]"));    		     	
+		if (!completefileName.exists()) {
+			statusDAO.listEvents.add(new BEvent(EventFileUploadedNotFound, "File[" + fileName + "] not found in path[" + allPathChecked + "]"));
 			return statusDAO;
-        }
+		}
 
-		boolean foundImportFile=false;
-        ZipInputStream zis = null;
-        try {
-            zis = new ZipInputStream(new FileInputStream(completefileName));
+		boolean foundImportFile = false;
+		ZipInputStream zis = null;
+		try {
+			zis = new ZipInputStream(new FileInputStream(completefileName));
 
-            // get the zipped file list entry
-            ZipEntry ze = zis.getNextEntry();
+			// get the zipped file list entry
+			ZipEntry ze = zis.getNextEntry();
 
-            while (ze != null) {
-                if (ze.getName().equals(cstZipNameEntry)) {
-                	foundImportFile=true;
-                    final byte[] buffer = new byte[1024];
+			while (ze != null) {
+				if (ze.getName().equals(cstZipNameEntry)) {
+					foundImportFile = true;
+					final byte[] buffer = new byte[1024];
 
-                    final ByteArrayOutputStream bosBuffer = new ByteArrayOutputStream();
-                    int len = 0;
-                    while ((len = zis.read(buffer)) > 0) {
-                        bosBuffer.write(buffer, 0, len);
-                    }
-                    String fileContentJson = bosBuffer.toString();
-                    
-                    // import now
-                    Object exportMap = JSONValue.parse(fileContentJson);
-                    List<Map<String,Object>> listConfs = (List<Map<String,Object>>) ((Map<String,Object>) exportMap).get( cstExportMapListConf );
-                    
-                    for( Map<String,Object> oneExport : listConfs)
-                    {
-                    	String name= (String) oneExport.get(cstExportConfName);
-                    	String content= (String) oneExport.get(cstExportConfContent);
-                    	String description= (String) oneExport.get(cstExportConfDescription);
-                    	bonitaProperties.setProperty(cstPropertiesConfig + name, content);
-                    	bonitaProperties.setProperty(cstPropertiesDescription + name, description);
-                    	configurationImported+=name+",";
-                    
-                    	// return the last one directly on the screen
-                    	statusDAO.configuration = new Configuration();
-                    	statusDAO.configuration.name = name;
-                		statusDAO.configuration.content = content;
-                		statusDAO.configuration.description = description;
-                	
-            		}
+					final ByteArrayOutputStream bosBuffer = new ByteArrayOutputStream();
+					int len = 0;
+					while ((len = zis.read(buffer)) > 0) {
+						bosBuffer.write(buffer, 0, len);
+					}
+					String fileContentJson = bosBuffer.toString();
 
-                    statusDAO.listEvents.addAll(bonitaProperties.store());
-                }
-                ze = zis.getNextEntry();
-            }
-            zis.close();
+					// import now
+					Object exportMap = JSONValue.parse(fileContentJson);
+					List<Map<String, Object>> listConfs = (List<Map<String, Object>>) ((Map<String, Object>) exportMap).get(cstExportMapListConf);
 
-            if (!foundImportFile) {
-            	 statusDAO.listEvents.add( new BEvent(EventConfigurationStructureFailed, "file["+cstZipNameEntry+"] not found in the Zip file;"));
-            }
-        } catch (final IOException ie) {
-        	 statusDAO.listEvents.add( new BEvent(EventConfigurationStructureFailed, ie, ""));
-             
-        } catch (final Exception e) {
-            final StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            final String exceptionDetails = sw.toString();
-            logger.severe("MeteorDAO.Import : "+exceptionDetails );
-       	 statusDAO.listEvents.add( new BEvent(EventConfigurationStructureFailed, e, ""));
+					for (Map<String, Object> oneExport : listConfs) {
+						String name = (String) oneExport.get(cstExportConfName);
+						String content = (String) oneExport.get(cstExportConfContent);
+						String description = (String) oneExport.get(cstExportConfDescription);
+						bonitaProperties.setProperty(cstPropertiesConfig + name, content);
+						bonitaProperties.setProperty(cstPropertiesDescription + name, description);
+						configurationImported += name + ",";
 
-        } finally {
-            if (zis != null) {
-                try {
-                    zis.close();
-                } catch (final IOException e1) {
-                }
-            }
+						// return the last one directly on the screen
+						statusDAO.configuration = new Configuration();
+						statusDAO.configuration.name = name;
+						statusDAO.configuration.content = content;
+						statusDAO.configuration.description = description;
 
-        }
+					}
 
-        if (getListNameConfiguration)
+					statusDAO.listEvents.addAll(bonitaProperties.store());
+				}
+				ze = zis.getNextEntry();
+			}
+			zis.close();
+
+			if (!foundImportFile) {
+				statusDAO.listEvents.add(new BEvent(EventConfigurationStructureFailed, "file[" + cstZipNameEntry + "] not found in the Zip file;"));
+			}
+		} catch (final IOException ie) {
+			statusDAO.listEvents.add(new BEvent(EventConfigurationStructureFailed, ie, ""));
+
+		} catch (final Exception e) {
+			final StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			final String exceptionDetails = sw.toString();
+			logger.severe("MeteorDAO.Import : " + exceptionDetails);
+			statusDAO.listEvents.add(new BEvent(EventConfigurationStructureFailed, e, ""));
+
+		} finally {
+			if (zis != null) {
+				try {
+					zis.close();
+				} catch (final IOException e1) {
+				}
+			}
+
+		}
+
+		if (getListNameConfiguration)
 			statusDAO.listNamesAllConfigurations = getListConfig(bonitaProperties);
 
 		if (!BEventFactory.isError(statusDAO.listEvents))
-			statusDAO.listEvents.add( new BEvent(EventConfigurationImported, configurationImported));
+			statusDAO.listEvents.add(new BEvent(EventConfigurationImported, configurationImported));
 		return statusDAO;
 	}
-	
-	
+
 	/*
 	 * BonitaProperties bonitaProperties = new BonitaProperties(
 	 * pageResourceProvider, apiSession.getTenantId() );
@@ -441,19 +441,15 @@ public class MeteorDAO {
 
 		List<Map<String, Object>> listConfig = new ArrayList<Map<String, Object>>();
 		for (Object key : mapConfig.keySet()) {
-			if (key.toString().trim().length()>0)
+			if (key.toString().trim().length() > 0)
 				listConfig.add(mapConfig.get(key));
 		}
-		
-		 Collections.sort(listConfig, new Comparator<Map<String, Object>>()
-		    {
-		      public int compare(Map<String, Object> s1,
-		    		  Map<String, Object> s2)
-		      {
-		        return s1.get("name").toString().toLowerCase().compareTo(s2.get("name").toString().toLowerCase());
-		      }
-		    });
 
+		Collections.sort(listConfig, new Comparator<Map<String, Object>>() {
+			public int compare(Map<String, Object> s1, Map<String, Object> s2) {
+				return s1.get("name").toString().toLowerCase().compareTo(s2.get("name").toString().toLowerCase());
+			}
+		});
 
 		return listConfig;
 	}

@@ -12,24 +12,25 @@ public class SentenceSleep extends Sentence {
 
 	public static String Verb = "SLEEP";
 
-	public SentenceSleep(final Map<String,Object> mapParam, final APIAccessor apiAccessor) {
+	public SentenceSleep(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
 		super(mapParam, apiAccessor);
 	}
 
 	private Long sleepInMs;
+
 	@Override
-	public List<BEvent> decodeSentence( int lineNumber) {
+	public List<BEvent> decodeSentence(int lineNumber) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
-		sleepInMs = getParamLong( cstParamSleepInMs,null );
+		sleepInMs = getParamLong(cstParamSleepInMs, null);
 		return listEvents;
-	
+
 	}
 
 	@Override
 	public List<BEvent> execute(int robotId, LogExecution logExecution) {
-		if (sleepInMs!=null)
+		if (sleepInMs != null)
 			try {
-				Thread.sleep( sleepInMs );
+				Thread.sleep(sleepInMs);
 			} catch (InterruptedException e) {
 			}
 		return new ArrayList<BEvent>();

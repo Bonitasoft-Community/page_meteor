@@ -9,40 +9,46 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bonitasoft.engine.api.APIAccessor;
+import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorActivity;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorProcess;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorProcessDefinitionUser;
 import org.bonitasoft.meteor.MeteorRobot.RobotStatus;
 import org.bonitasoft.meteor.MeteorRobot.RobotType;
 import org.bonitasoft.meteor.scenario.Scenario;
 import org.bonitasoft.meteor.scenario.Scenario.TYPESCENARIO;
 import org.bonitasoft.meteor.scenario.cmd.MeteorRobotCmdScenario;
 import org.bonitasoft.meteor.scenario.groovy.MeteorRobotGroovyScenario;
+import org.bonitasoft.meteor.scenario.process.MeteorCalculCover;
+import org.bonitasoft.meteor.scenario.process.MeteorCalculCover.CoverStatus;
+import org.bonitasoft.meteor.scenario.process.MeteorDefActivity;
+import org.bonitasoft.meteor.scenario.process.MeteorDefProcess;
+
+import org.bonitasoft.meteor.scenario.process.MeteorRobotActivity;
+import org.bonitasoft.meteor.scenario.process.MeteorRobotCreateCase;
+
 
 public class MeteorSimulation {
 
 	Logger logger = Logger.getLogger(MeteorSimulation.class.getName());
 
-	
-	protected static BEvent EventStarted = new BEvent("org.bonitasoft.custompage.meteor.MeteorSimulation", 1, Level.INFO, "Simulation Started", "The simulation started");
-	protected static BEvent EventLogExecution = new BEvent("org.bonitasoft.custompage.meteor.MeteorSimulation", 2, Level.INFO, "Log execution", "An event is reported");
-	protected static BEvent EventLogBonitaException = new BEvent("org.bonitasoft.custompage.meteor.MeteorSimulation", 3, Level.APPLICATIONERROR, "Bonita Exception during execution", "An exception is reported by the Bonita Engine", "The robot may failed during the execution", "Check the exeption");
-	protected static BEvent EventContractViolationException = new BEvent("org.bonitasoft.custompage.meteor.MeteorSimulation", 4, Level.APPLICATIONERROR, "Contract exception", "The contract is not respected", "operation failed", "check the contract");
-	protected static BEvent EventNoTaskToExecute = new BEvent("org.bonitasoft.custompage.meteor.MeteorSimulation", 5, Level.APPLICATIONERROR, "No task to execute", "The robot don't find any task to executed in the activity name", "operation failed", "check the scenario");
+	public static BEvent EventStarted = new BEvent(MeteorSimulation.class.getName(), 1, Level.INFO, "Simulation Started", "The simulation started");
+	public static BEvent EventLogExecution = new BEvent(MeteorSimulation.class.getName(), 2, Level.INFO, "Error at execution", "An event is reported");
+	public static BEvent EventLogBonitaException = new BEvent(MeteorSimulation.class.getName(), 3, Level.APPLICATIONERROR, "Bonita Exception during execution", "An exception is reported by the Bonita Engine", "The robot may failed during the execution", "Check the exeption");
+	public static BEvent EventContractViolationException = new BEvent(MeteorSimulation.class.getName(), 4, Level.APPLICATIONERROR, "Contract exception", "The contract is not respected", "operation failed", "check the contract");
+	public static BEvent EventNoTaskToExecute = new BEvent(MeteorSimulation.class.getName(), 5, Level.APPLICATIONERROR, "No task to execute", "The robot don't find any task to executed in the activity name", "operation failed", "check the scenario");
+	public static BEvent EventAccessContract = new BEvent(MeteorSimulation.class.getName(), 6, Level.APPLICATIONERROR, "Access contract", "The contract can't be accessed", "Contract transformation cannot be done", "check the contract");
 
-	public final static String cstJsonPercentAdvance="percentAdvance";
-	public final static String cstJsonTimeEstimatedDelay ="timeEstimatedDelay";
-	public final static String cstJsonTimeEstimatedEnd ="timeEstimatedEnd";
-	public final static String cstJsonStatus= "status";
-	public final static String cstJsonNbErrors ="nbErrors";
-			
+	public final static String cstJsonId= "id";
+	public final static String cstJsonPercentAdvance = "percentAdvance";
+	public final static String cstJsonTimeEstimatedDelay = "timeEstimatedDelay";
+	public final static String cstJsonTimeEstimatedEnd = "timeEstimatedEnd";
+	public final static String cstJsonStatus = "status";
+	public final static String cstJsonNbErrors = "nbErrors";
+
 	public enum STATUS {
-		DEFINITION, NOROBOT, STARTED, DONE, NOSIMULATION
+		DEFINITION, NOROBOT, STARTED, FINALISATION, DONE, NOSIMULATION
 	};
 
-	
 	private STATUS mStatus = STATUS.DEFINITION;
 
 	/**
@@ -54,13 +60,19 @@ public class MeteorSimulation {
 	 */
 	private Date mDateEndSimulation;
 
+	/**
+	 * collectPerformance
+	 *
+	 */
 	public static class CollectPerformance {
 
 		public String mTitle = "";
 
 		/**
-		 * advancement is based on Operation. Collect time is based on STEP. On STEP can be one OPERATION but may be different
-		 * Example : in Command Scenario, when the scenario has 4 sentence, there are 4 operations but one steps
+		 * advancement is based on Operation. Collect time is based on STEP. On
+		 * STEP can be one OPERATION but may be different Example : in Command
+		 * Scenario, when the scenario has 4 sentence, there are 4 operations
+		 * but one steps
 		 */
 		// keep the advancement
 		public long mOperationIndex;
@@ -80,17 +92,21 @@ public class MeteorSimulation {
 			mCollectTimeSteps += time;
 			mListTimePerStep.add(Long.valueOf(time));
 		}
-		public int getNbSteps()
-		{
+
+		public int getNbSteps() {
 			return mListTimePerStep.size();
 		}
 	}
 
+	/**
+	 * logExecution
+	 *
+	 */
 	public static class LogExecution {
 		public List<BEvent> mLogExecutionEvent = new ArrayList<BEvent>();
 		public StringBuffer mLogExecutionLog = new StringBuffer("");
-		public int mStatusNbErrors= 0;
-		
+		public int mStatusNbErrors = 0;
+
 		public void addLog(String msg) {
 			mLogExecutionLog.append(msg + ";");
 		}
@@ -100,33 +116,43 @@ public class MeteorSimulation {
 				mStatusNbErrors++;
 
 			// do not report N time the same event
-			for (BEvent eventReported : mLogExecutionEvent)
-			{
+			for (BEvent eventReported : mLogExecutionEvent) {
 				if (eventReported.isIdentical(event))
 					return;
 			}
 			mLogExecutionEvent.add(event);
-			addLog( event.getTitle()+":"+event.getParameters());
+			addLog(event.getTitle() + ":" + event.getParameters());
 		}
-		public String getLogExecution()
-		{
+
+		public String getLogExecution() {
 			return mLogExecutionLog.toString();
 		}
-		public int getNbErrors()
-		{
+
+		public int getNbErrors() {
 			return mStatusNbErrors;
 		}
 	}
 
+	/**
+	 * each simulation has a uniq ID
+	 */
 	private final long mId;
 
+	private List<MeteorDefProcess> mListMeteorProcess = new ArrayList<MeteorDefProcess>();
+	
+	
+	
+	private final List<MeteorRobot> mListRobots = new ArrayList<MeteorRobot>();
+	private MeteorCalculCover mCalculCover=null;
+	private long mTimeEndOfTheSimulation = 0;
+	
+	
+	
 	/** generate a unique ID */
 	public MeteorSimulation() {
 		mId = System.currentTimeMillis();
 	}
 
-	private final ArrayList<MeteorRobot> mListRobots = new ArrayList<MeteorRobot>();
-	private long mTimeEndOfTheSimulation = 0;
 
 	public void clear() {
 		mListRobots.clear();
@@ -148,16 +174,17 @@ public class MeteorSimulation {
 	 * @param timeSleep
 	 * @param variablesToSet
 	 */
-	public void addProcess(final MeteorProcess meteorProcessDefinition, final APIAccessor apiAccessor) {
-		if (meteorProcessDefinition.mNumberOfRobots == 0) {
-			meteorProcessDefinition.mNumberOfRobots = 1;
+	public void addProcess(final MeteorDefProcess meteorProcess, final APIAccessor apiAccessor) {
+		if (meteorProcess.mNumberOfRobots == 0) {
+			meteorProcess.mNumberOfRobots = 1;
 		}
-		for (int i = 0; i < meteorProcessDefinition.mNumberOfRobots; i++) {
+		for (int i = 0; i < meteorProcess.mNumberOfRobots; i++) {
 			final MeteorRobotCreateCase robot = (MeteorRobotCreateCase) MeteorRobot.getInstance(this, MeteorRobot.RobotType.CREATECASE, apiAccessor);
 			robot.mRobotId = i + 1;
-			robot.setParameters(meteorProcessDefinition, meteorProcessDefinition.mListDocuments, mTimeEndOfTheSimulation == 0 ? null : mTimeEndOfTheSimulation);
+			robot.setParameters(meteorProcess, meteorProcess.getListDocuments(), mTimeEndOfTheSimulation == 0 ? null : mTimeEndOfTheSimulation);
 			mListRobots.add(robot);
 		}
+		mListMeteorProcess.add( meteorProcess);
 	}
 
 	/**
@@ -166,7 +193,7 @@ public class MeteorSimulation {
 	 * @param meteorActivity
 	 * @param apiAccessor
 	 */
-	public void addActivity(final MeteorActivity meteorActivity, final APIAccessor apiAccessor) {
+	public void addActivity(final MeteorDefActivity meteorActivity, final APIAccessor apiAccessor) {
 		if (meteorActivity.mNumberOfRobots == 0) {
 			meteorActivity.mNumberOfRobots = 1;
 		}
@@ -202,23 +229,6 @@ public class MeteorSimulation {
 		}
 	}
 
-	/**
-	 * add a simulation for the User activity
-	 *
-	 * @param applicationConnection
-	 * @param processDefinition
-	 */
-	public void addUserActivity(final MeteorProcessDefinitionUser meteorUser, final APIAccessor apiAccessor) {
-
-		for (int i = 0; i < meteorUser.mNumberOfThread; i++) {
-			final MeteorRobotUserActivity robot = (MeteorRobotUserActivity) MeteorRobot.getInstance(this, RobotType.USERACTIVITY, apiAccessor);
-
-			robot.mRobotId = i + 1;
-			robot.setParameters(meteorUser);
-
-			mListRobots.add(robot);
-		}
-	}
 
 	public void setDurationOfSimulation(final int timeInMn) {
 		mTimeEndOfTheSimulation = System.currentTimeMillis() + timeInMn * 60 * 1000;
@@ -263,40 +273,42 @@ public class MeteorSimulation {
 	public STATUS getStatus() {
 		return mStatus;
 	}
-	public void setStatus( STATUS status) {
-		mStatus = status;;
+
+	public void setStatus(STATUS status) {
+		mStatus = status;
+		;
 	}
 
 	/**
-	 * calculate a HTML information on the running system
+	 * calculate information on the running system
+	 * If all the robots finish, then the method finalise the result
 	 *
 	 * @return
 	 */
-	public Map<String, Object> getDetailStatus() {
+	public Map<String, Object> refreshDetailStatus(final APIAccessor apiAccessor) {
 		logger.info("&~~~~~~~& MeteorSimulation [" + mId + "] Start currenStatusexecution");
 		final HashMap<String, Object> result = new HashMap<String, Object>();
 		final List<Map<String, Object>> listResultRobots = new ArrayList<Map<String, Object>>();
 
-		Date dateEndRobots=null;
+		Date dateEndRobots = null;
 		int nbOperationRealized = 0;
-		int totalSteps=0;
+		int totalSteps = 0;
 		long totalStepsTime = 0;
 		Long currentTime = System.currentTimeMillis();
 		final List<OneTimeAnswer> listTimeAnswers = new ArrayList<OneTimeAnswer>();
-		
+
 		Estimation estimation = getEstimatedAdvance();
-		
-		int nbErrors=0;
+
+		int nbErrors = 0;
+
 		for (final MeteorRobot robot : mListRobots) {
 			if (robot.getStatus() != RobotStatus.DONE) {
 				logger.info("&~~~~~~~& MeteorSimulation [" + mId + "] getCurrentStatusExection robot [" + robot.mRobotId + "] status[" + robot.getStatus() + "] StillAlive=" + estimation.robotsStillAlive);
-			}
-			else
-			{
-				if (dateEndRobots==null || dateEndRobots.before(robot.getEndDate()))
+			} else {
+				if (dateEndRobots == null || dateEndRobots.before(robot.getEndDate()))
 					dateEndRobots = robot.getEndDate();
 			}
-			nbErrors+= robot.getNbErrors();
+			nbErrors += robot.getNbErrors();
 			// calcul the minimum advancement
 			nbOperationRealized += robot.mCollectPerformance.mOperationIndex;
 			totalSteps += robot.mCollectPerformance.getNbSteps();
@@ -318,42 +330,64 @@ public class MeteorSimulation {
 			}
 
 		}
-
+	
+		
 		result.put("robots", listResultRobots);
 		result.put("nbErrors", nbErrors);
-		
+
 		final long divisor = 1024 * 1024;
 		final long totalMemoryInMb = Runtime.getRuntime().totalMemory() / divisor;
 		final long freeMemoryInMb = Runtime.getRuntime().freeMemory() / divisor;
-		String total = "TOTAL : " + totalSteps + " step in " + MeteorToolbox.getHumanDelay( totalStepsTime) + " ms Mem: " + (totalMemoryInMb - freeMemoryInMb) + "/" + totalMemoryInMb + " : " + (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb) + " % ";
+		String total = "TOTAL : " + totalSteps + " step in " + MeteorToolbox.getHumanDelay(totalStepsTime) + " ms Mem: " + (totalMemoryInMb - freeMemoryInMb) + "/" + totalMemoryInMb + " : " + (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb) + " % ";
 		if (totalSteps > 0) {
 			total += " average " + totalStepsTime / totalSteps + " ms";
 		}
-		result.put("total",total);
+		result.put("total", total);
 
 		result.put("memUsedMb", totalMemoryInMb - freeMemoryInMb);
-		result.put("memTotalMb", totalMemoryInMb );
+		result.put("memTotalMb", totalMemoryInMb);
 		result.put("memPercent", (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb));
 		result.put("timeStarted", MeteorToolbox.getHumanDate(mDateBeginSimulation));
 		logger.info("&~~~~~~~& MeteorSimulation [" + mId + "] currenStatusexecution : Robot Still Alive " + estimation.robotsStillAlive);
 
-		if (!estimation.robotsStillAlive) {
-			mStatus = STATUS.DONE;
+		if (! estimation.robotsStillAlive) {
+			result.put(cstJsonPercentAdvance, Integer.valueOf(100));
+			
+			// 3 possibility : 
+			// DONE : all is finish
+			// FINALYSE : finish, calcul cover in progress
+			// else : we just arrive, robot just finish, so start the cover now
+			if ( (mStatus != STATUS.DONE && mStatus!= STATUS.FINALISATION) || (mCalculCover==null))
+			{
+				// start the calcul cover now
+				mCalculCover= new MeteorCalculCover( mListMeteorProcess, mListRobots, apiAccessor );
+
+				mCalculCover.start();
+				mStatus = STATUS.FINALISATION;
+			}
+			result.put("cover", mCalculCover.toJson());
+
+			// check the calcul cover
+			if (mCalculCover!=null && mCalculCover.getStatus()== CoverStatus.DONE)
+				mStatus = STATUS.DONE;
+			
 			if (mDateEndSimulation == null) {
 				mDateEndSimulation = dateEndRobots;
 			}
-			if (mDateEndSimulation !=null)
+			if (mDateEndSimulation != null)
 				result.put("timeEnded", MeteorToolbox.getHumanDate(mDateEndSimulation));
+			// display the cover
+			
 		} else {
 
 			// calculate an estimation based on the slowest robot
-			result.put( cstJsonPercentAdvance, estimation.percentAdvance);
+			result.put(cstJsonPercentAdvance, estimation.percentAdvance);
 			if (estimation.percentAdvance == 0) {
 				// we can't do any calculation
 			}
 			if (estimation.percentAdvance > 0) {
-				result.put( cstJsonTimeEstimatedDelay, MeteorToolbox.getHumanDelay( estimation.timeNeedInMs));
-				result.put( cstJsonTimeEstimatedEnd, MeteorToolbox.getHumanDate( new Date(currentTime + estimation.timeNeedInMs)));
+				result.put(cstJsonTimeEstimatedDelay, MeteorToolbox.getHumanDelay(estimation.timeNeedInMs));
+				result.put(cstJsonTimeEstimatedEnd, MeteorToolbox.getHumanDate(new Date(currentTime + estimation.timeNeedInMs)));
 			}
 		}
 
@@ -396,33 +430,44 @@ public class MeteorSimulation {
 		return result;
 	}
 
-	public Date getDateBeginSimulation()
-	{
+	public Date getDateBeginSimulation() {
 		return mDateBeginSimulation;
 	}
-	public Date getDateEndSimulation()
-	{
+
+	public Date getDateEndSimulation() {
 		return mDateEndSimulation;
 	}
-	public class Estimation{
+
+	/* ******************************************************************** */
+	/*                                                                      */
+	/* Estimation														*/
+	/*                                                                      */
+	/*                                                                      */
+	/* ******************************************************************** */
+
+	public class Estimation {
 		public long timeNeedInMs;
 		public Date dateEnd;
 		public int percentAdvance;
 		public boolean robotsStillAlive;
+		/**
+		 * when all the robots are done, then play the finalisation
+		 */
+		public boolean finish=false;
 	}
+
 	
-	
-	public Estimation getEstimatedAdvance()
-	{
-		Estimation estimation=new Estimation();
-		
+	/* calculate the estimation */
+	public Estimation getEstimatedAdvance() {
+		Estimation estimation = new Estimation();
+
 		estimation.percentAdvance = 100;
-		
+
 		estimation.robotsStillAlive = false;
-		
+
 		for (final MeteorRobot robot : mListRobots) {
 			if (robot.getStatus() != RobotStatus.DONE) {
-				estimation.robotsStillAlive=true;
+				estimation.robotsStillAlive = true;
 			}
 			// calcul the minimum advancement
 			int percentAdvance = 0;
@@ -435,27 +480,22 @@ public class MeteorSimulation {
 			if (percentAdvance < estimation.percentAdvance) {
 				estimation.percentAdvance = percentAdvance;
 			}
-	}
-		if (! estimation.robotsStillAlive)
-			estimation.percentAdvance=100;
-		
-		
-		
-		
-		if (estimation.percentAdvance==0)
+		}
+		if (!estimation.robotsStillAlive)
+			estimation.percentAdvance = 100;
+
+		if (estimation.percentAdvance == 0)
 			return estimation;
-		
-		if (mDateBeginSimulation!=null)
-		{
+
+		if (mDateBeginSimulation != null) {
 			final long currentTime = System.currentTimeMillis();
 			final long executionTime = currentTime - mDateBeginSimulation.getTime();
-			estimation.timeNeedInMs = (long) ( (100.0 - estimation.percentAdvance) * executionTime / estimation.percentAdvance);
-			estimation.dateEnd= new Date(currentTime + estimation.timeNeedInMs);
+			estimation.timeNeedInMs = (long) ((100.0 - estimation.percentAdvance) * executionTime / estimation.percentAdvance);
+			estimation.dateEnd = new Date(currentTime + estimation.timeNeedInMs);
 		}
 		return estimation;
 	}
-	
-	
+
 	public boolean isRunning() {
 		return mStatus == STATUS.STARTED;
 	};

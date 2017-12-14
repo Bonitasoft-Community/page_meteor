@@ -12,10 +12,10 @@ import org.bonitasoft.engine.bpm.process.ProcessDefinitionNotFoundException;
 import org.bonitasoft.engine.exception.SearchException;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorDocument;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorInput;
-import org.bonitasoft.meteor.MeteorRobotActivity;
 import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
+import org.bonitasoft.meteor.scenario.process.MeteorRobotActivity;
+import org.bonitasoft.meteor.scenario.process.MeteorDefInputs;
+import org.bonitasoft.meteor.scenario.process.MeteorDocument;
 
 public class SentenceExecuteTask extends Sentence {
 
@@ -29,7 +29,6 @@ public class SentenceExecuteTask extends Sentence {
 	private static BEvent EventTaskExecutionError = new BEvent(SentenceExecuteTask.class.getName(), 4, Level.APPLICATIONERROR, "A task can't be created", "The task execution failed", "The task is not executed", "Check the sentence");
 	private static BEvent EventNoTaskExecuted = new BEvent(SentenceExecuteTask.class.getName(), 5, Level.APPLICATIONERROR, "No task is ready to be executed", "The robot failed to execute a tasks", "The execution is not completed", "Check your scenario");
 
-	
 	/** execute a task */
 	/**
 	 * ExecuteTask(processName, ProcessVersion, TaskName, WaitTaskArriveInMs,
@@ -38,7 +37,7 @@ public class SentenceExecuteTask extends Sentence {
 	 * @param listParams
 	 * @param apiAccessor
 	 */
-	public SentenceExecuteTask(final Map<String,Object> mapParam, final APIAccessor apiAccessor) {
+	public SentenceExecuteTask(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
 		super(mapParam, apiAccessor);
 	}
 
@@ -47,24 +46,25 @@ public class SentenceExecuteTask extends Sentence {
 	Long processDefinitionId;
 	public String taskName;
 	public Long taskId;
-	long nbExecution=1;
-	
-	MeteorInput meteorInput = new MeteorInput();
+	long nbExecution = 1;
+
+	MeteorDefInputs meteorInputs = new MeteorDefInputs();
+
 	List<MeteorDocument> listDocuments = new ArrayList<MeteorDocument>();
 
 	@Override
-	public List<BEvent> decodeSentence( int lineNumber ) {
+	public List<BEvent> decodeSentence(int lineNumber) {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 		try {
-			processName = getParam( cstParamProcessName);
-			processVersion = getParam( cstParamProcessVersion);
-			taskName = getParam( cstParamTaskName);
-			nbExecution = getParamLong(cstParamNbExecution,1L);
-			
+			processName = getParam(cstParamProcessName);
+			processVersion = getParam(cstParamProcessVersion);
+			taskName = getParam(cstParamTaskName);
+			nbExecution = getParamLong(cstParamNbExecution, 1L);
+
 			if (processName == null) {
 				listEvents.add(EventNoProcessname);
 			} else {
-				if (processVersion==null || processVersion.trim().length()==0)
+				if (processVersion == null || processVersion.trim().length() == 0)
 					processDefinitionId = apiAccessor.getProcessAPI().getLatestProcessDefinitionId(processName);
 				else
 					processDefinitionId = apiAccessor.getProcessAPI().getProcessDefinitionId(processName, processVersion);
@@ -72,15 +72,14 @@ public class SentenceExecuteTask extends Sentence {
 				// taskId = apiAccessor.getProcessAPI().get
 				// ProcessDefinitionId(processName, processVersion);
 			}
-			if (taskName==null || taskName.trim()=="")
-			{
-				listEvents.add(new BEvent(EventNoTaskFound, "line "+lineNumber));
-				
+			if (taskName == null || taskName.trim() == "") {
+				listEvents.add(new BEvent(EventNoTaskFound, "line " + lineNumber));
+
 			}
-			meteorInput.setContent( getJsonVariables( cstParamInput ));
+			meteorInputs.addContent(getJsonVariables(cstParamInput));
 
 		} catch (final ProcessDefinitionNotFoundException pe) {
-			listEvents.add(new BEvent(EventNoProcessFound, "process[" + processName + "] version[" + processVersion + "] at line "+lineNumber));
+			listEvents.add(new BEvent(EventNoProcessFound, "process[" + processName + "] version[" + processVersion + "] at line " + lineNumber));
 
 		}
 		return listEvents;
@@ -91,18 +90,17 @@ public class SentenceExecuteTask extends Sentence {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 
 		try {
-			for (int i=0;i<nbExecution;i++)
-			{
-			Long taskId=MeteorRobotActivity.executeActivity( processDefinitionId, taskName, meteorInput, 0, robotId, logExecution,apiAccessor.getProcessAPI(), apiAccessor.getIdentityAPI() );
-			if (taskId==null)
-				logExecution.addEvent(new BEvent( EventNoTaskExecuted, "taskName["+taskName+"]"));
-			else
-				logExecution.addLog("task("+String.valueOf(taskId)+")");
+			for (int i = 0; i < nbExecution; i++) {
+				Long taskId = MeteorRobotActivity.executeActivity(processDefinitionId, taskName,meteorInputs, meteorInputs.getInputAtStep(0), 0, robotId, logExecution, apiAccessor.getProcessAPI(), apiAccessor.getIdentityAPI());
+				if (taskId == null)
+					logExecution.addEvent(new BEvent(EventNoTaskExecuted, "taskName[" + taskName + "]"));
+				else
+					logExecution.addLog("task(" + String.valueOf(taskId) + ")");
 			}
 		} catch (final Exception e) {
-			BEvent event=new BEvent(EventTaskExecutionError, e, "process[" + processName + "] version[" + processVersion + "] processDefinitionId[" + processDefinitionId + "]");
-			logExecution.addEvent( event );
-			listEvents.add( event );
+			BEvent event = new BEvent(EventTaskExecutionError, e, "process[" + processName + "] version[" + processVersion + "] processDefinitionId[" + processDefinitionId + "]");
+			logExecution.addEvent(event);
+			listEvents.add(event);
 		}
 
 		return listEvents;

@@ -8,7 +8,7 @@ import com.bonitasoft.scenario.accessor.Accessor;
 import com.bonitasoft.scenario.accessor.ext.ScenarioProcessAPI;
 
 public class TaskExecutionWaiter extends Waiter {
-	public TaskExecutionWaiter( Accessor accessor, Map<String, Serializable> parameters) {
+	public TaskExecutionWaiter(Accessor accessor, Map<String, Serializable> parameters) {
 		super(accessor, parameters);
 	}
 

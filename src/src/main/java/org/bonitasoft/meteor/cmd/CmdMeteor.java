@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-
-
 import org.bonitasoft.engine.api.CommandAPI;
 import org.bonitasoft.engine.api.PlatformAPI;
 import org.bonitasoft.engine.command.CommandCriterion;
@@ -42,9 +40,10 @@ public class CmdMeteor extends TenantCommand {
 	public static String cstParamPing = "ping";
 
 	static Logger logger = Logger.getLogger(CmdMeteor.class.getName());
-
-	private static BEvent EventAlreadyDeployed = new BEvent("org.bonitasoft.custompage.meteor.cmdmeteor", 1, Level.INFO, "Command already deployed", "The command at the same version is already deployed");
-	private static BEvent EventDeployedWithSuccess = new BEvent("org.bonitasoft.custompage.meteor.cmdmeteor", 2, Level.INFO, "Command deployed with success", "The command are correctly deployed");
+	private static String logHeader="CommandMeteor ~~~~~~ ";
+	private static BEvent EventAlreadyDeployed = new BEvent(CmdMeteor.class.getName(), 1, Level.INFO, "Command already deployed", "The command at the same version is already deployed");
+	private static BEvent EventDeployedWithSuccess = new BEvent(CmdMeteor.class.getName(), 2, Level.INFO, "Command deployed with success", "The command are correctly deployed");
+	private static BEvent EventErrorAtDeployment = new BEvent(CmdMeteor.class.getName(), 3, Level.APPLICATIONERROR, "Error during deployment of the command", "The command are not deployed", "The pâge can not work", "Check the exception");
 
 	public final static String cstParamCommandName = "CommandName";
 	public final static String cstParamCommandNameStart = "START";
@@ -64,6 +63,11 @@ public class CmdMeteor extends TenantCommand {
 	 */
 	public final static String cstParamCommandExecId = "ExecId";
 
+	
+	public final static String cstParamResultListEventsSt = "listevents";
+	public final static String cstParamResultSimulationId = "simulationid";
+
+	
 	/**
 	 * Change the time of an timer. parameters are tenantid : optional, 1 per
 	 * default activityid : name of the activity ELSE the activityName +
@@ -170,9 +174,9 @@ public class CmdMeteor extends TenantCommand {
 			this.jarName = name;
 			this.pageDirectory = pageDirectory;
 		}
-		public String getCompleteFileName()
-		{
-			return pageDirectory.getAbsolutePath()+"/lib/"+jarName;
+
+		public String getCompleteFileName() {
+			return pageDirectory.getAbsolutePath() + "/lib/" + jarName;
 		}
 	}
 
@@ -187,19 +191,20 @@ public class CmdMeteor extends TenantCommand {
 		// DeletionException {
 		final List<BEvent> listEvents = new ArrayList<BEvent>();
 
-		
-		   List<JarDependencyCommand> jarDependencies = new ArrayList<JarDependencyCommand>();
-		   // execute the groovy scenario
-		   /*
-	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bdm-jpql-query-executor-command-1.0.jar", pageDirectory));
-	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "process-starter-command-1.0.jar", pageDirectory));
-	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-2.0.jar", pageDirectory));
-	        */
-	        // execute the meteor command
-	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageDirectory));
-	        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageDirectory));
-	        
-		
+		List<JarDependencyCommand> jarDependencies = new ArrayList<JarDependencyCommand>();
+		// execute the groovy scenario
+		/*
+		 * jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand(
+		 * "bdm-jpql-query-executor-command-1.0.jar", pageDirectory));
+		 * jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand(
+		 * "process-starter-command-1.0.jar", pageDirectory));
+		 * jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand(
+		 * "scenario-utils-2.0.jar", pageDirectory));
+		 */
+		// execute the meteor command
+		jarDependencies.add(CmdMeteor.getInstanceJarDependencyCommand("CustomPageMeteor-1.0.0.jar", pageDirectory));
+		jarDependencies.add(CmdMeteor.getInstanceJarDependencyCommand("bonita-event-1.1.0.jar", pageDirectory));
+
 		String message = "";
 
 		try {
@@ -213,8 +218,8 @@ public class CmdMeteor extends TenantCommand {
 				if (commandName.equals(command.getName())) {
 					final String description = command.getDescription();
 					if (!forceDeploy && description.startsWith("V " + version)) {
-						logger.info("Meteor.cmdMeteor >>>>>>>>>>>>>>>>>>>>>>>>> No deployment Command ["+commandName+"] Version[V " + version+"]");
-						
+						logger.info("Meteor.cmdMeteor >>>>>>>>>>>>>>>>>>>>>>>>> No deployment Command [" + commandName + "] Version[V " + version + "]");
+
 						listEvents.add(new BEvent(EventAlreadyDeployed, "V " + version));
 						return listEvents;
 					}
@@ -222,36 +227,34 @@ public class CmdMeteor extends TenantCommand {
 					commandAPI.unregister(command.getId());
 				}
 			}
-			logger.info("Meteor.cmdMeteor >>>>>>>>>>>>>>>>>>>>>>>>> DEPLOIEMENT Command ["+commandName+"] Version[V " + version+"]");
+			logger.info("Meteor.cmdMeteor >>>>>>>>>>>>>>>>>>>>>>>>> DEPLOIEMENT Command [" + commandName + "] Version[V " + version + "]");
 			/*
 			 * File commandFile = new File(jarFileServer); FileInputStream fis =
 			 * new FileInputStream(commandFile); byte[] fileContent = new
 			 * byte[(int) commandFile.length()]; fis.read(fileContent);
 			 * fis.close();
-			 */			
+			 */
 			for (final JarDependencyCommand onejar : jarDependencies) {
 				final ByteArrayOutputStream fileContent = new ByteArrayOutputStream();
 				final byte[] buffer = new byte[10000];
 				int nbRead = 0;
-				InputStream fileJar=null;
-				try
-				{
-					fileJar= new FileInputStream( onejar.getCompleteFileName() );
-				
+				InputStream fileJar = null;
+				try {
+					fileJar = new FileInputStream(onejar.getCompleteFileName());
+
 					while ((nbRead = fileJar.read(buffer)) > 0) {
 						fileContent.write(buffer, 0, nbRead);
 					}
-				
+
 					commandAPI.removeDependency(onejar.jarName);
 				} catch (final Exception e) {
-				}
-				finally
-				{
-					if (fileJar!=null)
+					logger.info( logHeader+" Remove dependency["+e.toString()+"]");
+					message+="Exception remove["+onejar.jarName+"]:"+e.toString();
+				} finally {
+					if (fileJar != null)
 						fileJar.close();
-				};
-
-				message += "Adding jarName [" + onejar.jarName + "] size[" + fileContent.size() + "]...";
+				}				
+//				message += "Adding jarName [" + onejar.jarName + "] size[" + fileContent.size() + "]...";
 				commandAPI.addDependency(onejar.jarName, fileContent.toByteArray());
 				message += "Done.";
 			}
@@ -266,24 +269,30 @@ public class CmdMeteor extends TenantCommand {
 			listEvents.add(new BEvent(EventDeployedWithSuccess, message));
 			return listEvents;
 
-		} catch (final StopNodeException e1) {
-			logger.severe("Can't stop  [" + e1.toString() + "]");
-			message += e1.toString();
+		} catch (final StopNodeException e) {
+			logger.severe("Can't stop  [" + e.toString() + "]");
+			message += e.toString();
+			listEvents.add(new BEvent(EventErrorAtDeployment, e, "Command["+commandName + "V " + version + " " + commandDescription+"]"));
 			return null;
-		} catch (final StartNodeException e1) {
-			logger.severe("Can't  start [" + e1.toString() + "]");
-			message += e1.toString();
+		} catch (final StartNodeException e) {
+			logger.severe("Can't  start [" + e.toString() + "]");
+			message += e.toString();
+			listEvents.add(new BEvent(EventErrorAtDeployment, e, "Command["+commandName + "V " + version + " " + commandDescription+"]"));
 			return null;
 		} catch (final CommandNotFoundException e) {
 			logger.severe("Error during deploy command " + e);
 		} catch (final DeletionException e) {
 			logger.severe("Error during deploy command " + e);
+			listEvents.add(new BEvent(EventErrorAtDeployment, e, "Command["+commandName + "V " + version + " " + commandDescription+"]"));
 		} catch (final IOException e) {
 			logger.severe("Error during deploy command " + e);
+			listEvents.add(new BEvent(EventErrorAtDeployment, e, "Command["+commandName + "V " + version + " " + commandDescription+"]"));
 		} catch (final AlreadyExistsException e) {
 			logger.severe("Error during deploy command " + e);
+			listEvents.add(new BEvent(EventErrorAtDeployment, e, "Command["+commandName + "V " + version + " " + commandDescription+"]"));
 		} catch (final CreationException e) {
 			logger.severe("Error during deploy command " + e);
+			listEvents.add(new BEvent(EventErrorAtDeployment, e, "Command["+commandName + "V " + version + " " + commandDescription+"]"));
 		}
 		return listEvents;
 	}

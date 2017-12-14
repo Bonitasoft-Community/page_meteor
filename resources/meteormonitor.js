@@ -48,6 +48,16 @@ appCommand.controller('MeteorControler',
 	this.isshowExportDialog=false;
 	
 	this.showmainscenarii=true;
+	
+	this.testChart = {
+			'type': 'ColumnChart',
+			'displayed': true,
+			'data': {
+				'cols': ['cover','happy'],
+				'rows' : [ 12,43]
+			}
+	};
+	
 	// ------------------------------------------------------------------------------------------------------
 	// --------------------- getListProcess
 	this.getListArtefacts = function()
@@ -84,6 +94,16 @@ appCommand.controller('MeteorControler',
 		console.log("add in variable");
 		activityinfo.inputs.push(  {'percent':'100'} );
 	}
+	this.proposeInput = function( processinfo, input)
+	{
+		var jsonValue = JSON.parse(processinfo.proposecontent);
+		input.content=JSON.stringify( jsonValue, null, 4);
+	}
+	this.formatInput = function( processinfo, input)
+	{
+		input.content=JSON.stringify( JSON.parse(input.content), null, 4);
+	}
+			
 	this.removeInput = function (activityinfo, input)
 	{
 		var i= activityinfo.inputs.indexOf(input);
@@ -459,6 +479,9 @@ appCommand.controller('MeteorControler',
 			self.listeventsexecution    = jsonResult.listevents;
 			self.execution 				= jsonResult;
 			self.refreshinprogress		= false;
+			
+			// $scope.chartTimeline		 	= JSON.parse(jsonResult.chartTimeline);
+			
 			console.log(" Refresh done, status=["+self.execution.Status+"]");
 			console.log(self.timer.timer);
 			// ream the timeout

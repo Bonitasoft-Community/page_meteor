@@ -1,11 +1,17 @@
 package org.bonitasoft.meteor;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import org.bonitasoft.engine.bpm.contract.InputDefinition;
+import org.bonitasoft.engine.bpm.contract.Type;
+
+import javassist.bytecode.ByteArray;
 
 public class MeteorToolbox {
 
@@ -73,6 +79,7 @@ public class MeteorToolbox {
 			return defaultValue;
 		}
 	}
+
 	public static List<Object> getParameterList(final Map<String, Object> mapRequestMultipart, final String paramName, final List<Object> defaultValue) {
 		final Object value = mapRequestMultipart.get(paramName);
 		if (value == null || (!(value instanceof List))) {
@@ -92,83 +99,37 @@ public class MeteorToolbox {
 			return defaultValue;
 		}
 	}
-	
-	/**
-	 * Bonita Input require LONG when the JSON return INTEGER
-	 * @param inputMap
-	 * @return
-	 */
-	
-	public static void transformJsonContentForBonitaInput(Object inputObject)
-	{
-		if (inputObject ==null)
-			return;
-		if (inputObject instanceof Map)
-		{
-			Map<String,Object> inputObjectMap = (Map<String,Object>) inputObject;
-			for (String key : inputObjectMap.keySet())
-			{
-				if (inputObjectMap.get(key) instanceof Map)
-				{
-					transformJsonContentForBonitaInput( inputObjectMap.get(key) );
-				}
-				if (inputObjectMap.get(key) instanceof List)
-				{
-					transformJsonContentForBonitaInput( inputObjectMap.get(key) );
-				}
-				if (inputObjectMap.get(key) instanceof Long)
-				{
-					inputObjectMap.put( key, Integer.valueOf( ((Long)inputObjectMap.get(key)).intValue() ));
-				}
-			}
-		}
-		
-		if (inputObject instanceof List)
-		{
-			List<Object> inputObjectList = (List<Object>)  inputObject;
 
-				for (Object item : inputObjectList)
-				{
-					transformJsonContentForBonitaInput( item );
-				}
-			
-		}
-	}
-	
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:MM:ss");
 
-	public static String getHumanDate( Date date)
-	{
-		if (date!=null)
-			return sdf.format( date);
+	public static String getHumanDate(Date date) {
+		if (date != null)
+			return sdf.format(date);
 		return null;
 	}
-	public static String getHumanDelay( long delayMs)
-	{
-		String accumulate="";
-		long calculMs=delayMs;
-		if (calculMs > 1000*60*60)
-		{
-			accumulate += (calculMs / (1000*60*60))+" h ";
-			calculMs =  calculMs %  (1000*60*60);
+
+	public static String getHumanDelay(long delayMs) {
+		String accumulate = "";
+		long calculMs = delayMs;
+		if (calculMs > 1000 * 60 * 60) {
+			accumulate += (calculMs / (1000 * 60 * 60)) + " h ";
+			calculMs = calculMs % (1000 * 60 * 60);
 		}
-		if (calculMs > 1000*60)
-		{
-			accumulate += (calculMs / (1000*60))+" mn ";
-			calculMs =  calculMs %  (1000*60);
+		if (calculMs > 1000 * 60) {
+			accumulate += (calculMs / (1000 * 60)) + " mn ";
+			calculMs = calculMs % (1000 * 60);
 		}
 		// display the MS only if delay are small
-		if (calculMs > 1000)
-		{
-			accumulate += (calculMs / 1000)+" s ";
-			calculMs =  calculMs % 1000;
+		if (calculMs > 1000) {
+			accumulate += (calculMs / 1000) + " s ";
+			calculMs = calculMs % 1000;
 		}
-		if (calculMs>0 && delayMs < 60*1000)
-			accumulate+= calculMs +" ms ";
-		if (accumulate.length()==0)
-			accumulate="";
-		//else
-		//	accumulate+="("+delayMs+")";
+		if (calculMs > 0 && delayMs < 60 * 1000)
+			accumulate += calculMs + " ms ";
+		if (accumulate.length() == 0)
+			accumulate = "";
+		// else
+		// accumulate+="("+delayMs+")";
 		return accumulate;
 	}
 }

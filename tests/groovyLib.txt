@@ -1,0 +1,9 @@
+Long processDefinitionId = accessor.processAPI.getLatestProcessDefinitionId("meteor1");
+
+ProcessDefinition process = accessor.processAPI.getProcessDefinition( processDefinitionId);
+ProcessInstance processInstance = process.start();
+TaskInstance task;
+wait { 
+	task= processInstance.isHumanTaskAvailable process_instance:processInstance, task_name:"Meteor_1";
+};
+task.execute;

@@ -25,11 +25,11 @@ public class CommandRegister {
 		String password = "bpm";
 		String filepath = ".\\target\\";
 		String filename = "bdm-jpql-query-executor-command-1.0.jar";
-		
+
 		boolean tearDown = false;
 		boolean register = true;
 		boolean test = true;
-		
+
 		if (args.length != 0) {
 			url = "http://" + args[0] + ":" + args[1];
 			appName = args[2];
@@ -50,19 +50,19 @@ public class CommandRegister {
 		APISession apiSession = loginAPI.login(login, password);
 
 		// Tear down
-		if(tearDown) {
+		if (tearDown) {
 			TenantAPIAccessor.getCommandAPI(apiSession).removeDependency(filename);
 			TenantAPIAccessor.getCommandAPI(apiSession).unregister(BDMJpqlQueryExecutorCommand.NAME);
 		}
 		// Register
-		if(register) {
+		if (register) {
 			byte[] byteArray = IOUtils.toByteArray(new FileInputStream(new File(filepath + filename)));
 			TenantAPIAccessor.getCommandAPI(apiSession).addDependency(filename, byteArray);
 			TenantAPIAccessor.getCommandAPI(apiSession).register(BDMJpqlQueryExecutorCommand.NAME, BDMJpqlQueryExecutorCommand.SUMMARY, BDMJpqlQueryExecutorCommand.class.getName());
-		}	
+		}
 
 		// Run a test
-		if(test) {
+		if (test) {
 			// No test defined
 		}
 	}

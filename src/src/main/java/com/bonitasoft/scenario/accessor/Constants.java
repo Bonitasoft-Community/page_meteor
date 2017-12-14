@@ -1,7 +1,7 @@
 package com.bonitasoft.scenario.accessor;
 
 public class Constants {
-	//---- Function parameters
+	// ---- Function parameters
 	final static public String PROCESS = "process";
 	final static public String PROCESSES = "processes";
 	final static public String NAME = "name";
@@ -33,8 +33,8 @@ public class Constants {
 	final static public String THROWABLE = "throwable";
 	final static public String CONNECTORS = "connectors";
 	final static public String RESOURCE_NAME = "resource_name";
-	
-	//---- File extensions
+
+	// ---- File extensions
 	final static public String EXTENSION_GROOVY = ".groovy";
 	final static public String EXTENSION_BAR = ".bar";
 	final static public String EXTENSION_XML = ".xml";
@@ -42,11 +42,11 @@ public class Constants {
 	final static public String EXTENSION_ZIP = ".zip";
 	final static public String EXTENSION_JSON = ".json";
 	final static public String EXTENSION_JAR = ".jar";
-	
-	//----- Java
+
+	// ----- Java
 	final static public String IMPORT_KEYWORD = "import";
-	
-	//----- System
+
+	// ----- System
 	final static public String LINE_SEPARATOR_REGEX = "\\R";
 	final static public String LINE_SEPARATOR = System.getProperty("line.separator");
 	final static public String TAB_SEPARATOR = "\t";

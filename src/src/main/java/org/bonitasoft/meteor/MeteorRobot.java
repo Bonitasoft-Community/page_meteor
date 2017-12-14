@@ -13,13 +13,16 @@ import org.bonitasoft.meteor.MeteorSimulation.CollectPerformance;
 import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
 import org.bonitasoft.meteor.scenario.cmd.MeteorRobotCmdScenario;
 import org.bonitasoft.meteor.scenario.groovy.MeteorRobotGroovyScenario;
+import org.bonitasoft.meteor.scenario.process.MeteorRobotActivity;
+import org.bonitasoft.meteor.scenario.process.MeteorRobotCreateCase;
+
 
 public abstract class MeteorRobot implements Runnable {
 
 	public static Logger logger = Logger.getLogger(MeteorRobot.class.getName());
 
 	protected enum RobotType {
-		CREATECASE, PLAYACTIVITY, USERACTIVITY, CMDSCENARIO, GRVSCENARIO
+		CREATECASE, PLAYACTIVITY, CMDSCENARIO, GRVSCENARIO
 	};
 
 	// public RobotType mRobotType;
@@ -52,7 +55,7 @@ public abstract class MeteorRobot implements Runnable {
 
 	private final APIAccessor apiAccessor;
 	protected MeteorSimulation meteorSimulation;
-	
+
 	public CollectPerformance mCollectPerformance = new CollectPerformance();
 
 	/**
@@ -66,13 +69,11 @@ public abstract class MeteorRobot implements Runnable {
 		mStatus = RobotStatus.INACTIF;
 	}
 
-	public static MeteorRobot getInstance(MeteorSimulation meteorSimulation,final RobotType robotType, final APIAccessor apiAccessor) {
+	public static MeteorRobot getInstance(MeteorSimulation meteorSimulation, final RobotType robotType, final APIAccessor apiAccessor) {
 		if (robotType == RobotType.CREATECASE) {
 			return new MeteorRobotCreateCase(meteorSimulation, apiAccessor);
 		} else if (robotType == RobotType.PLAYACTIVITY) {
 			return new MeteorRobotActivity(meteorSimulation, apiAccessor);
-		} else if (robotType == RobotType.USERACTIVITY) {
-			return new MeteorRobotUserActivity(meteorSimulation, apiAccessor);
 		} else if (robotType == RobotType.CMDSCENARIO) {
 			return new MeteorRobotCmdScenario(meteorSimulation, apiAccessor);
 		} else if (robotType == RobotType.GRVSCENARIO) {
@@ -83,12 +84,13 @@ public abstract class MeteorRobot implements Runnable {
 	}
 
 	/*
-	 * ******************************************************************** */
+	 * ********************************************************************
+	 */
 	/*                                                                      */
-	/* Manage advancement 													*/
+	/* Manage advancement */
 	/*                                                                      */
 	/*                                                                      */
-	/* ********************************************************************	*/
+	/* ******************************************************************** */
 
 	/**
 	 * each robot should call this method to give the number of operation, in
@@ -140,12 +142,11 @@ public abstract class MeteorRobot implements Runnable {
 		return apiAccessor;
 	}
 
-	public Date getDateBegin()
-	{
+	public Date getDateBegin() {
 		return mDateBegin;
 	}
-	public Date getEndDate()
-	{
+
+	public Date getEndDate() {
 		return mDateEnd;
 	}
 	/*
@@ -179,23 +180,25 @@ public abstract class MeteorRobot implements Runnable {
 		} catch (Exception e) {
 			final StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
-			setFinalStatus( FINALSTATUS.FAIL);
+			setFinalStatus(FINALSTATUS.FAIL);
 			logger.severe("Robot " + getSignature() + " exception " + e.toString() + " at " + sw.toString());
-			mLogExecution.addLog("Exception "+e.toString());
+			mLogExecution.addLog("Exception " + e.toString());
 
 		} catch (Error er) {
 			final StringWriter sw = new StringWriter();
 			er.printStackTrace(new PrintWriter(sw));
-			setFinalStatus( FINALSTATUS.FAIL);
+			setFinalStatus(FINALSTATUS.FAIL);
 
 			logger.severe("Robot " + getSignature() + " exception " + er.toString() + " at " + sw.toString());
-			mLogExecution.addLog("Exception "+er.toString());
+			mLogExecution.addLog("Exception " + er.toString());
 
 		}
 
 		mStatus = RobotStatus.DONE;
-		mCollectPerformance.mOperationIndex=mCollectPerformance.mOperationTotal; // set to 100%
-		
+		mCollectPerformance.mOperationIndex = mCollectPerformance.mOperationTotal; // set
+																					// to
+																					// 100%
+
 		mDateEnd = new Date();
 
 		logger.info("----------- End robot #" + mRobotId + " type[" + getClass().getName() + "]");
@@ -257,21 +260,18 @@ public abstract class MeteorRobot implements Runnable {
 											// #"+mRobotId+" ";
 		int percent = 0;
 		resultRobot.put(MeteorSimulation.cstJsonStatus, mStatus.toString());
-		resultRobot.put("finalstatus", mFinalStatus==null ? "": mFinalStatus.toString());
+		resultRobot.put("finalstatus", mFinalStatus == null ? "" : mFinalStatus.toString());
 		resultRobot.put("log", mLogExecution.getLogExecution());
 		resultRobot.put(MeteorSimulation.cstJsonNbErrors, mLogExecution.getNbErrors());
 
 		if (mCollectPerformance.mOperationTotal == -1) {
-			if (mStatus == RobotStatus.DONE)
-			{
+			if (mStatus == RobotStatus.DONE) {
 				resultRobot.put("adv", "0/0");
 				percent = 0;
-			}
-			else
-			{
+			} else {
 				resultRobot.put("adv", "100/100");
 				percent = 100;
-			}	
+			}
 		} else if (mCollectPerformance.mOperationIndex < mCollectPerformance.mOperationTotal) {
 			resultRobot.put("adv", mCollectPerformance.mOperationIndex + " / " + mCollectPerformance.mOperationTotal);
 			percent = (int) (100 * mCollectPerformance.mOperationIndex / mCollectPerformance.mOperationTotal);
@@ -280,10 +280,10 @@ public abstract class MeteorRobot implements Runnable {
 			percent = 100;
 		}
 
-		resultRobot.put( MeteorSimulation.cstJsonPercentAdvance, percent);
+		resultRobot.put(MeteorSimulation.cstJsonPercentAdvance, percent);
 		// status.append("<td><progress max=\"100\"
 		// value=\""+percent+"\"></progress>("+percent+" %)</td>");
-		resultRobot.put("time", MeteorToolbox.getHumanDelay( mCollectPerformance.mCollectTimeSteps )+ " for " + mCollectPerformance.getNbSteps() + " step");
+		resultRobot.put("time", MeteorToolbox.getHumanDelay(mCollectPerformance.mCollectTimeSteps) + " for " + mCollectPerformance.getNbSteps() + " step");
 		if (mCollectPerformance.getNbSteps() > 0) {
 			resultRobot.put("timeavg", mCollectPerformance.mCollectTimeSteps / mCollectPerformance.getNbSteps() + " ms/step");
 		}
@@ -293,10 +293,10 @@ public abstract class MeteorRobot implements Runnable {
 		return resultRobot;
 	}
 
-	public int getNbErrors()
-	{
+	public int getNbErrors() {
 		return mLogExecution.getNbErrors();
 	}
+
 	/**
 	 * return the time per step
 	 *
