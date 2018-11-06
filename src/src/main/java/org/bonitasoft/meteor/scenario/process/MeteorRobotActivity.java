@@ -18,6 +18,7 @@ import org.bonitasoft.engine.bpm.document.DocumentValue;
 import org.bonitasoft.engine.bpm.flownode.FlowNodeExecutionException;
 import org.bonitasoft.engine.bpm.flownode.HumanTaskInstance;
 import org.bonitasoft.engine.bpm.flownode.HumanTaskInstanceSearchDescriptor;
+import org.bonitasoft.engine.bpm.flownode.UserTaskNotFoundException;
 import org.bonitasoft.engine.bpm.process.ProcessDefinitionNotFoundException;
 import org.bonitasoft.engine.bpm.process.ProcessInstance;
 import org.bonitasoft.engine.exception.SearchException;
@@ -127,14 +128,14 @@ public class MeteorRobotActivity extends MeteorRobot {
 		int countExecute = 10;
 		while (countExecute > 0) {
 			countExecute--;
-
+			Long taskId=null;
 			try {
 				SearchOptionsBuilder searchOptions = new SearchOptionsBuilder(0, 10);
 				searchOptions.filter(HumanTaskInstanceSearchDescriptor.NAME, activityName);
 				searchOptions.filter(HumanTaskInstanceSearchDescriptor.PROCESS_DEFINITION_ID, processDefinitionId);
 				SearchResult<HumanTaskInstance> search = processAPI.searchHumanTaskInstances(searchOptions.done());
 				if (search.getResult().size() > 0) {
-					Long taskId = search.getResult().get(0).getId();
+					taskId = search.getResult().get(0).getId();
 					Long processInstanceId =  search.getResult().get(0).getRootContainerId();
 					// assign it
 					processAPI.assignUserTask(taskId, user != null ? user.getId() : 0);
@@ -172,13 +173,16 @@ public class MeteorRobotActivity extends MeteorRobot {
 			} catch (FlowNodeExecutionException fl)
 			{
 				// someone execute the same node, no worry
-			} catch (Exception e) {
+			 } catch (UserTaskNotFoundException ue)
+      {
+        // someone execute the same node, no worry
+      } catch (Exception e) {
 				final StringWriter sw = new StringWriter();
 				e.printStackTrace(new PrintWriter(sw));
 
 				logger.severe("Robot #" + robotId + " exception " + e.toString() + " at " + sw.toString());
 				// not yet logged ? Add in the logExecution
-				logExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, ""));
+				logExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "taskId:["+taskId+"]"));
 
 			}
 			if (countExecute != 0) {

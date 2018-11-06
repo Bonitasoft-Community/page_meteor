@@ -1,4 +1,4 @@
-package org.bonitasoft.meteor;
+package org.bonitasoft.meteor.scenario.process;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -24,12 +24,18 @@ import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.engine.session.APISession;
 import org.bonitasoft.engine.session.SessionNotFoundException;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorDocument;
-import org.bonitasoft.meteor.MeteorProcessDefinitionList.MeteorProcessDefinitionUser;
+import org.bonitasoft.meteor.MeteorRobot;
+import org.bonitasoft.meteor.MeteorSimulation;
 
+/**
+ * this class is not used at this moment
+ * Idea is to connect as a USER and see all different task pending for this user.
+ * @author Firstname Lastname
+ *
+ */
 public class MeteorRobotUserActivity extends MeteorRobot {
 
-	MeteorProcessDefinitionUser mMeteorUser;
+	// MeteorProcessDefinitionUser mMeteorUser;
 
 	Long mTimeEndOfTheSimulationInMs = null;
 
@@ -37,19 +43,20 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 		super( meteorSimulation, apiAccessor);
 	}
 
-	public void setParameters(final MeteorProcessDefinitionUser meteorUser) {
+	/*public void setParameters(final MeteorProcessDefinitionUser meteorUser) {
 		mMeteorUser = meteorUser;
 	}
+	*/
 
 	@Override
 	public void executeRobot() {
 		LoginAPI loginAPI = null;
 		APISession userActivityApiSession = null;
 		try {
-			mCollectPerformance.mTitle = "USER:" + mMeteorUser.mUserName + " #" + mRobotId;
-			mCollectPerformance.mOperationTotal = mMeteorUser.mNumberOfCase;
+			//mCollectPerformance.mTitle = "USER:" + mMeteorUser.mUserName + " #" + mRobotId;
+			//mCollectPerformance.mOperationTotal = mMeteorUser.mNumberOfCase;
 			loginAPI = TenantAPIAccessor.getLoginAPI();
-			userActivityApiSession = loginAPI.login(mMeteorUser.mUserName, mMeteorUser.mUserPassword);
+			userActivityApiSession = loginAPI.login( "walter.bates", "bpm" /*mMeteorUser.mUserName, mMeteorUser.mUserPassword*/ );
 			// else
 			// userActivityApiSession = apiSession;
 			final ProcessAPI processAPI = TenantAPIAccessor.getProcessAPI(userActivityApiSession);
@@ -58,7 +65,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 			// TenantAPIAccessor.getProcessAPI(apiSession);
 			final long userId = userActivityApiSession.getUserId();
 			mCollectPerformance.mOperationIndex = 0;
-			while (mCollectPerformance.mOperationIndex < mMeteorUser.mNumberOfCase) {
+			while (mCollectPerformance.mOperationIndex <10 /* mMeteorUser.mNumberOfCase */) {
 				// -------------------------------------- getPendingTask
 
 				// List<HumanTaskInstance> listResult =
@@ -68,7 +75,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 				final SearchOptionsBuilder searchOptionBuilder = new SearchOptionsBuilder(0, 20);
 				// searchOptionBuilder.filter(HumanTaskInstanceSearchDescriptor.NAME,
 				// activityName);
-				searchOptionBuilder.filter(HumanTaskInstanceSearchDescriptor.PROCESS_DEFINITION_ID, mMeteorUser.mProcessDefinitionId);
+				searchOptionBuilder.filter(HumanTaskInstanceSearchDescriptor.PROCESS_DEFINITION_ID, 100 /* mMeteorUser.mProcessDefinitionId*/ );
 
 				long timeStart = System.currentTimeMillis();
 				final SearchResult<HumanTaskInstance> searchHumanTaskInstances = processAPI.searchPendingTasksForUser(userId, searchOptionBuilder.done());
@@ -77,7 +84,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 				mCollectPerformance.collectOneStep(timeEnd - timeStart);
 
 				HumanTaskInstance pendingTask = pendingTasks.size() > 0 ? pendingTasks.get(0) : null;
-				if (pendingTask != null && pendingTask.getProcessDefinitionId() != mMeteorUser.mProcessDefinitionId) {
+				if (pendingTask != null && pendingTask.getProcessDefinitionId() != 100 /*mMeteorUser.mProcessDefinitionId */) {
 					pendingTask = null;
 				}
 				if (pendingTask != null) { // assign the task to the
@@ -88,15 +95,17 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 					mCollectPerformance.collectOneStep(timeEnd - timeStart);
 
 					// update variable
+					/*
 					for (final String variableName : mMeteorUser.mVariables.keySet()) {
 
 						processAPI.updateActivityDataInstance(variableName, pendingTask.getId(), mMeteorUser.mVariables.get(variableName) == null ? null : mMeteorUser.mVariables.get(variableName).toString());
 					}
+					
 					// add documents
 					for (final MeteorDocument meteorDocument : mMeteorUser.mListDocuments) {
 						processAPI.attachDocument(pendingTask.getId(), meteorDocument.mDocumentName, "TheFileName", "application/pdf", meteorDocument.mContent.toByteArray());
 					}
-
+					 */
 					// execute the task
 					timeStart = System.currentTimeMillis();
 					processAPI.executeFlowNode(pendingTask.getId());
@@ -105,7 +114,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 
 					mCollectPerformance.mOperationIndex++;
 				}
-				Thread.sleep(mMeteorUser.mTimeSleep);
+				// Thread.sleep(mMeteorUser.mTimeSleep);
 				if (mTimeEndOfTheSimulationInMs != null && mTimeEndOfTheSimulationInMs != 0) {
 					if (System.currentTimeMillis() > mTimeEndOfTheSimulationInMs) {
 						return;
@@ -118,12 +127,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 			e.printStackTrace(new PrintWriter(sw));
 
 			logger.severe("--------- SID #"+meteorSimulation.getId()+" ROBOT #" + mRobotId + " exception " + e.toString() + " at " + sw.toString());
-		} catch (final InterruptedException e) {
-			final StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-
-			logger.severe("--------- SID #"+meteorSimulation.getId()+" ROBOT #" + mRobotId + " exception " + e.toString() + " at " + sw.toString());
-		} catch (final UpdateException e) {
+	} catch (final UpdateException e) {
 			final StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 
@@ -138,7 +142,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 			e.printStackTrace(new PrintWriter(sw));
 
 			logger.severe("--------- SID #"+meteorSimulation.getId()+" ROBOT #" + mRobotId +" exception " + e.toString() + " at " + sw.toString());
-		} catch (final ProcessInstanceNotFoundException e) {
+		/* } catch (final ProcessInstanceNotFoundException e) {
 
 			final StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -149,6 +153,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 			e.printStackTrace(new PrintWriter(sw));
 
 			logger.severe("--------- SID #"+meteorSimulation.getId()+" ROBOT #" + mRobotId + " exception " + e.toString() + " at " + sw.toString());
+			*/
 		} catch (final BonitaHomeNotSetException e) {
 			final StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));

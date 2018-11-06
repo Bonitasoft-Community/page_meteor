@@ -178,7 +178,15 @@ public class Index implements PageController {
 				// def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
 				// indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
 				// indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
-				
+			  File pageDirectory = pageResourceProvider.getPageDirectory();
+        
+        // def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
+        // indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
+        // indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);
+        indexContent= indexContent.replace("@_CURRENTTIMEMILIS_@", String.valueOf(System.currentTimeMillis()));
+        indexContent= indexContent.replace("@_PAGEDIRECTORY_@", pageDirectory.getAbsolutePath()) ;
+                 
+        
 				response.setCharacterEncoding("UTF-8");
 				response.addHeader("content-type", "text/html");
 

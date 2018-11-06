@@ -73,7 +73,7 @@ appCommand.controller('MeteorControler',
 			};
 		var json= encodeURI( angular.toJson(postMsg, true));
 
-		$http.get( '?page=custompage_meteor&action=getListArtefacts&jsonparam='+json )
+		$http.get( '?page=custompage_meteor&action=getListArtefacts&jsonparam='+json+'&t='+Date.now() )
 				.success( function ( jsonResult ) {
 						console.log("history",jsonResult);
 						self.processes 					= jsonResult.processes;
@@ -179,7 +179,7 @@ appCommand.controller('MeteorControler',
 
  		console.log("Start : "+json);
 
-		$http.get( '?page=custompage_meteor&action=start&paramjson='+json )
+		$http.get( '?page=custompage_meteor&action=start&paramjson='+json+'&t='+Date.now() )
 				.success( function ( jsonResult ) {
 						console.log("history", angular.toJson(jsonResult));
 
@@ -237,7 +237,7 @@ appCommand.controller('MeteorControler',
 		selfconfig.listUrlPercent=0;
 		selfconfig.configwait=true;
 		
-		$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json )
+		$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json+'&t='+Date.now() )
 		.success( function ( jsonResult ) {
 			selfconfig.configwait=false;
 			// ready to save it
@@ -275,7 +275,7 @@ appCommand.controller('MeteorControler',
 			selfconfig.listUrlPercent=0;
 			selfconfig.configwait=true;
 
-			$http.get( '?page=custompage_meteor&action=deleteconfig&paramjson='+json )
+			$http.get( '?page=custompage_meteor&action=deleteconfig&paramjson='+json+'&t='+Date.now() )
 			.success( function ( jsonResult ) {
 				selfconfig.configwait=false;
 				selfconfig.config.newname=""; // ready to save it
@@ -308,7 +308,7 @@ appCommand.controller('MeteorControler',
 
 
 		self.configwait=true;
-		$http.get( '?page=custompage_meteor&action=initpage&jsonparam='+json )
+		$http.get( '?page=custompage_meteor&action=initpage&jsonparam='+json+'&t='+Date.now() )
 		.success( function ( jsonResult ) {
 			self.config.list 				= jsonResult.configList;
 			self.processes 					= jsonResult.processes;
@@ -346,7 +346,7 @@ appCommand.controller('MeteorControler',
 		var self=this;
 		self.listeventsconfig ='';
 		self.configwait=true;
-		$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported )
+		$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported+'&t='+Date.now() )
 		.success( function ( jsonResult ) {
 			self.config.list 			= jsonResult.configList;
 			self.listeventsconfig 		= jsonResult.listeventsconfig;
@@ -424,7 +424,7 @@ appCommand.controller('MeteorControler',
 		self.configwait=true;
 		self.config.newname			= self.config.currentname;
 		
-		$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json )
+		$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json+'&t='+Date.now() )
 		.success( function ( jsonResult ) {
 			self.configwait						= false;
 			self.config.newdescription	= jsonResult.description; 
@@ -474,7 +474,7 @@ appCommand.controller('MeteorControler',
 		self.operation="Refresh";
 		self.refreshinprogress=true;
 
-		$http.get( '?page=custompage_meteor&action=status&paramjson='+json )
+		$http.get( '?page=custompage_meteor&action=status&paramjson='+json+'&t='+Date.now() )
 		.success( function ( jsonResult ) {
 			self.listeventsexecution    = jsonResult.listevents;
 			self.execution 				= jsonResult;
@@ -512,7 +512,7 @@ appCommand.controller('MeteorControler',
 		console.log(" Call "+self.listUrlIndex+" : "+self.listUrlCall[ self.listUrlIndex ]);
 		self.listUrlPercent= Math.round( (100 *  self.listUrlIndex) / self.listUrlCall.length);
 		
-		$http.get( '?page=custompage_meteor&'+self.listUrlCall[ self.listUrlIndex ] )
+		$http.get( '?page=custompage_meteor&'+self.listUrlCall[ self.listUrlIndex ]+'&t='+Date.now() )
 			.success( function ( jsonResult ) {
 				// console.log("Correct, advance one more",
 				// angular.toJson(jsonResult));

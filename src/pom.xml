@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>org.bonitasoft.ext.BonitaProperties</groupId>
 			<artifactId>bonita-properties</artifactId>
-			<version>1.4.2</version>
+			<version>1.5</version>
 		</dependency>
 
 		<dependency>

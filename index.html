@@ -44,6 +44,11 @@
 }
 </style>
 </head>
+
+
+<!--  Page Directory: @_PAGEDIRECTORY_@ -->
+
+
 <body ng-app="meteormonitor">
 	<div class="bs-component" ng-controller="TitleController as titlectrl">
 		<center>
@@ -54,7 +59,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V2.0</a></td>
+					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V2.1</a></td>
 				</tr>
 				<tr>
 					<td>
@@ -62,6 +67,7 @@
 							style="border-width: 2px; border-style: ridge; border-color: blue">
 							1.0 First version<br>
 							2.0 Contract proposition and transformation, Cover result calculation
+							2.1 Update for 7.7x
 					</td>
 				</tr>
 				</div>
@@ -546,6 +552,6 @@
 
 
 	<!-- Application dependencies -->
-	<script src="pageResource?page=custompage_meteor&location=meteormonitor.js"></script>
+	<script src="pageResource?page=custompage_meteor&location=meteormonitor.js&v=@_CURRENTTIMEMILIS_@"></script>
 </body>
 </html>

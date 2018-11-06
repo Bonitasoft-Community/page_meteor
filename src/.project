@@ -22,6 +22,26 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>custompage/1106 7.7.3/Actions.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.7.3/workspace/tomcat/server/temp/bonita_portal_32696@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/Actions.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/1106 7.7.3/Index.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.7.3/workspace/tomcat/server/temp/bonita_portal_32696@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/Index.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/1106 7.7.3/index.html</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.7.3/workspace/tomcat/server/temp/bonita_portal_32696@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/index.html</locationURI>
+		</link>
+		<link>
+			<name>custompage/1106 7.7.3/meteormonitor.js</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.7.3/workspace/tomcat/server/temp/bonita_portal_32696@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/resources/meteormonitor.js</locationURI>
+		</link>
+		<link>
 			<name>custompage/7.2.3-c/Index.groovy</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.2.3-c/workspace/Premiere%20Digital/bonita_home/client/tenants/1/work/pages/custompage_meteor/Index.groovy</locationURI>

@@ -1,17 +1,11 @@
 package org.bonitasoft.meteor;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import org.bonitasoft.engine.bpm.contract.InputDefinition;
-import org.bonitasoft.engine.bpm.contract.Type;
-
-import javassist.bytecode.ByteArray;
 
 public class MeteorToolbox {
 
