@@ -51,7 +51,9 @@ import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEventFactory;
 import org.bonitasoft.log.event.BEvent.Level;
 
-import org.bonitasoft.ext.properties.BonitaProperties;
+import org.bonitasoft.properties.BonitaProperties;
+
+import org.bonitasoft.command.BonitaCommandDeployment.DeployStatus;
 
 import org.bonitasoft.meteor.MeteorAPI;
 import org.bonitasoft.meteor.MeteorAPI.StartParameters;
@@ -144,7 +146,8 @@ public class Actions {
 			else if ("start".equals(action))
 			{
 				String accumulateJson = (String) httpSession.getAttribute("accumulate" );
-			    start( accumulateJson,  listEvents, actionAnswer.responseMap, meteorAPI, processAPI, commandAPI, pageResourceProvider );
+
+			    start( accumulateJson,  listEvents, actionAnswer.responseMap, meteorAPI, processAPI, commandAPI, pageResourceProvider, apiSession.getTenantId()  );
 
 			} 
 			else if ("loadandstart".equals(action))
@@ -173,7 +176,7 @@ public class Actions {
 		               	
 		               	
 				if (accumulateJson!=null)
-					start( accumulateJson,  listEvents, actionAnswer.responseMap, meteorAPI, processAPI, commandAPI, pageResourceProvider );
+					start( accumulateJson,  listEvents, actionAnswer.responseMap, meteorAPI, processAPI, commandAPI, pageResourceProvider,apiSession.getTenantId() );
 				
 			}
 
@@ -190,7 +193,7 @@ public class Actions {
 				
 					statusParameters=StatusParameters.getInstanceFromSimulationId( simulationId );
 				}
-				actionAnswer.setResponse( meteorAPI.getStatus(statusParameters, processAPI, commandAPI) );
+				actionAnswer.setResponse( meteorAPI.getStatus(statusParameters, processAPI, commandAPI, apiSession.getTenantId()) );
                 
             }
             // ------- init 
@@ -337,36 +340,22 @@ public class Actions {
 	/*
 	 * 
 	 */
-	public static void start(String accumulateJson, List<BEvent> listEvents, Map<String,Object> answer, MeteorAPI meteorAPI, ProcessAPI processAPI, CommandAPI commandAPI, PageResourceProvider pageResourceProvider )
+	public static void start(String accumulateJson, List<BEvent> listEvents, Map<String,Object> answer, MeteorAPI meteorAPI, ProcessAPI processAPI, CommandAPI commandAPI, PageResourceProvider pageResourceProvider,long tenantId )
 	{
-
-		/*
-        List jarDependencies = new ArrayList<>();
-        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bdm-jpql-query-executor-command-1.0.jar", pageResourceProvider.getResourceAsStream("lib/bdm-jpql-query-executor-command-1.0.jar")));
-        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "process-starter-command-1.0.jar", pageResourceProvider.getResourceAsStream("lib/process-starter-command-1.0.jar")));
-        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "scenario-utils-2.0.jar", pageResourceProvider.getResourceAsStream("lib/scenario-utils-2.0.jar")));
-        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "CustomPageMeteor-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/CustomPageMeteor-1.0.0.jar")));
-        jarDependencies.add( CmdMeteor.getInstanceJarDependencyCommand( "bonita-event-1.0.0.jar", pageResourceProvider.getResourceAsStream("lib/bonita-event-1.0.0.jar")));
-        */
-        File fileJar = pageResourceProvider.getResourceAsFile("lib/CustomPageMeteor-1.0.0.jar");
-        long timeFile=fileJar.lastModified();
-        
         // so no need to have a force deploy here.
-        List<BEvent> listEventsDeploy = meteorAPI.deployCommand(false, String.valueOf(timeFile), pageResourceProvider.getPageDirectory(),  commandAPI, null);
-        if (BEventFactory.isError( listEventsDeploy))
+        DeployStatus deployStatus= meteorAPI.deployCommand( pageResourceProvider.getPageDirectory(),  commandAPI, null, tenantId);
+		 
+        if (BEventFactory.isError( deployStatus.listEvents ))
         {
-            listEvents.addAll(listEventsDeploy );
-        }
+            listEvents.addAll( deployStatus.listEvents  );
+        } 
         
-        listEventsDeploy.addAll( meteorAPI.deployCommandGroovyScenario(true, "1.0", new ArrayList<>(), commandAPI, null));
-        
-        
-		// logger.info("Json=["+paramJsonSt+"]");
+  	// logger.info("Json=["+paramJsonSt+"]");
           StartParameters startParameters; 
           logger.info(" We get a LIST JSON size=("+accumulateJson.length()+" - first value =["+ (accumulateJson==null ? null :(accumulateJson.length()>100 ? accumulateJson.substring(0,100) :accumulateJson))+ "]");
           startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
        
-		answer.putAll( meteorAPI.start(startParameters, processAPI, commandAPI));
+		answer.putAll( meteorAPI.start(startParameters, processAPI, commandAPI,tenantId));
 
 	}
 	

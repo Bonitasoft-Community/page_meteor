@@ -59,7 +59,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V2.1</a></td>
+					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V3.0</a></td>
 				</tr>
 				<tr>
 					<td>
@@ -68,6 +68,7 @@
 							1.0 First version<br>
 							2.0 Contract proposition and transformation, Cover result calculation
 							2.1 Update for 7.7x
+							3.0 Experience scenario
 					</td>
 				</tr>
 				</div>
@@ -120,8 +121,7 @@
 					
 				</legend>
 				<div class="panel panel-primary" ng-show="meteorctrl.showmainscenarii">
-					<div class="explanation">All processes on the server</div>
-
+					
 					<table width="100%">
 						<tr>
 							<td align="center"><span ng-show="meteorctrl.wait"> 
@@ -294,8 +294,118 @@
 						</table>
 					</div>
 					
-					<! -- end process -->
+					<!-- end process -->
 
+					<h3>
+						<a href="#" ng-click="meteorctrl.showexperience = ! meteorctrl.showexperience" style="text-decoration:none">					
+			  				<span ng-show="meteorctrl.showexperience" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
+		  				</a>
+						<a href="#" ng-click="meteorctrl.showexperience = ! meteorctrl.showexperience" style="text-decoration:none">					
+							<span ng-show="! meteorctrl.showexperience" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
+						</a>		
+			  			Experience
+					</h3>
+					<div ng-show="meteorctrl.showexperience">
+						Case Id <input ng-model="meteorctrl.experienceCaseId">
+						<button ng-click="meteorctrl.collectExperience()" class="btn btn-success" ng-disabled="meteorctrl.startwait">Collect Experience</button>
+						<div class="explanation">Give an existing caseId, then the scenario will be build  processes on the server</div>
+						
+						<!-- style="background-color: #f9f9f9;" -->
+						<table class="table table-striped table-hover table-condensed">
+							<tr>
+								<th style="background-color: #f2dede; text-align: center;">Name</th>
+								<th style="background-color: #f2dede; text-align: center;"><span title="number of execution (cases or tasks) PER robots">exec/rob</span></th>
+								<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep before the start">Delay start (ms)</span></th>
+								<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep between each execution, in millisecond">sleep (ms)</span></th>
+								<th style="background-color: #f2dede; text-align: center;">Contract</th>
+							</tr>
+							<tbody ng-repeat="experienceinfo in meteorctrl.experiencescenario track by $index">
+								<tr style="background-color: ##D9EDF7;border-width: 1px 1px" >
+									<td style="background-color: #D9EDF7;border-width: 1px 1px"><span title="Name"><input ng-model="experienceinfo.name"></span></td>
+								
+									<td style="background-color: #D9EDF7;border-width: 1px 1px"><span title="Process name and version">{{experienceinfo.information}}</span></td>
+									<td style="background-color: #D9EDF7;border-width: 1px 1px;text-align: center;"><input type="number"
+										ng-model="processinfo.nbrob" style="text-align: right; width: 80px;"
+										title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably"></td>
+									<td style="background-color: #D9EDF7; text-align: center;">
+										<input type="number" ng-model="processinfo.nbcases" style="text-align: right; width: 80px;"	title="Attention, the number of case created will be Nb robots*nbCases"></td>
+									<td style="background-color: #D9EDF7; text-align: right;width: 80px">({{processinfo.nbrob*processinfo.nbcases}})</td>
+									<td style="background-color: #D9EDF7; text-align: center">
+										<input type="number" ng-model="processinfo.delaysleep" style="text-align: right; width: 80px;" title="Before start, robots will sleep this time (in ms)"></td>
+									<td style="background-color: #D9EDF7; text-align: center">
+										<input type="number" ng-model="processinfo.timesleep" style="text-align: right; width: 80px;" title="Between each creation, robots will sleep this time (in ms)"></td>
+									<td style="background-color: #D9EDF7; text-align: center;">
+										<table>
+											<tr ng-repeat="input in processinfo.inputs track by $index">
+												<td>
+													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;">%
+												</td>
+												<td>
+													<table>
+														<tr><td>
+															<button ng-click="meteorctrl.formatInput( processinfo, input)" class="btn btn-info btn-xs" style="width: 100%;">Format</button>
+														</td></tr>														
+														<tr><td>
+															<textarea cols="70" rows="5" ng-model="input.content"></textarea>
+														</td></tr>
+														<tr><td>
+															<button ng-click="meteorctrl.proposeInput( processinfo, input)" class="btn btn-default btn-xs" style="width: 100%;">Propose</button>
+														</td></tr>														
+													</table>
+												</td>
+												<td>
+													<button ng-click="meteorctrl.removeInput( processinfo, input) " class="btn btn-danger btn-xs">Remove</button>
+												</td>
+											</tr>
+										</table>
+										<button ng-click="meteorctrl.addInput( processinfo )" class="btn btn-info btn-xs">Add</button>
+									</td>
+								</tr>
+								<tr ng-repeat="activityinfo in processinfo.activities track by $index"
+									ng-show="! meteorctrl.showonlyactive  || activityinfo.nbrob>0" style="border-width: 1px 1px">
+									<td style="background-color: #fcf8e3">&nbsp;&nbsp;{{activityinfo.activityname}}</td>
+									<td style="background-color: #fcf8e3; text-align: center;"><input type="number"
+										ng-model="activityinfo.nbrob" style="text-align: right; width: 80px;"></td>
+									<td style="background-color: #fcf8e3; text-align: center;">
+										<input type="number"
+										ng-model="activityinfo.nbcases" style="text-align: right; width: 80px;"></td>
+									<td style="background-color: #fcf8e3;text-align: right;width: 80px">({{activityinfo.nbrob*activityinfo.nbcases}})</td>										
+									<td style="background-color: #fcf8e3; text-align: center;">
+										<input type="number" ng-model="activityinfo.delaysleep" style="text-align: right; width: 80px;"></td>
+									<td style="background-color: #fcf8e3; text-align: center;">
+										<input type="number" ng-model="activityinfo.timesleep" style="text-align: right; width: 80px;"></td>
+									<td style="background-color: #fcf8e3; text-align: center;; text-align: center">
+										<table>
+											<tr ng-repeat="input in activityinfo.inputs track by $index">
+												<td>
+													<input type="number" ng-model="input.percent" style="text-align: right; width: 80px;">%
+												</td>
+												<td>
+													<table>
+														<tr><td>
+															<textarea ng-model="input.content"></textarea>
+														</td></tr>
+														<tr><td>
+														<button ng-click="meteorctrl.proposeInput( activityinfo, input)" class="btn btn-default btn-xs" style="width: 100%;">Propose</button>
+														</td></tr>
+													</table>
+
+												</td>
+												<td>
+													<button ng-click="meteorctrl.removeInput( activityinfo, input) " class="btn btn-danger btn-xs">Remove</button>
+												</td>
+											</tr>
+										</table>
+										<button ng-click="meteorctrl.addInput( activityinfo )" class="btn btn-info btn-xs">Add</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+
+
+					<!-- 
 					<h3>
 						<a href="#" ng-click="meteorctrl.showscenarii = ! meteorctrl.showscenarii" style="text-decoration:none">					
 			  				<span ng-show="meteorctrl.showscenarii" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
@@ -305,6 +415,7 @@
 						</a>		
 			  			 Scenarii
 					</h3>
+					 
 					<div ng-show="meteorctrl.showscenarii">
 						<table class="table table-striped table-hover table-condensed">
 							<tr>
@@ -353,9 +464,11 @@
 							<button ng-click="meteorctrl.addScenarii()" class="btn btn-info">Add</button>
 						</center>
 						
-						<!-- Scenario={{meteorctrl.scenarii}} -->
-					</div>
-
+						
+					</div> end meteorctrl.scenarii
+					-->
+					
+					<!-- 
 					<h3>
 						<a href="#" ng-click="meteorctrl.showRestApi = ! meteorctrl.showRestApi" style="text-decoration:none">					
 			  				<span ng-show="meteorctrl.showRestApi" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
@@ -368,7 +481,7 @@
 						 <div ng-show="meteorctrl.showRestApi">
 						 	This part is not yet implemented.
 						</div>
-				
+				 	-->
 
 				</div>
 

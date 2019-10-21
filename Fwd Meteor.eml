@@ -1,0 +1,642 @@
+Delivered-To: pierre-yves.monnet@bonitasoft.com
+Received: by 2002:a25:4941:0:0:0:0:0 with SMTP id w62csp296480yba;
+        Tue, 24 Sep 2019 23:56:14 -0700 (PDT)
+X-Received: by 2002:a9f:3808:: with SMTP id p8mr2106184uad.52.1569394574176;
+        Tue, 24 Sep 2019 23:56:14 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1569394574; cv=none;
+        d=google.com; s=arc-20160816;
+        b=I2Yz3GL+j2ZnqtG4kcejaD21uSnMfgf+V1/M4rh4fZLYb2GlOpVnOoCqDEi3a1grGz
+         1+ITp8F7wzufhskLxpvkTU6RbZExq4InsZdya8sfDlGs1tptjhQ7MOtFtqGcwSgerMko
+         jTwXXuxTZ5e9EX5KqxO2RWGPsgOFyyCzw9uk1DyRCrcCkc2/hUUXnC8vVCPz+1sJP5DT
+         tUaFJkD4Zx0IKuopjN4exQ31KjEsXdjshbFAd2/U/qWmbfC3wbjC8hEcthI5NsUXOdaX
+         4XktlQZZplKNE0hr3u+0vBM3r9K9kXpoHNf1W2VEl30CZZ8gaQJ5E9uYS/h+5O+p7FSH
+         i4bw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=PgmgiAh9J9GAd0X18cFz1UALwtcuSnxJ//59d6pD2FA=;
+        b=g91uOrlCUP+8+phqF96zU1DviI681DgrljQ16GHIoErdnKpIVtrOcJJGMwSsvVtbj2
+         rGvsEtFbIjtElg5DsaO07W75vGlRzsXpAYjiqdaLoGFLRn58prHtHe+DHaH0wXNkKFr4
+         dDa4o5U+DZgw0SsPehVgJ5fBJ5mdEHKld7eqzePh22zXy7Lkxot+D4+p/PvnKHT7AmWe
+         PT2rJnn1GyhaNCiXyxuMn1yHMBQFMo0bEPYzRqzP7jePXYILvhvIRUvwf30IOmaXlcca
+         QGLZDFBx+6dVChpwVnMCYGzEFKlPcP2iTmUtMEwJixhp4m4o3OOGX5UqEMXWWKk4OwVM
+         zwJg==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@bonitasoft-com.20150623.gappssmtp.com header.s=20150623 header.b=mrcPVcVe;
+       spf=pass (google.com: domain of shamil.hassanaly@bonitasoft.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=shamil.hassanaly@bonitasoft.com
+Return-Path: <shamil.hassanaly@bonitasoft.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id u12sor2317672vsk.58.2019.09.24.23.56.13
+        for <pierre-yves.monnet@bonitasoft.com>
+        (Google Transport Security);
+        Tue, 24 Sep 2019 23:56:13 -0700 (PDT)
+Received-SPF: pass (google.com: domain of shamil.hassanaly@bonitasoft.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@bonitasoft-com.20150623.gappssmtp.com header.s=20150623 header.b=mrcPVcVe;
+       spf=pass (google.com: domain of shamil.hassanaly@bonitasoft.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=shamil.hassanaly@bonitasoft.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bonitasoft-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to;
+        bh=PgmgiAh9J9GAd0X18cFz1UALwtcuSnxJ//59d6pD2FA=;
+        b=mrcPVcVeTJVynYMOh3stsThh3aHPQL6q5H8Tptsoewi51zdIa2aK/yGn5MLZuXze8k
+         abr1rhEhnyGe9ibywHPiRuHIJvuPkCCbQvqxlaqHDBalFocWRg+jaRPIuz7pRJ4J6pPE
+         9HIu55qmrQmlNr4XRRvC2qHlLtFkoWcwN0WauRi0Btt2yTi3yihIjy+7tQX+Zgou415C
+         A6tyztLnPacvFZjFdub/YfEyPp6WUiMClwVduME1eoA0M6wGZRiL7+q+mxJj8LbLDYeP
+         /XaGoU510IuWhpFGuUXwqjTIlIP+W5e6qjJSIhUCtvSaug7K6qLjnoozzwBcUUtnNUyY
+         Dvaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to;
+        bh=PgmgiAh9J9GAd0X18cFz1UALwtcuSnxJ//59d6pD2FA=;
+        b=DhTJPRu0nlyxGk/l9KncasbwWPrN5jjaYIlKxoQcwAj0BvCAQbHL9pbX+EzWGkKMWj
+         dNd4VXFPfycx3XFf8aaw1Pqbp0iaqYn2mv9vXKjzQyVjMr1GNYIjGzgz5Yk+F1UjWNDk
+         nQ59Ko3/TMu24zptum5UM2wFKQYffDEaOFmohN5FaFQfEXzaUnLDZ0zeS2jXPwxch1v3
+         6vSBAEg/UF7+ZwlwRY9X8gmkmaVFvIM2grAZCsQEmRZy33Xmiv6GrdP4JDFHBLkwa5sC
+         Pb1bClR+iENo2WtElXPpdjXb3RKsmEg+9P5fJcvGCkxf7KGIm1pxW3Sy10PE/DEr8UiD
+         wBMg==
+X-Gm-Message-State: APjAAAUIveyDkYVn7RGG7X5yK9LSpEmyQvQ9JMOH8ZrHEBkeOgI36IRi
+	2/9IE0Sc46E7zsMtjVSoDEf40oGXvMKZsu81u/06unAr0Xkueg==
+X-Google-Smtp-Source: APXvYqztAtFRFv1OWmm9v+rZiG+U7aM6rxF8Hw1iiEPRdTFDRAI07n/NBe8GQvIdlX1rOMJMAbUicxzqZOL8/ToN7uI=
+X-Received: by 2002:a67:ee02:: with SMTP id f2mr3830991vsp.220.1569394572902;
+ Tue, 24 Sep 2019 23:56:12 -0700 (PDT)
+MIME-Version: 1.0
+References: <CAKyCOhN0q9JZVA=dYw6u8ABhigEuCasiCQxb7bHJDEqf_NpjSw@mail.gmail.com>
+ <9A9AE71F-D575-4776-8AAA-5FD34C266639@bonitasoft.com>
+In-Reply-To: <9A9AE71F-D575-4776-8AAA-5FD34C266639@bonitasoft.com>
+From: Shamil Hassanaly <shamil.hassanaly@bonitasoft.com>
+Date: Wed, 25 Sep 2019 08:55:36 +0200
+Message-ID: <CANTvtgYDfiFnxRGZ3wrQtO1G3w4pcVj4eks60vTpx0vGpkE=0Q@mail.gmail.com>
+Subject: Fwd: Meteor
+To: Pierre-Yves Monnet <pierre-yves.monnet@bonitasoft.com>
+Content-Type: multipart/alternative; boundary="00000000000007d61805935b2680"
+X-Antivirus: Avast (VPS 190923-2, 23/09/2019), Inbound message
+X-Antivirus-Status: Clean
+
+--00000000000007d61805935b2680
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+FYI
+
+*Exp=C3=A9diteur:* Charles Souillard <charles.souillard@bonitasoft.com>
+*Date:* 12 mars 2019 =C3=A0 22:18:23 UTC+1
+*Destinataire:* Pierre-Yves Monnet <pierre-yves.monnet@bonitasoft.com>
+*Objet:* *Meteor*
+
+Salut Pierre-Yves,
+
+
+Suite =C3=A0 notre meeting de ce jour sur ta contribution Meteor, voici une
+propage pour avancer.
+
+
+Probl=C3=A8mes de la page actuelle:
+
+- mix de personas: technique et moins technique
+
+- ergonomie tr=C3=A8s loin du niveau attendu
+
+- spectre trop large: fonctionnel, perf, custom=E2=80=A6
+
+- environnement de la page =C3=A0 am=C3=A9liorer (objectif, ce que c=E2=80=
+=99est, ce que ce
+n=E2=80=99est pas=E2=80=A6)
+
+
+Proposition pour avancer:
+
+- refaire une nouvelle page from scratch comme cela tu ne perturbes pas la
+communaut=C3=A9 avec la page existante
+
+- r=C3=A9duire le p=C3=A9rim=C3=A8tre au test fonctionnel
+
+- rendre la page =C2=AB clic clic only =C2=BB, pas de code
+
+- ajoute l=E2=80=99export =C2=AB as a Jenkins job =C2=BB
+
+
+Solution envisag=C3=A9e:
+
+- cr=C3=A9er l=E2=80=99API qui va bien pour r=C3=A9cup=C3=A9rer un enregist=
+rement (contrats
+d=E2=80=99instance et de t=C3=A2che) d=E2=80=99un case donn=C3=A9 correspon=
+dant =C3=A0 un enregistrement
+fait par un utilisateur sur la plateforme
+
+- permettre dans la page de cr=C3=A9er un sc=C3=A9nario de test compos=C3=
+=A9 de l=E2=80=99import
+de diff=C3=A9rents cases depuis:
+
+  * soit un case id directement
+
+  * soit par s=C3=A9lection d=E2=80=99un process par son nom & version puis=
+ s=C3=A9lection du
+case gr=C3=A2ce =C3=A0 certaines m=C3=A9ta-donn=C3=A9es (date de cr=C3=A9at=
+ion, contrat
+d=E2=80=99instantiation=E2=80=A6)
+
+- permettre depuis la page de jouer le case ? Quel serait l=E2=80=99int=C3=
+=A9r=C3=AAt?
+
+- permettre depuis la page d=E2=80=99exporter le test fonctionnel en tant q=
+ue job
+Jenkins qui exposerait juste le param=C3=A8tre de =C2=AB sleep =C2=BB avant=
+ d=E2=80=99ex=C3=A9cuter une
+t=C3=A2che
+
+
+Questions / doutes =C3=A0 creuser:
+
+- persistenceId qui bougent pour un BDM?
+
+
+Proposition de texte pour cette nouvelle page:
+
+- title: =C3=A0 d=C3=A9finir si tu veux des noms =C2=AB fun =C2=BB mais dan=
+s ce cas, c=E2=80=99est cool
+d=E2=80=99expliquer le choix du nom=E2=80=A6
+
+- sub-title: =C2=AB Jenkins job: process test generator =C2=BB
+
+- goal:  graphically create functional process tests and export them as
+Jenkins jobs
+
+- how to use it: download and install this page in one of your
+non-production Bonita Runtime
+
+
+@+
+
+
+
+<https://bonitasoft.com>
+<http://bonitasoft.com/>
+
+Charles SOUILLARD
+<https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/link?=
+element=3Dname>
+
+Chief Operating Officer & co-founder
+<https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/link?=
+element=3Djob>
+
++33 6 85 84 99 46
+<https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/link?=
+element=3Dmobile>
+charles.souillard
+<https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/link?=
+element=3Dskype>
+charles.souillard@bonitasoft.com
+32, rue Gustave Eiffel - 38000 Grenoble
+<https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/link?=
+element=3Dmap_marker>
+
+<https://www.facebook.com/bonitasoftbpm>
+<https://twitter.com/bonitasoft>
+<https://www.youtube.com/user/BonitaSoft>
+
+<https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/redir=
+ect_link>
+
+
+
+--=20
+
+
+
+<https://bonitasoft.com>
+<http://bonitasoft.com/>
+
+Shamil Hassanaly
+<https://data.sigilium.com/signatures/rclx1xxtnlltgw-qci1kidk4cfoiorc/link?=
+element=3Dname>
+
+CCO
+<https://data.sigilium.com/signatures/rclx1xxtnlltgw-qci1kidk4cfoiorc/link?=
+element=3Djob>
+
+shamil.hassanaly@bonitasoft.com
+76, boulevard de la R=C3=A9publique
+92100 Boulogne Billancourt
+<https://data.sigilium.com/signatures/rclx1xxtnlltgw-qci1kidk4cfoiorc/link?=
+element=3Dmap_marker>
+
+<https://www.facebook.com/bonitasoftbpm>
+<https://twitter.com/bonitasoft>
+<https://www.youtube.com/user/BonitaSoft>
+
+--00000000000007d61805935b2680
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><div class=3D"gmail_quote"><div dir=3D"auto"><div>FYI<=
+br><br></div><blockquote type=3D"cite"><div dir=3D"ltr"><b>Exp=C3=A9diteur:=
+</b> Charles Souillard &lt;<a href=3D"mailto:charles.souillard@bonitasoft.c=
+om" target=3D"_blank">charles.souillard@bonitasoft.com</a>&gt;<br><b>Date:<=
+/b> 12 mars 2019 =C3=A0 22:18:23 UTC+1<br><b>Destinataire:</b> Pierre-Yves =
+Monnet &lt;<a href=3D"mailto:pierre-yves.monnet@bonitasoft.com" target=3D"_=
+blank">pierre-yves.monnet@bonitasoft.com</a>&gt;<br><b>Objet:</b> <b>Meteor=
+</b><br><br></div></blockquote><blockquote type=3D"cite"><div dir=3D"ltr"><=
+div dir=3D"ltr">
+
+
+
+
+
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Salut Pierre-Yves,</p>
+<p class=3D"m_219392439626502618gmail-p2" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica;min-height:14px"><br></p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Suite =C3=A0 notre meeting =
+de ce jour sur ta contribution Meteor, voici une propage pour avancer.</p>
+<p class=3D"m_219392439626502618gmail-p2" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica;min-height:14px"><br></p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Probl=C3=A8mes de la page a=
+ctuelle:</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- mix de personas: techniqu=
+e et moins technique</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- ergonomie tr=C3=A8s loin =
+du niveau attendu</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- spectre trop large: fonct=
+ionnel, perf, custom=E2=80=A6</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- environnement de la page =
+=C3=A0 am=C3=A9liorer (objectif, ce que c=E2=80=99est, ce que ce n=E2=80=99=
+est pas=E2=80=A6)</p>
+<p class=3D"m_219392439626502618gmail-p2" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica;min-height:14px"><br></p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Proposition pour avancer:</=
+p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- refaire une nouvelle page=
+ from scratch comme cela tu ne perturbes pas la communaut=C3=A9 avec la pag=
+e existante</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- r=C3=A9duire le p=C3=A9ri=
+m=C3=A8tre au test fonctionnel</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- rendre la page =C2=AB=C2=
+=A0clic clic only=C2=A0=C2=BB, pas de code</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- ajoute l=E2=80=99export =
+=C2=AB=C2=A0as a Jenkins job=C2=A0=C2=BB</p>
+<p class=3D"m_219392439626502618gmail-p2" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica;min-height:14px"><br></p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Solution envisag=C3=A9e:</p=
+>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- cr=C3=A9er l=E2=80=99API =
+qui va bien pour r=C3=A9cup=C3=A9rer un enregistrement (contrats d=E2=80=99=
+instance et de t=C3=A2che) d=E2=80=99un case donn=C3=A9 correspondant =C3=
+=A0 un enregistrement fait par un utilisateur sur la plateforme</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- permettre dans la page de=
+ cr=C3=A9er un sc=C3=A9nario de test compos=C3=A9 de l=E2=80=99import de di=
+ff=C3=A9rents cases depuis:</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica"><span class=3D"m_2193924396=
+26502618gmail-Apple-converted-space">=C2=A0 </span>* soit un case id direct=
+ement</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica"><span class=3D"m_2193924396=
+26502618gmail-Apple-converted-space">=C2=A0 </span>* soit par s=C3=A9lectio=
+n d=E2=80=99un process par son nom &amp; version puis s=C3=A9lection du cas=
+e gr=C3=A2ce =C3=A0 certaines m=C3=A9ta-donn=C3=A9es (date de cr=C3=A9ation=
+, contrat d=E2=80=99instantiation=E2=80=A6)</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- permettre depuis la page =
+de jouer le case ? Quel serait l=E2=80=99int=C3=A9r=C3=AAt?</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- permettre depuis la page =
+d=E2=80=99exporter le test fonctionnel en tant que job Jenkins qui exposera=
+it juste le param=C3=A8tre de =C2=AB=C2=A0sleep=C2=A0=C2=BB avant d=E2=80=
+=99ex=C3=A9cuter une t=C3=A2che</p>
+<p class=3D"m_219392439626502618gmail-p2" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica;min-height:14px"><br></p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Questions / doutes =C3=A0 c=
+reuser:</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- persistenceId qui bougent=
+ pour un BDM?<span class=3D"m_219392439626502618gmail-Apple-converted-space=
+">=C2=A0</span></p>
+<p class=3D"m_219392439626502618gmail-p2" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica;min-height:14px"><br></p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">Proposition de texte pour c=
+ette nouvelle page:</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- title: =C3=A0 d=C3=A9fini=
+r si tu veux des noms =C2=AB=C2=A0fun=C2=A0=C2=BB mais dans ce cas, c=E2=80=
+=99est cool d=E2=80=99expliquer le choix du nom=E2=80=A6</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- sub-title: =C2=AB=C2=A0Je=
+nkins job: process test generator=C2=A0=C2=BB</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- goal:<span class=3D"m_219=
+392439626502618gmail-Apple-converted-space">=C2=A0 </span>graphically creat=
+e functional process tests and export them as Jenkins jobs</p>
+<p class=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-=
+numeric:normal;font-variant-east-asian:normal;font-stretch:normal;font-size=
+:12px;line-height:normal;font-family:Helvetica">- how to use it: download a=
+nd install this page in one of your non-production Bonita Runtime</p><p cla=
+ss=3D"m_219392439626502618gmail-p1" style=3D"margin:0px;font-variant-numeri=
+c:normal;font-variant-east-asian:normal;font-stretch:normal;font-size:12px;=
+line-height:normal;font-family:Helvetica"><br></p><p class=3D"m_21939243962=
+6502618gmail-p1" style=3D"margin:0px;font-variant-numeric:normal;font-varia=
+nt-east-asian:normal;font-stretch:normal;font-size:12px;line-height:normal;=
+font-family:Helvetica"><a class=3D"gmail_plusreply" id=3D"m_219392439626502=
+618plusReplyChip-4">@+</a><br></p><div><div dir=3D"ltr" class=3D"m_21939243=
+9626502618gmail_signature" data-smartmail=3D"gmail_signature"><div>
+<br>
+<br>
+<br>
+<table>
+<tbody><tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-right:15px;borde=
+r-right:1px solid #e0002d" valign=3D"top"><a href=3D"https://bonitasoft.com=
+" target=3D"_blank"><img src=3D"https://data.sigilium.com/img/clients/bonit=
+asoft/gptw.png" style=3D"border-style:none;width:110px;height:180px;display=
+:block" border=3D"0" width=3D"110" height=3D"180">
+</a></td><td style=3D"margin:0;padding:0;vertical-align:top"><table>
+<tbody><tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-left:10px;paddin=
+g-bottom:10px"><a href=3D"http://bonitasoft.com/" target=3D"_blank"><img sr=
+c=3D"https://data.sigilium.com/images/logos/rciqyozxsdqd0-2cpyclpkyx76txcrc=
+/auto/logo.png" style=3D"border-style:none;display:block;width:240px;height=
+:50px" width=3D"240" height=3D"50"></a>
+</td></tr>
+</tbody></table>
+<table>
+<tbody><tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;min-width:250px;padding-=
+left:10px" colspan=3D"1"><p style=3D"margin:0;padding:0;font-family:Arial,s=
+ans-serif;font-size:12px;color:#3f3f3f;font-weight:bold"><span style=3D"fon=
+t-family:Arial,sans-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-de=
+coration:none!important;text-decoration:none;color:#3f3f3f;font-family:Aria=
+l,sans-serif;font-size:12px" href=3D"https://data.sigilium.com/signatures/r=
+cyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/link?element=3Dname" target=3D"_blank">Charl=
+es SOUILLARD</a></span>
+</p></td></tr>
+<tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-left:10px" colsp=
+an=3D"1"><p style=3D"margin:0;padding:0;font-family:Arial,sans-serif;font-s=
+ize:12px;color:#3f3f3f"><span style=3D"font-family:Arial,sans-serif;font-si=
+ze:12px;color:#e0002d"><a style=3D"text-decoration:none!important;text-deco=
+ration:none;color:#e0002d;font-family:Arial,sans-serif;font-size:12px" href=
+=3D"https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2Wm4oXW8Irc/li=
+nk?element=3Djob" target=3D"_blank">Chief Operating Officer &amp; co-founde=
+r</a></span>
+</p></td></tr>
+
+<tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-left:10px" colsp=
+an=3D"1"><p style=3D"margin:0;padding:0;font-family:Arial,sans-serif;font-s=
+ize:12px;color:#3f3f3f"></p><table>
+
+
+<tbody><tr style=3D"font-family:Arial,sans-serif;font-size:12px;color:#3f3f=
+3f"><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sa=
+ns-serif;font-size:12px;color:#3f3f3f;padding-right:4px"><img src=3D"https:=
+//data.sigilium.com/img/3f3f3f/30/mobile.png" style=3D"border-style:none;wi=
+dth:15px;height:15px;margin-right:5px" border=3D"0" width=3D"15" height=3D"=
+15"></td><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Ari=
+al,sans-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-decoration:non=
+e!important;text-decoration:none;color:#3f3f3f;font-family:Arial,sans-serif=
+;font-size:12px" href=3D"https://data.sigilium.com/signatures/rcyeRXxnmoazN=
+KU0ji1C2Wm4oXW8Irc/link?element=3Dmobile" target=3D"_blank"> +33 6 85 84 99=
+ 46</a></td></tr>
+<tr style=3D"font-family:Arial,sans-serif;font-size:12px;color:#3f3f3f"><td=
+ style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sans-seri=
+f;font-size:12px;color:#3f3f3f;padding-right:4px"><img src=3D"https://data.=
+sigilium.com/img/3f3f3f/30/skype.png" style=3D"border-style:none;width:15px=
+;height:15px;margin-right:5px" border=3D"0" width=3D"15" height=3D"15"></td=
+><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sans-=
+serif;font-size:12px;color:#3f3f3f"><a style=3D"text-decoration:none!import=
+ant;text-decoration:none;color:#3f3f3f;font-family:Arial,sans-serif;font-si=
+ze:12px" href=3D"https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0ji1C2=
+Wm4oXW8Irc/link?element=3Dskype" target=3D"_blank"> charles.souillard</a></=
+td></tr>
+
+<tr style=3D"font-family:Arial,sans-serif;font-size:12px;color:#3f3f3f"><td=
+ style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sans-seri=
+f;font-size:12px;color:#3f3f3f;padding-right:4px"><img src=3D"https://data.=
+sigilium.com/img/3f3f3f/30/envelope.png" style=3D"border-style:none;width:1=
+5px;height:15px;margin-right:5px" border=3D"0" width=3D"15" height=3D"15"><=
+/td><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sa=
+ns-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-decoration:none!imp=
+ortant;text-decoration:none;color:#3f3f3f;font-family:Arial,sans-serif;font=
+-size:12px" href=3D"mailto:charles.souillard@bonitasoft.com" target=3D"_bla=
+nk"> charles.souillard@bonitasoft.com</a></td></tr>
+<tr style=3D"font-family:Arial,sans-serif;font-size:12px;color:#3f3f3f"><td=
+ style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sans-seri=
+f;font-size:12px;color:#3f3f3f;padding-right:4px"><img src=3D"https://data.=
+sigilium.com/img/3f3f3f/30/map-marker.png" style=3D"border-style:none;width=
+:15px;height:15px;margin-right:5px" border=3D"0" width=3D"15" height=3D"15"=
+></td><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,=
+sans-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-decoration:none!i=
+mportant;text-decoration:none;color:#3f3f3f;font-family:Arial,sans-serif;fo=
+nt-size:12px" href=3D"https://data.sigilium.com/signatures/rcyeRXxnmoazNKU0=
+ji1C2Wm4oXW8Irc/link?element=3Dmap_marker" target=3D"_blank"> 32, rue Gusta=
+ve Eiffel  - 38000 Grenoble</a></td></tr>
+</tbody></table>
+<p></p></td><td style=3D"margin:0;padding:0;vertical-align:top;padding-left=
+:10px"><table>
+<tbody><tr>
+<td>
+<a style=3D"text-decoration:none" href=3D"https://www.facebook.com/bonitaso=
+ftbpm" target=3D"_blank"><img src=3D"https://data.sigilium.com/img/e0002d/5=
+0/facebook.png" style=3D"border-style:none;width:25px;height:25px;display:b=
+lock;margin-right:5px" border=3D"0" width=3D"25" height=3D"25">
+</a></td>
+</tr>
+<tr>
+<td>
+<a style=3D"text-decoration:none" href=3D"https://twitter.com/bonitasoft" t=
+arget=3D"_blank"><img src=3D"https://data.sigilium.com/img/e0002d/50/twitte=
+r.png" style=3D"border-style:none;width:25px;height:25px;display:block;marg=
+in-right:5px" border=3D"0" width=3D"25" height=3D"25">
+</a></td>
+</tr>
+<tr>
+<td>
+<a style=3D"text-decoration:none" href=3D"https://www.youtube.com/user/Boni=
+taSoft" target=3D"_blank"><img src=3D"https://data.sigilium.com/img/e0002d/=
+50/youtube.png" style=3D"border-style:none;width:25px;height:25px;display:b=
+lock;margin-right:5px" border=3D"0" width=3D"25" height=3D"25">
+</a></td>
+</tr>
+</tbody></table>
+
+</td></tr>
+</tbody></table>
+</td></tr>
+<tr>
+<td style=3D"margin:0;padding:0;vertical-align:top" colspan=3D"4"><p style=
+=3D"margin:10px 0px;padding:0;font-family:Arial,sans-serif;font-size:12px;c=
+olor:#3f3f3f"><a href=3D"https://data.sigilium.com/signatures/rcyeRXxnmoazN=
+KU0ji1C2Wm4oXW8Irc/redirect_link" target=3D"_blank"><img src=3D"https://dat=
+a.sigilium.com/system/announcements/full_images/000/006/862/normal/Forreste=
+r_-_Video_%281%29.png" style=3D"border-style:none;display:block;width:450px=
+;height:253px" width=3D"450" height=3D"253"></a>
+</p></td></tr>
+
+
+
+</tbody></table>
+
+</div>
+</div></div></div>
+</div></blockquote></div></div><br clear=3D"all"><div><br></div>-- <br><div=
+ dir=3D"ltr" class=3D"gmail_signature" data-smartmail=3D"gmail_signature"><=
+div>
+<br>
+<br>
+<br>
+<table>
+<tbody><tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-right:15px;borde=
+r-right:1px solid #e0002d" valign=3D"top"><a href=3D"https://bonitasoft.com=
+" target=3D"_blank"><img src=3D"https://data.sigilium.com/img/clients/bonit=
+asoft/gptw.png" style=3D"border-style:none;width:110px;height:180px;display=
+:block" border=3D"0" width=3D"110" height=3D"180">
+</a></td><td style=3D"margin:0;padding:0;vertical-align:top"><table>
+<tbody><tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-left:10px;paddin=
+g-bottom:10px"><a href=3D"http://bonitasoft.com/" target=3D"_blank"><img sr=
+c=3D"https://data.sigilium.com/images/logos/rctp6qslyh9-juwdrye4w7o7suql8rc=
+/auto/logo.png" style=3D"border-style:none;display:block;width:240px;height=
+:50px" width=3D"240" height=3D"50"></a>
+</td></tr>
+</tbody></table>
+<table>
+<tbody><tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;min-width:250px;padding-=
+left:10px" colspan=3D"1"><p style=3D"margin:0;padding:0;font-family:Arial,s=
+ans-serif;font-size:12px;color:#3f3f3f;font-weight:bold"><span style=3D"fon=
+t-family:Arial,sans-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-de=
+coration:none!important;text-decoration:none;color:#3f3f3f;font-family:Aria=
+l,sans-serif;font-size:12px" href=3D"https://data.sigilium.com/signatures/r=
+clx1xxtnlltgw-qci1kidk4cfoiorc/link?element=3Dname" target=3D"_blank">Shami=
+l Hassanaly</a></span>
+</p></td></tr>
+<tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-left:10px" colsp=
+an=3D"1"><p style=3D"margin:0;padding:0;font-family:Arial,sans-serif;font-s=
+ize:12px;color:#3f3f3f"><span style=3D"font-family:Arial,sans-serif;font-si=
+ze:12px;color:#e0002d"><a style=3D"text-decoration:none!important;text-deco=
+ration:none;color:#e0002d;font-family:Arial,sans-serif;font-size:12px" href=
+=3D"https://data.sigilium.com/signatures/rclx1xxtnlltgw-qci1kidk4cfoiorc/li=
+nk?element=3Djob" target=3D"_blank">CCO</a></span>
+</p></td></tr>
+
+<tr>
+<td style=3D"margin:0;padding:0;vertical-align:top;padding-left:10px" colsp=
+an=3D"1"><p style=3D"margin:0;padding:0;font-family:Arial,sans-serif;font-s=
+ize:12px;color:#3f3f3f"></p><table>
+
+
+
+
+
+<tbody><tr style=3D"font-family:Arial,sans-serif;font-size:12px;color:#3f3f=
+3f"><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sa=
+ns-serif;font-size:12px;color:#3f3f3f;padding-right:4px"><img src=3D"https:=
+//data.sigilium.com/img/3f3f3f/30/envelope.png" style=3D"border-style:none;=
+width:15px;height:15px;margin-right:5px" border=3D"0" width=3D"15" height=
+=3D"15"></td><td style=3D"margin:0;padding:0;vertical-align:top;font-family=
+:Arial,sans-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-decoration=
+:none!important;text-decoration:none;color:#3f3f3f;font-family:Arial,sans-s=
+erif;font-size:12px" href=3D"mailto:shamil.hassanaly@bonitasoft.com" target=
+=3D"_blank"> shamil.hassanaly@bonitasoft.com</a></td></tr>
+<tr style=3D"font-family:Arial,sans-serif;font-size:12px;color:#3f3f3f"><td=
+ style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,sans-seri=
+f;font-size:12px;color:#3f3f3f;padding-right:4px"><img src=3D"https://data.=
+sigilium.com/img/3f3f3f/30/map-marker.png" style=3D"border-style:none;width=
+:15px;height:15px;margin-right:5px" border=3D"0" width=3D"15" height=3D"15"=
+></td><td style=3D"margin:0;padding:0;vertical-align:top;font-family:Arial,=
+sans-serif;font-size:12px;color:#3f3f3f"><a style=3D"text-decoration:none!i=
+mportant;text-decoration:none;color:#3f3f3f;font-family:Arial,sans-serif;fo=
+nt-size:12px" href=3D"https://data.sigilium.com/signatures/rclx1xxtnlltgw-q=
+ci1kidk4cfoiorc/link?element=3Dmap_marker" target=3D"_blank"> 76, boulevard=
+ de la R=C3=A9publique <br>92100 Boulogne Billancourt</a></td></tr>
+</tbody></table>
+<p></p></td><td style=3D"margin:0;padding:0;vertical-align:top;padding-left=
+:10px"><table>
+<tbody><tr>
+<td>
+<a style=3D"text-decoration:none" href=3D"https://www.facebook.com/bonitaso=
+ftbpm" target=3D"_blank"><img src=3D"https://data.sigilium.com/img/e0002d/5=
+0/facebook.png" style=3D"border-style:none;width:25px;height:25px;display:b=
+lock;margin-right:5px" border=3D"0" width=3D"25" height=3D"25">
+</a></td>
+</tr>
+<tr>
+<td>
+<a style=3D"text-decoration:none" href=3D"https://twitter.com/bonitasoft" t=
+arget=3D"_blank"><img src=3D"https://data.sigilium.com/img/e0002d/50/twitte=
+r.png" style=3D"border-style:none;width:25px;height:25px;display:block;marg=
+in-right:5px" border=3D"0" width=3D"25" height=3D"25">
+</a></td>
+</tr>
+<tr>
+<td>
+<a style=3D"text-decoration:none" href=3D"https://www.youtube.com/user/Boni=
+taSoft" target=3D"_blank"><img src=3D"https://data.sigilium.com/img/e0002d/=
+50/youtube.png" style=3D"border-style:none;width:25px;height:25px;display:b=
+lock;margin-right:5px" border=3D"0" width=3D"25" height=3D"25">
+</a></td>
+</tr>
+</tbody></table>
+
+</td></tr>
+</tbody></table>
+</td></tr>
+
+
+
+</tbody></table>
+
+</div>
+</div></div>
+
+--00000000000007d61805935b2680--

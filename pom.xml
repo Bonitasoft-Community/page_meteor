@@ -1,0 +1,205 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.bonitasoft.custompage</groupId>
+	<artifactId>CustomPageMeteor</artifactId>
+	<version>3.0.0</version>
+	<name>CustomPageMeteor</name>
+	<properties>
+        <bonita.version>7.9.0</bonita.version>
+  	</properties>
+	
+	<dependencies>
+
+		<!-- mvn install:install-file -Dfile=scenario-utils-2.0.jar -DgroupId=com.bonitasoft.scenario -DartifactId=scenario-utils -Dversion=2.0 -Dpackaging=jar -->
+
+		
+		<dependency>
+			<groupId>org.bonitasoft.engine</groupId>
+			<artifactId>bonita-client</artifactId>
+			<version>${bonita.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bonitasoft.engine</groupId>
+			<artifactId>bonita-server</artifactId>
+			<version>${bonita.version}</version>
+			<scope>provided</scope>
+		</dependency>
+			<dependency>
+			<groupId>org.bonitasoft.log.event</groupId>
+			<artifactId>bonita-event</artifactId>
+			<version>1.6.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.bonitasoft.command</groupId>
+  			<artifactId>bonita-commanddeployment</artifactId>
+  			<version>1.5</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.bonitasoft.properties</groupId>
+			<artifactId>bonita-properties</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+			<scope>provided</scope>
+		</dependency>
+<!-- to execute the Deploy Plugin -->
+		<dependency>
+			<groupId>org.bonitasoft.store</groupId>
+			<artifactId>bonita-store</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+		
+
+	</dependencies>
+
+	<!-- ******************** Community Maven repository **************** -->
+	<repositories>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>logPageBonita</id>
+			<name>logPageBonita</name>
+			<url>https://raw.githubusercontent.com/Bonitasoft-Community/bonitamavenrepository/master</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+	<build>
+		<!-- ******************** Copy JAR files under lib **************** -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/lib</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeTransitive>true</excludeTransitive>
+							<excludeScope>provided</excludeScope>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>copy-Jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/lib</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+							<resources>
+								<resource>
+									<directory>target</directory>
+									<includes>
+										<include>*.jar</include>
+									</includes>
+								</resource>
+							</resources>
+
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+			<!-- ******************** Generate the Resource (ZIP FILE) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+
+					<execution>
+						<id>build-bonitaresource</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<inherited>false</inherited>
+						<configuration>
+							<finalName>${project.artifactId}-${project.version}</finalName>
+							<ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/assembly/buildzip.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- *************** deploy the resource localy -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+
+				<executions>
+					<execution>
+						<id>Deploy Page to Bonita Server</id>
+
+						<phase>install</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.bonitasoft.store.BonitaStoreAccessorClient</mainClass>
+							<arguments>
+								<argument>http://localhost:8080</argument>
+								<argument>bonita</argument>
+								<argument>Walter.Bates</argument>
+								<argument>bpm</argument>
+								<argument>target/${project.artifactId}-${project.version}.zip</argument>
+								<!-- use UPDATE or DELETEANDADD -->
+								<argument>strategy:UPDATE</argument>
+								<argument>profile:BOTools</argument>
+								
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>
