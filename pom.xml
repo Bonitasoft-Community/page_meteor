@@ -28,9 +28,16 @@
 			<dependency>
 			<groupId>org.bonitasoft.log.event</groupId>
 			<artifactId>bonita-event</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.bonitasoft.tools</groupId>
+			<artifactId>case-details</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
+	
 		<dependency>
 			<groupId>org.bonitasoft.command</groupId>
   			<artifactId>bonita-commanddeployment</artifactId>
@@ -40,7 +47,7 @@
 		<dependency>
 			<groupId>org.bonitasoft.properties</groupId>
 			<artifactId>bonita-properties</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.1</version>
 		</dependency>
 
 		<dependency>
