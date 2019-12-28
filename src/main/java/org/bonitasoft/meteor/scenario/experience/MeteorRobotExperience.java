@@ -11,8 +11,12 @@ import org.bonitasoft.meteor.scenario.experience.MeteorTimeLine.TimeLineStep;
 
 public class MeteorRobotExperience extends MeteorRobot {
 
+    APIAccessor apiAccessor=null;
+    MeteorSimulation meteorSimulation;
     public MeteorRobotExperience(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
         super(meteorSimulation, apiAccessor);
+        this.apiAccessor = apiAccessor;
+        this.meteorSimulation = meteorSimulation;
 
     }
     @Override
@@ -21,9 +25,7 @@ public class MeteorRobotExperience extends MeteorRobot {
         // calculate the timeLine of the case
         MeteorTimeLine meteorTimeLine = createTimeLine();
         
-        List<BEvent> listEvents = meteorTimeLine.calcul();
-        if (BEventFactory.isError(listEvents))
-            return;
+        // create from the JSON
         
         // execute the steps now
         for (int i=0;i<meteorTimeLine.getListTimeLineSteps().size();i++)
@@ -44,6 +46,6 @@ public class MeteorRobotExperience extends MeteorRobot {
     
     
     public MeteorTimeLine createTimeLine() {
-        return new MeteorTimeLineBasic( 12L );
+        return new MeteorTimeLineBasic();
     }
 }

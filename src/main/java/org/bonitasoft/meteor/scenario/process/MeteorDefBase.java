@@ -9,7 +9,6 @@ import org.bonitasoft.engine.bpm.contract.ContractDefinition;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.meteor.MeteorToolbox;
-import org.bonitasoft.meteor.scenario.process.MeteorDefInputs.MeteorInputItem;
 
 /* all elements in Process use the same pattern : 
  * - a number of robots
@@ -21,8 +20,8 @@ import org.bonitasoft.meteor.scenario.process.MeteorDefInputs.MeteorInputItem;
  */
 public class MeteorDefBase {
 
-	protected static BEvent EventGetContract = new BEvent(MeteorMain.class.getName(), 1, Level.ERROR, "Error while accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
-	protected static BEvent EventNoInputs = new BEvent(MeteorMain.class.getName(), 2, Level.INFO, "No inputs", "The process/activity does not have any input");
+	protected static BEvent EventGetContract = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
+	protected static BEvent EventNoInputs = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.INFO, "No inputs", "The process/activity does not have any input");
 
 	// this is the robot part : how many robot do we have to start on this
 	// activity ?
@@ -58,22 +57,22 @@ public class MeteorDefBase {
 	}
 	
 	public void decodeFromMap(final Map<String, Object> oneProcess, ProcessAPI processAPI) {
-		mNumberOfRobots = MeteorToolbox.getParameterLong(oneProcess, MeteorMain.cstHtmlNumberOfRobots, 0);
-		mNumberOfCases = MeteorToolbox.getParameterLong(oneProcess, MeteorMain.cstJsonNumberOfCases, 0);
-		mDelaySleep = MeteorToolbox.getParameterLong(oneProcess, MeteorMain.cstHtmlDelaySleep, 0);
-		mTimeSleep = MeteorToolbox.getParameterLong(oneProcess, MeteorMain.cstHtmlTimeSleep, 0);
-		mListEvents.addAll(mInputs.loadFromList(MeteorToolbox.getParameterList(oneProcess, MeteorMain.cstHtmlInputs, null)));
+		mNumberOfRobots = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlNumberOfRobots, 0L);
+		mNumberOfCases = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstJsonNumberOfCases, 0L);
+		mDelaySleep = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlDelaySleep, 0L);
+		mTimeSleep = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlTimeSleep, 0L);
+		mListEvents.addAll(mInputs.loadFromList(MeteorToolbox.getParameterList(oneProcess, MeteorScenarioProcess.cstHtmlInputs, null)));
 	}
 	
 	
 	public void fullfillMap(final Map<String, Object> oneProcess) 
 		{
-			oneProcess.put(MeteorMain.cstHtmlNumberOfRobots, mNumberOfRobots);
-			oneProcess.put(MeteorMain.cstJsonNumberOfCases, mNumberOfCases);
-			oneProcess.put(MeteorMain.cstHtmlDelaySleep, mDelaySleep);
-			oneProcess.put(MeteorMain.cstHtmlTimeSleep, mTimeSleep);
+			oneProcess.put(MeteorScenarioProcess.cstHtmlNumberOfRobots, mNumberOfRobots);
+			oneProcess.put(MeteorScenarioProcess.cstJsonNumberOfCases, mNumberOfCases);
+			oneProcess.put(MeteorScenarioProcess.cstHtmlDelaySleep, mDelaySleep);
+			oneProcess.put(MeteorScenarioProcess.cstHtmlTimeSleep, mTimeSleep);
 			// build a proposition to the input
-			oneProcess.put(MeteorMain.cstHtmlInputProposeContent, mInputs.getProposeJson()); 
+			oneProcess.put(MeteorScenarioProcess.cstHtmlInputProposeContent, mInputs.getProposeJson()); 
 
 		}
 

@@ -37,7 +37,7 @@ public class MeteorToolbox {
 	 * @param defaultValue
 	 * @return
 	 */
-	public static long getParameterLong(final Map<String, Object> mapRequestMultipart, final String paramName, final long defaultValue) {
+	public static long getParameterLong(final Map<String, Object> mapRequestMultipart, final String paramName, final Long defaultValue) {
 		final Object value = mapRequestMultipart.get(paramName);
 		if (value == null) {
 			return defaultValue;

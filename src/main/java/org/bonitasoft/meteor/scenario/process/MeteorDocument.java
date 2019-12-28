@@ -22,7 +22,7 @@ public class MeteorDocument {
 	}
 
 	public String getHtmlId() {
-		return MeteorMain.cstHtmlPrefixDocument + (mMeteorProcess == null ? "" : mMeteorProcess.mProcessDefinitionId.toString()) + "_" + (mMeteorActivity == null ? "" : mMeteorActivity.mActivityDefinitionId.toString()) + "_" + mIndice;
+		return MeteorScenarioProcess.cstHtmlPrefixDocument + (mMeteorProcess == null ? "" : mMeteorProcess.mProcessDefinitionId.toString()) + "_" + (mMeteorActivity == null ? "" : mMeteorActivity.mActivityDefinitionId.toString()) + "_" + mIndice;
 
 	}
 }

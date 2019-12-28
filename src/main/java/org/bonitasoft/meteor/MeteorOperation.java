@@ -18,7 +18,7 @@ import org.bonitasoft.meteor.MeteorSimulation.Estimation;
 import org.bonitasoft.meteor.MeteorSimulation.STATUS;
 import org.bonitasoft.meteor.cmd.CmdMeteor;
 import org.bonitasoft.meteor.scenario.Scenario;
-import org.bonitasoft.meteor.scenario.process.MeteorMain;
+import org.bonitasoft.meteor.scenario.process.MeteorScenarioProcess;
 import org.bonitasoft.log.event.BEventFactory;
 
 public class MeteorOperation {
@@ -78,7 +78,7 @@ public class MeteorOperation {
 			meteorResult.result.put(CmdMeteor.cstParamResultSimulationId, String.valueOf(meteorSimulation.getId()));
 
 			// first, reexplore the list of process / activity
-			final MeteorMain meteorProcessDefinitionList = new MeteorMain();
+			final MeteorScenarioProcess meteorProcessDefinitionList = new MeteorScenarioProcess();
 			// listEvents.addAll(
 			// meteorProcessDefinitionList.calculateListProcess(processAPI));
 

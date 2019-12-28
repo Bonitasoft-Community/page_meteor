@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.engine.bpm.contract.ContractDefinition;
 import org.bonitasoft.engine.bpm.flownode.ActivityDefinition;
-import org.bonitasoft.engine.bpm.flownode.ActivityInstance;
-import org.bonitasoft.engine.bpm.flownode.ActivityInstanceSearchDescriptor;
 import org.bonitasoft.engine.bpm.flownode.ArchivedActivityInstance;
 import org.bonitasoft.engine.bpm.flownode.ArchivedActivityInstanceSearchDescriptor;
 import org.bonitasoft.engine.bpm.flownode.FlowElementContainerDefinition;
@@ -24,15 +22,15 @@ import org.bonitasoft.engine.bpm.process.DesignProcessDefinition;
 import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.log.event.BEvent;
-import org.bonitasoft.log.event.BEventFactory;
 import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.log.event.BEventFactory;
 import org.bonitasoft.meteor.MeteorToolbox;
 
 /*
  * The process Meteor correspond to a process found in the Server. Then, this class will create one line for the Process Creation, an done line for each Human Task found in the process
  */
 public class MeteorDefProcess extends MeteorDefBase {
-	private final Logger logger = Logger.getLogger(MeteorMain.class.getName());
+	private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
 
 	/**
 	 * Keep information on a process A MeteorProcessDefinition will create one
@@ -40,9 +38,9 @@ public class MeteorDefProcess extends MeteorDefBase {
 	 *
 	 * 
 	 */
-	private static BEvent EventGetContract = new BEvent(MeteorMain.class.getName(), 1, Level.ERROR, "Accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
-	private static BEvent EventGetProcessDesign = new BEvent(MeteorMain.class.getName(), 2, Level.ERROR, "Accessing Process Design", "Check error ", "The happyPath can't be calculated, and then the cover percentage", "Check Exception");
-	private static BEvent EventSearchActivities = new BEvent(MeteorMain.class.getName(), 2, Level.ERROR, "Searching activities", "Check error", "To calculate the cover, all activities ran from the list of process is searched. The operation failed", "Check Exception");
+	private static BEvent EventGetContract = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
+	private static BEvent EventGetProcessDesign = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.ERROR, "Accessing Process Design", "Check error ", "The happyPath can't be calculated, and then the cover percentage", "Check Exception");
+	private static BEvent EventSearchActivities = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.ERROR, "Searching activities", "Check error", "To calculate the cover, all activities ran from the list of process is searched. The operation failed", "Check Exception");
 	// Attention, the processDefinitionID must be recalculated each time:
 	// process may be redeployed
 	public Long mProcessDefinitionId;
@@ -110,10 +108,10 @@ public class MeteorDefProcess extends MeteorDefBase {
 
 		// attention : the processdefinitionId is very long it has to be set
 		// in STRING else JSON will do an error
-		oneProcess.put(MeteorMain.cstHtmlId, mProcessDefinitionId.toString());
+		oneProcess.put(MeteorScenarioProcess.cstHtmlId, mProcessDefinitionId.toString());
 		
-		oneProcess.put(MeteorMain.cstJsonProcessName, mProcessName);
-		oneProcess.put(MeteorMain.cstHtmlProcessVersion, mProcessVersion);
+		oneProcess.put(MeteorScenarioProcess.cstJsonProcessName, mProcessName);
+		oneProcess.put(MeteorScenarioProcess.cstHtmlProcessVersion, mProcessVersion);
 		fullfillMap( oneProcess );
 		return oneProcess;
 	}
@@ -122,10 +120,10 @@ public class MeteorDefProcess extends MeteorDefBase {
 
 		// attention : the processdefinitionId is very long it has to be set
 		// in STRING else JSON will do an error
-		Long processDefinitionId = MeteorToolbox.getParameterLong(oneProcess, MeteorMain.cstHtmlId, -1);
+		Long processDefinitionId = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlId, -1L);
 		MeteorDefProcess meteorProcess = new MeteorDefProcess(processDefinitionId);
-		meteorProcess.mProcessName = MeteorToolbox.getParameterString(oneProcess, MeteorMain.cstJsonProcessName, "");
-		meteorProcess.mProcessVersion = MeteorToolbox.getParameterString(oneProcess, MeteorMain.cstHtmlProcessVersion, "");
+		meteorProcess.mProcessName = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.cstJsonProcessName, "");
+		meteorProcess.mProcessVersion = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.cstHtmlProcessVersion, "");
 
 		
 		meteorProcess.decodeFromMap(oneProcess, processAPI);
@@ -192,13 +190,13 @@ public class MeteorDefProcess extends MeteorDefBase {
 		public Map<String,Object> getMap()
 		{
 			Map<String,Object> result = new HashMap<String,Object>();
-			result.put(MeteorMain.cstJsonProcessName, mProcessName);
-			result.put(MeteorMain.cstHtmlProcessVersion, mProcessVersion);
-			result.put(MeteorMain.cstHtmlCoverAll, mCoverAll);
-			result.put(MeteorMain.cstHtmlCoverPercent, mCoverPercent);
-			result.put(MeteorMain.cstHtmlCoverHappyPathPercent, mCoverHappyPathPercent);
-			result.put(MeteorMain.cstJsonActivitiesNotCovered, mActivitiesNotExecuted);
-			result.put(MeteorMain.cstJsonListEvents, BEventFactory.getHtml(mListEvents));
+			result.put(MeteorScenarioProcess.cstJsonProcessName, mProcessName);
+			result.put(MeteorScenarioProcess.cstHtmlProcessVersion, mProcessVersion);
+			result.put(MeteorScenarioProcess.cstHtmlCoverAll, mCoverAll);
+			result.put(MeteorScenarioProcess.cstHtmlCoverPercent, mCoverPercent);
+			result.put(MeteorScenarioProcess.cstHtmlCoverHappyPathPercent, mCoverHappyPathPercent);
+			result.put(MeteorScenarioProcess.cstJsonActivitiesNotCovered, mActivitiesNotExecuted);
+			result.put(MeteorScenarioProcess.cstJsonListEvents, BEventFactory.getHtml(mListEvents));
 			/*
 			 * {
   "type": "ColumnChart",

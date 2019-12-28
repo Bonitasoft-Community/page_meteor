@@ -132,7 +132,8 @@ public class MeteorDefInputs {
 	/* ******************************************************************** */
 
 
-	public void loadFromString(String listSt) {
+	@SuppressWarnings("unchecked")
+    public void loadFromString(String listSt) {
 		List<Object> listToLoad = (List<Object>) JSONValue.parse(listSt);
 		loadFromList(listToLoad);
 	}
@@ -152,11 +153,11 @@ public class MeteorDefInputs {
 
 		for (Object itemLoad : listToLoad) {
 			MeteorInputItem oneItem = new MeteorInputItem();
-			oneItem.mNbSteps = MeteorToolbox.getParameterLong((Map<String, Object>) itemLoad, MeteorMain.cstHtmlInputPercent, 1);
+			oneItem.mNbSteps = MeteorToolbox.getParameterLong((Map<String, Object>) itemLoad, MeteorScenarioProcess.cstHtmlInputPercent, 1L);
 			if (oneItem.mNbSteps < 1)
 				oneItem.mNbSteps = 1;
 
-			String contentSt = MeteorToolbox.getParameterString((Map<String, Object>) itemLoad, MeteorMain.cstHtmlInputContent, "");
+			String contentSt = MeteorToolbox.getParameterString((Map<String, Object>) itemLoad, MeteorScenarioProcess.cstHtmlInputContent, "");
 			if ((contentSt != null) && (contentSt.length() > 0)) {
 				oneItem.mContent = (Map<String, Serializable>) JSONValue.parse(contentSt);
 			

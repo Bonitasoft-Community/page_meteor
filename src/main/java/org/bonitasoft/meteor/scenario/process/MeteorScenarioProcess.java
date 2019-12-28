@@ -35,9 +35,9 @@ import org.json.simple.JSONValue;
 /*                                                                      */
 /* ******************************************************************** */
 
-public class MeteorMain {
+public class MeteorScenarioProcess {
 
-	private final Logger logger = Logger.getLogger(MeteorMain.class.getName());
+	private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
 
 	// todo : rename html => json
 	public static String cstJsonNumberOfCases = "nbcases";
@@ -76,14 +76,14 @@ public class MeteorMain {
 	public static String cstHtmlPrefixDocument = "DOC_";
 	public static int cstCurrentSimulation = 2;
 
-	private static BEvent EventGetListProcesses = new BEvent(MeteorMain.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
+	private static BEvent EventGetListProcesses = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
 
-	private static BEvent EventCalculateListProcess = new BEvent(MeteorMain.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
+	private static BEvent EventCalculateListProcess = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
 
-	private static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorMain.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
+	private static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorScenarioProcess.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
 			"If you set a number of robot, then set a number of case(or inverse)");
 
-	private static BEvent EventInitializeJson = new BEvent(MeteorMain.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
+	private static BEvent EventInitializeJson = new BEvent(MeteorScenarioProcess.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
 
 	private final boolean mShowActivity = true;
 

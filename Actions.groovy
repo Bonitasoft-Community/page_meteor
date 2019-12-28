@@ -58,7 +58,10 @@ import org.bonitasoft.command.BonitaCommandDeployment.DeployStatus;
 import org.bonitasoft.meteor.MeteorAPI;
 import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
-import  org.bonitasoft.meteor.scenario.process.MeteorMain.ListProcessParameter;
+import org.bonitasoft.meteor.scenario.process.MeteorScenarioProcess.ListProcessParameter;
+
+import org.bonitasoft.meteor.scenario.experience.MeteorExperience.MeteorExperienceParameter;
+import org.bonitasoft.meteor.scenario.experience.MeteorExperience;
 
 import org.bonitasoft.meteor.MeteorDAO;
 import org.bonitasoft.meteor.MeteorDAO.StatusDAO;
@@ -97,7 +100,7 @@ public class Actions {
 			
 		    MeteorAPI meteorAPI = MeteorAPI.getMeteorAPI( httpSession );
 			ProcessAPI processAPI = TenantAPIAccessor.getProcessAPI(apiSession);
-			IdentityAPI identityApi = TenantAPIAccessor.getIdentityAPI(apiSession);
+			IdentityAPI identityAPI = TenantAPIAccessor.getIdentityAPI(apiSession);
             CommandAPI commandAPI = TenantAPIAccessor.getCommandAPI(apiSession);
             
             List<BEvent> listEvents=new ArrayList<BEvent>();
@@ -124,6 +127,15 @@ public class Actions {
 				 actionAnswer.setResponse( meteorAPI.getListProcesses( listProcessParameter, processAPI));
 			}
             
+            else if ("addCasesId".equals(action)) 
+            {
+                String accumulateJson = (String) httpSession.getAttribute("accumulate" );
+                
+                MeteorExperienceParameter meteorExperienceParameter = MeteorExperienceParameter.getInstanceFromJsonSt( accumulateJson );
+                
+                actionAnswer.setResponse( meteorAPI.experienceAction( meteorExperienceParameter, processAPI, identityAPI));
+                
+            }
             /** POST is too big, so use the collect_reset, [collect_add] * ,  and then start to do the same as start */
             else if ("collect_reset".equals(action))
             {

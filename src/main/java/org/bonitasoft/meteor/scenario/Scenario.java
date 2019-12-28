@@ -67,8 +67,8 @@ public class Scenario {
 
 		// attention : the processdefinitionId is very long it has to be set in
 		// STRING else JSON will do an error
-		mNumberOfRobots = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfRobots, 0);
-		mNumberOfExecutions = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfExecutions, 1);
+		mNumberOfRobots = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfRobots, 0L);
+		mNumberOfExecutions = MeteorToolbox.getParameterLong(mapScenario, cstHtmlNumberOfExecutions, 1L);
 
 		mName = MeteorToolbox.getParameterString(mapScenario, cstHtmlName, "");
 		mScenario = MeteorToolbox.getParameterString(mapScenario, cstHtmlScenario, "");

@@ -1,14 +1,11 @@
 package org.bonitasoft.meteor.scenario.process;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.engine.bpm.contract.ContractDefinition;
 import org.bonitasoft.log.event.BEvent;
-import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.meteor.MeteorToolbox;
 
 /**
@@ -32,7 +29,7 @@ public class MeteorDefActivity extends MeteorDefBase {
 	}
 
 	public String getHtmlId() {
-		return MeteorMain.cstHtmlPrefixActivity + (mActivityDefinitionId == null ? "#" : mActivityDefinitionId.toString());
+		return MeteorScenarioProcess.cstHtmlPrefixActivity + (mActivityDefinitionId == null ? "#" : mActivityDefinitionId.toString());
 	}
 
 	public String getInformation() {
@@ -47,7 +44,7 @@ public class MeteorDefActivity extends MeteorDefBase {
 
 		// attention : the processdefinitionId is very long it has to be set
 		// in STRING else JSON will do an error
-		Long activityDefinitionId = MeteorToolbox.getParameterLong(oneProcess, MeteorMain.cstHtmlId, -1);
+		Long activityDefinitionId = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlId, -1L);
 		MeteorDefActivity meteorActivity = new MeteorDefActivity(meteorProcess, activityDefinitionId.longValue());
 
 		// mProcessDefinitionId = MeteorToolbox.getParameterLong(oneProcess,
@@ -56,7 +53,7 @@ public class MeteorDefActivity extends MeteorDefBase {
 		// MeteorProcessDefinitionList.cstHtmlProcessName, "");
 		// mProcessVersion = MeteorToolbox.getParameterString(oneProcess,
 		// MeteorProcessDefinitionList.cstHtmlProcessVersion, "");
-		meteorActivity.mActivityName = MeteorToolbox.getParameterString(oneProcess, MeteorMain.cstHtmlActivityName, "");
+		meteorActivity.mActivityName = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.cstHtmlActivityName, "");
 		
 		
 		meteorActivity.decodeFromMap(oneProcess, processAPI);
@@ -82,13 +79,13 @@ public class MeteorDefActivity extends MeteorDefBase {
 	public Map<String, Object> getMap() {
 		final Map<String, Object> oneActivity = new HashMap<String, Object>();
 
-		oneActivity.put(MeteorMain.cstHtmlActivityName, mActivityName);
+		oneActivity.put(MeteorScenarioProcess.cstHtmlActivityName, mActivityName);
 	// attention, the activityId is very long it has to be
 	// transform in STRING else JSON will mess it
-	oneActivity.put(MeteorMain.cstHtmlId, mActivityDefinitionId.toString());
-	oneActivity.put(MeteorMain.cstHtmlProcessDefId, mMeteorProcess.mProcessDefinitionId.toString());
-	oneActivity.put(MeteorMain.cstJsonProcessName, mMeteorProcess.mProcessName);
-	oneActivity.put(MeteorMain.cstHtmlProcessVersion, mMeteorProcess.mProcessVersion);
+	oneActivity.put(MeteorScenarioProcess.cstHtmlId, mActivityDefinitionId.toString());
+	oneActivity.put(MeteorScenarioProcess.cstHtmlProcessDefId, mMeteorProcess.mProcessDefinitionId.toString());
+	oneActivity.put(MeteorScenarioProcess.cstJsonProcessName, mMeteorProcess.mProcessName);
+	oneActivity.put(MeteorScenarioProcess.cstHtmlProcessVersion, mMeteorProcess.mProcessVersion);
 	fullfillMap( oneActivity );
 	return oneActivity;
 	}
