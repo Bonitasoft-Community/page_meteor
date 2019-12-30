@@ -43,8 +43,8 @@ appCommand.controller('MeteorControler',
 	this.statuslistrobots = [];
 	this.wait=false;
 	this.wait=false;
-	this.showprocess=true;
-	this.showscenarii=true;
+	this.showprocess=false;
+	this.showscenarii=false;
 	this.showexperience = true;
 	this.isshowExportDialog=false;
 	
