@@ -7,56 +7,57 @@ import com.bonitasoft.scenario.accessor.configuration.ScenarioConfiguration;
 import com.bonitasoft.scenario.accessor.resource.Resource;
 
 public class TestSuiteRunContext extends RunContext {
-	static public String SCENARIOS_FOLDER_NAME = "test";
 
-	private String[] testSuiteNames = null;
-	private int currentTestSuiteIndex = -1;
+    static public String SCENARIOS_FOLDER_NAME = "test";
 
-	public TestSuiteRunContext(Long tenantId, ScenarioConfiguration scenarioConfiguration, Map<String, Serializable> parameters, Map<String, byte[]> mainResources, Map<String, byte[]> jarDependencies, Map<String, byte[]> gsDependencies, Resource resource, String scenarioName,
-			String testSuiteLocationFolderPath) {
-		super(tenantId, scenarioConfiguration, ScenarioType.TEST_SUITE, parameters, mainResources, jarDependencies, gsDependencies, resource, scenarioName);
-	}
+    private String[] testSuiteNames = null;
+    private int currentTestSuiteIndex = -1;
 
-	public TestSuiteRunContext(Long tenantId, ScenarioConfiguration scenarioConfiguration, Map<String, Serializable> parameters, Map<String, byte[]> mainResources, Map<String, byte[]> jarDependencies, Map<String, byte[]> gsDependencies, Resource resource, String scenarioName,
-			String testSuiteLocationFolderPath, String[] testSuiteNames) {
-		this(tenantId, scenarioConfiguration, parameters, mainResources, jarDependencies, gsDependencies, resource, scenarioName, testSuiteLocationFolderPath);
+    public TestSuiteRunContext(Long tenantId, ScenarioConfiguration scenarioConfiguration, Map<String, Serializable> parameters, Map<String, byte[]> mainResources, Map<String, byte[]> jarDependencies, Map<String, byte[]> gsDependencies, Resource resource, String scenarioName,
+            String testSuiteLocationFolderPath) {
+        super(tenantId, scenarioConfiguration, ScenarioType.TEST_SUITE, parameters, mainResources, jarDependencies, gsDependencies, resource, scenarioName);
+    }
 
-		this.testSuiteNames = testSuiteNames;
-	}
+    public TestSuiteRunContext(Long tenantId, ScenarioConfiguration scenarioConfiguration, Map<String, Serializable> parameters, Map<String, byte[]> mainResources, Map<String, byte[]> jarDependencies, Map<String, byte[]> gsDependencies, Resource resource, String scenarioName,
+            String testSuiteLocationFolderPath, String[] testSuiteNames) {
+        this(tenantId, scenarioConfiguration, parameters, mainResources, jarDependencies, gsDependencies, resource, scenarioName, testSuiteLocationFolderPath);
 
-	public String[] getTestSuiteNames() {
-		return testSuiteNames;
-	}
+        this.testSuiteNames = testSuiteNames;
+    }
 
-	public void setTestSuiteNames(String[] testSuiteNames) {
-		this.testSuiteNames = testSuiteNames;
-	}
+    public String[] getTestSuiteNames() {
+        return testSuiteNames;
+    }
 
-	public int getCurrentTestSuiteIndex() {
-		return currentTestSuiteIndex;
-	}
+    public void setTestSuiteNames(String[] testSuiteNames) {
+        this.testSuiteNames = testSuiteNames;
+    }
 
-	public void setCurrentTestSuiteIndex(int currentTestSuiteIndex) {
-		if (currentTestSuiteIndex > -1 && currentTestSuiteIndex < testSuiteNames.length) {
-			this.currentTestSuiteIndex = currentTestSuiteIndex;
-		}
-	}
+    public int getCurrentTestSuiteIndex() {
+        return currentTestSuiteIndex;
+    }
 
-	public String getCurrentTestSuiteName() {
-		return testSuiteNames[currentTestSuiteIndex];
-	}
+    public void setCurrentTestSuiteIndex(int currentTestSuiteIndex) {
+        if (currentTestSuiteIndex > -1 && currentTestSuiteIndex < testSuiteNames.length) {
+            this.currentTestSuiteIndex = currentTestSuiteIndex;
+        }
+    }
 
-	@Override
-	public String getGSContent() {
-		return new String(getMainResources().get(getCurrentTestSuiteName()));
-	}
+    public String getCurrentTestSuiteName() {
+        return testSuiteNames[currentTestSuiteIndex];
+    }
 
-	@Override
-	public String toString() {
-		if (currentTestSuiteIndex > -1 && currentTestSuiteIndex < testSuiteNames.length) {
-			return getCurrentTestSuiteName();
-		}
+    @Override
+    public String getGSContent() {
+        return new String(getMainResources().get(getCurrentTestSuiteName()));
+    }
 
-		return "General";
-	}
+    @Override
+    public String toString() {
+        if (currentTestSuiteIndex > -1 && currentTestSuiteIndex < testSuiteNames.length) {
+            return getCurrentTestSuiteName();
+        }
+
+        return "General";
+    }
 }

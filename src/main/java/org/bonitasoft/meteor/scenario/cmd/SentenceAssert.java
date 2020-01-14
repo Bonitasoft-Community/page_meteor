@@ -9,20 +9,20 @@ import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
 
 public class SentenceAssert extends Sentence {
 
-	public static String Verb = "ASSERT";
+    public static String Verb = "ASSERT";
 
-	public SentenceAssert(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
-		super(mapParam, apiAccessor);
-	}
+    public SentenceAssert(final Map<String, Object> mapParam, final APIAccessor apiAccessor) {
+        super(mapParam, apiAccessor);
+    }
 
-	@Override
-	public List<BEvent> decodeSentence(int lineNumber) {
-		return null;
-	}
+    @Override
+    public List<BEvent> decodeSentence(int lineNumber) {
+        return null;
+    }
 
-	@Override
-	public List<BEvent> execute(int robotId, LogExecution logExecution) {
-		return null;
-	}
+    @Override
+    public List<BEvent> execute(int robotId, LogExecution logExecution) {
+        return null;
+    }
 
 }

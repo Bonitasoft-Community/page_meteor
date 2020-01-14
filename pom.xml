@@ -6,6 +6,8 @@
 	<name>CustomPageMeteor</name>
 	<properties>
         <bonita.version>7.9.0</bonita.version>
+	   	<maven.compiler.source>1.8</maven.compiler.source>
+   		<maven.compiler.target>1.8</maven.compiler.target>
   	</properties>
 	
 	<dependencies>
@@ -33,7 +35,7 @@
 
 		<dependency>
 			<groupId>org.bonitasoft.tools</groupId>
-			<artifactId>case-details</artifactId>
+			<artifactId>bonita-casedetails</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 		

@@ -15,63 +15,64 @@ import org.json.simple.parser.JSONParser;
 import com.bonitasoft.scenario.accessor.Accessor;
 
 public class BusinessVariableAccessor extends ReferencedVariableAccessor {
-	private final static String BUSINESS_DATA_BY_IDS = "getBusinessDataByIds";
-	private final static String BUSINESS_DATA_URI_PATTERN_MULTIPLE_IDS = "/API/bdm/businessData/{className}/findByIds";
 
-	private final static String ENTITY_CLASS_NAME = "entityClassName";
-	private final static String BUSINESS_DATA_IDS = "businessDataIds";
-	private final static String BUSINESS_DATA_URI_PATTERN = "businessDataURIPattern";
+    private final static String BUSINESS_DATA_BY_IDS = "getBusinessDataByIds";
+    private final static String BUSINESS_DATA_URI_PATTERN_MULTIPLE_IDS = "/API/bdm/businessData/{className}/findByIds";
 
-	public BusinessVariableAccessor(Long instanceId, String name) {
-		super(instanceId, name);
-	}
+    private final static String ENTITY_CLASS_NAME = "entityClassName";
+    private final static String BUSINESS_DATA_IDS = "businessDataIds";
+    private final static String BUSINESS_DATA_URI_PATTERN = "businessDataURIPattern";
 
-	@Override
-	public Serializable getValue(Accessor accessor) throws Exception {
-		// Retrieve the execution context
-		Map<String, Serializable> executionContext = getExecutionContext(accessor);
+    public BusinessVariableAccessor(Long instanceId, String name) {
+        super(instanceId, name);
+    }
 
-		// Retrieve the right business variable
-		Serializable businessVariable = executionContext.get(name + ReferencedVariableAccessor.REF_SUFFIX);
+    @Override
+    public Serializable getValue(Accessor accessor) throws Exception {
+        // Retrieve the execution context
+        Map<String, Serializable> executionContext = getExecutionContext(accessor);
 
-		if (businessVariable != null) {
-			// Retrieve its associated persistence id(s)
-			ArrayList<Long> persistenceIds = new ArrayList<Long>();
-			String boClassName = null;
-			if (businessVariable instanceof SimpleBusinessDataReference) {
-				SimpleBusinessDataReference simpleBusinessDataReference = (SimpleBusinessDataReference) businessVariable;
-				boClassName = simpleBusinessDataReference.getType();
-				name = simpleBusinessDataReference.getName();
-				persistenceIds.add(simpleBusinessDataReference.getStorageId());
-			} else if (businessVariable instanceof MultipleBusinessDataReference) {
-				MultipleBusinessDataReference multipleBusinessDataReference = (MultipleBusinessDataReference) businessVariable;
-				boClassName = multipleBusinessDataReference.getType();
-				name = multipleBusinessDataReference.getName();
-				persistenceIds.addAll(multipleBusinessDataReference.getStorageIds());
-			} else {
-				throw new Exception("The business value type is not supported by the Scenario library: " + businessVariable.getClass().getName());
-			}
+        // Retrieve the right business variable
+        Serializable businessVariable = executionContext.get(name + ReferencedVariableAccessor.REF_SUFFIX);
 
-			// Get the business object instance(s) from the persistences id(s)
-			if (!persistenceIds.isEmpty()) {
-				List<JSONObject> businessVariableEntities = new ArrayList<JSONObject>();
+        if (businessVariable != null) {
+            // Retrieve its associated persistence id(s)
+            ArrayList<Long> persistenceIds = new ArrayList<Long>();
+            String boClassName = null;
+            if (businessVariable instanceof SimpleBusinessDataReference) {
+                SimpleBusinessDataReference simpleBusinessDataReference = (SimpleBusinessDataReference) businessVariable;
+                boClassName = simpleBusinessDataReference.getType();
+                name = simpleBusinessDataReference.getName();
+                persistenceIds.add(simpleBusinessDataReference.getStorageId());
+            } else if (businessVariable instanceof MultipleBusinessDataReference) {
+                MultipleBusinessDataReference multipleBusinessDataReference = (MultipleBusinessDataReference) businessVariable;
+                boClassName = multipleBusinessDataReference.getType();
+                name = multipleBusinessDataReference.getName();
+                persistenceIds.addAll(multipleBusinessDataReference.getStorageIds());
+            } else {
+                throw new Exception("The business value type is not supported by the Scenario library: " + businessVariable.getClass().getName());
+            }
 
-				// Use a system command to get the valu(es) of the persistence
-				// ID(s)
-				final Map<String, Serializable> commandParameters = new HashMap<String, Serializable>();
-				commandParameters.put(ENTITY_CLASS_NAME, boClassName);
-				commandParameters.put(BUSINESS_DATA_IDS, persistenceIds);
-				commandParameters.put(BUSINESS_DATA_URI_PATTERN, BUSINESS_DATA_URI_PATTERN_MULTIPLE_IDS);
-				businessVariableEntities.addAll((JSONArray) new JSONParser().parse((String) accessor.getDefaultCommandAPI().execute(BUSINESS_DATA_BY_IDS, commandParameters)));
+            // Get the business object instance(s) from the persistences id(s)
+            if (!persistenceIds.isEmpty()) {
+                List<JSONObject> businessVariableEntities = new ArrayList<JSONObject>();
 
-				if (businessVariableEntities.size() == 1) {
-					return businessVariableEntities.get(0);
-				} else if (businessVariableEntities.size() > 1) {
-					return new ArrayList<JSONObject>(businessVariableEntities);
-				}
-			}
-		}
+                // Use a system command to get the valu(es) of the persistence
+                // ID(s)
+                final Map<String, Serializable> commandParameters = new HashMap<String, Serializable>();
+                commandParameters.put(ENTITY_CLASS_NAME, boClassName);
+                commandParameters.put(BUSINESS_DATA_IDS, persistenceIds);
+                commandParameters.put(BUSINESS_DATA_URI_PATTERN, BUSINESS_DATA_URI_PATTERN_MULTIPLE_IDS);
+                businessVariableEntities.addAll((JSONArray) new JSONParser().parse((String) accessor.getDefaultCommandAPI().execute(BUSINESS_DATA_BY_IDS, commandParameters)));
 
-		return null;
-	}
+                if (businessVariableEntities.size() == 1) {
+                    return businessVariableEntities.get(0);
+                } else if (businessVariableEntities.size() > 1) {
+                    return new ArrayList<JSONObject>(businessVariableEntities);
+                }
+            }
+        }
+
+        return null;
+    }
 }

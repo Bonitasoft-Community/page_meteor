@@ -60,8 +60,8 @@ import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 import org.bonitasoft.meteor.scenario.process.MeteorScenarioProcess.ListProcessParameter;
 
-import org.bonitasoft.meteor.scenario.experience.MeteorExperience.MeteorExperienceParameter;
-import org.bonitasoft.meteor.scenario.experience.MeteorExperience;
+import org.bonitasoft.meteor.scenario.experience.MeteorScenarioExperience.MeteorExperienceParameter;
+import org.bonitasoft.meteor.scenario.experience.MeteorScenarioExperience;
 
 import org.bonitasoft.meteor.MeteorDAO;
 import org.bonitasoft.meteor.MeteorDAO.StatusDAO;
@@ -120,7 +120,7 @@ public class Actions {
                 
             }
             
-			else if ("getListArtefacts".equals(action))
+			else if ("collectProcesses".equals(action))
 			{
 				ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJsonSt );
 				
@@ -211,15 +211,20 @@ public class Actions {
             // ------- init 
             else if ("initpage".equals(action))
             {
+                // deploy the command now, initialise all which is needed
+                DeployStatus deployStatus= meteorAPI.deployCommand( pageResourceProvider.getPageDirectory(),  commandAPI, null, apiSession.getTenantId());
+                
                 // first process
-                ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJsonSt );
-                actionAnswer.setResponse( meteorAPI.getListProcesses( listProcessParameter, processAPI));
+                // ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJsonSt );
+                // actionAnswer.setResponse( meteorAPI.getListProcesses( listProcessParameter, processAPI));
 
         		// second configuration
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
             	MeteorDAO.StatusDAO statusDao = meteorDAO.getListNames(pageResourceProvider.getPageName(), apiSession.getTenantId()  ) ;
-            	actionAnswer.responseMap.put("listeventsconfig",  BEventFactory.getHtml( statusDao.listEvents));
+            	actionAnswer.responseMap = statusDao.getMap();
+                /* .put("listeventsconfig",  BEventFactory.getHtml( statusDao.listEvents));
             	actionAnswer.responseMap.put("configList", statusDao.listNamesAllConfigurations);
+            	*/
                 
              	/*
                 BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );

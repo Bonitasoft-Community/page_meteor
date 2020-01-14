@@ -4,7 +4,7 @@
 
 (function() {
 
-
+<!-- 'ng-file-upload' -->
 var appCommand = angular.module('meteormonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize','ngModal','angularFileUpload']);
 
 
@@ -50,6 +50,22 @@ appCommand.controller('MeteorControler',
 	
 	this.showmainscenarii=true;
 	
+	this.navbaractiv = 'experiencescenarii';
+	
+	this.getNavClass = function( tabtodisplay )
+	{
+		if (this.navbaractiv === tabtodisplay)
+			return 'ng-isolate-scope active';
+		return 'ng-isolate-scope';
+	}
+
+	this.getNavStyle = function( tabtodisplay )
+	{
+		if (this.navbaractiv === tabtodisplay)
+			return 'border: 1px solid #c2c2c2;border-bottom-color: transparent;';
+		return 'background-color:#cbcbcb';
+	}
+	
 	this.testChart = {
 			'type': 'ColumnChart',
 			'displayed': true,
@@ -74,7 +90,7 @@ appCommand.controller('MeteorControler',
 	// ------------------------------------------------------------------------------------------------------
 	// Process
 	// ------------------------------------------------------------------------------------------------------
-	this.getListArtefacts = function()
+	this.collectProcesses = function()
 	{
 		this.wait=true;		
 		var self=this;
@@ -87,7 +103,7 @@ appCommand.controller('MeteorControler',
 			};
 		var json= encodeURI( angular.toJson(postMsg, true));
 
-		$http.get( '?page=custompage_meteor&action=getListArtefacts&jsonparam='+json+'&t='+Date.now() )
+		$http.get( '?page=custompage_meteor&action=collectProcesses&jsonparam='+json+'&t='+Date.now() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 					
 				// connection is lost ?
@@ -97,7 +113,7 @@ appCommand.controller('MeteorControler',
 				}
 			
 				console.log("listArtifacts",jsonResult);
-				self.processes 					= jsonResult.processes;
+				self.processes.scenarii 		= jsonResult.processes;
 				self.listeventslistprocesses 	= jsonResult.listevents;
 				self.showonlyactive=false;
 				self.wait=false;
@@ -181,7 +197,7 @@ appCommand.controller('MeteorControler',
 	// ------------------------------------------------------------------------------------------------------
 	// Experience
 	// ------------------------------------------------------------------------------------------------------
-	this.experience = { "listCasesId" : "1003", "scenarii":[] };
+	this.experience = { "listCasesId" : "1,1000", "scenarii":[], "enable": true };
 	this.collectExperience = function( action )
 	{
 		this.wait=true;
@@ -247,14 +263,22 @@ appCommand.controller('MeteorControler',
  		console.log("Start : "+json);
 
 		$http.get( '?page=custompage_meteor&action=start&paramjson='+json+'&t='+Date.now() )
-				.success( function ( jsonResult ) {
-						console.log("history", angular.toJson(jsonResult));
+				.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+					// connection is lost ?
+					if (statusHttp==401 || typeof jsonResult === 'string') {
+						console.log("Redirected to the login page !");
+						window.location.reload();
+					}
+			
+					
+					console.log("history", angular.toJson(jsonResult));
 
-						self.listeventsexecution    = jsonResult.listevents;
-						self.statusrobots 			= jsonResult.statusrobots;
-						self.simulationid			= jsonResult.simulationid;
-						self.statusexecution		= jsonResult.statusexecution;
-						self.wait=false;
+					self.listeventsexecution    = jsonResult.listevents;
+					self.statusrobots 			= jsonResult.statusrobots;
+					self.simulationid			= jsonResult.simulationid;
+					self.statusexecution		= jsonResult.statusexecution;
+					self.wait=false;
 						
 						// alert('statusrobot='+self.statusrobot);
 				})
@@ -286,14 +310,21 @@ appCommand.controller('MeteorControler',
 
 		self.wait=true;
 		$http.get( '?page=custompage_meteor&action=initpage&jsonparam='+json+'&t='+Date.now() )
-		.success( function ( jsonResult ) {
-			self.config.list 				= jsonResult.configList;
-			self.processes 					= jsonResult.processes;
-			self.listeventslistprocesses 	= jsonResult.listevents;
+			.success( function ( jsonResult, statusHttp, headers, config ) {
 			
-			self.wait=false;
-			self.listeventsconfig = jsonResult.listeventsconfig;
-		})
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				
+				self.config.list 				= jsonResult.configList;
+				self.processes 					= jsonResult.processes;
+				self.listeventslistprocesses 	= jsonResult.listevents;
+				
+				self.wait=false;
+				self.listeventsconfig = jsonResult.listeventsconfig;
+			})
 		.error( function() {
 			self.wait=false;
 			});
@@ -329,30 +360,37 @@ appCommand.controller('MeteorControler',
 		self.refreshinprogress=true;
 
 		$http.get( '?page=custompage_meteor&action=status&paramjson='+json+'&t='+Date.now() )
-		.success( function ( jsonResult ) {
-			self.listeventsexecution    = jsonResult.listevents;
-			self.execution 				= jsonResult;
-			self.refreshinprogress		= false;
+		.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
 			
-			// $scope.chartTimeline = JSON.parse(jsonResult.chartTimeline);
-			
-			console.log(" Refresh done, status=["+self.execution.Status+"]");
-			console.log(self.timer.timer);
-			// ream the timeout
-			if (self.execution.status !="DONE")
-			{
-				console.log(" Rearm the timer");
-				$scope.timer = $timeout(function() { self.refresh() }, 30000);
-			}
-			
-			if (self.execution.Status=="DONE" && (angular.isDefined($scope.timer)))              
-			{
-				// console.log(" Stop the timer");
-				// $interval.cancel( $scope.timer );
-				$scope.timer=null;
-			}
-			
-		})
+				self.listeventsexecution    = jsonResult.listevents;
+				self.execution 				= jsonResult;
+				self.refreshinprogress		= false;
+				
+				// $scope.chartTimeline = JSON.parse(jsonResult.chartTimeline);
+				
+				console.log(" Refresh done, status=["+self.execution.Status+"]");
+				console.log(self.timer.timer);
+				// ream the timeout
+				if (self.execution.status !="DONE")
+				{
+					console.log(" Rearm the timer");
+					$scope.timer = $timeout(function() { self.refresh() }, 30000);
+				}
+				
+				if (self.execution.Status=="DONE" && (angular.isDefined($scope.timer)))              
+				{
+					// console.log(" Stop the timer");
+					// $interval.cancel( $scope.timer );
+					$scope.timer=null;
+				}
+				
+			})
 		.error( function() {
 			self.refreshinprogress=false;
 			});
@@ -380,9 +418,18 @@ appCommand.controller('MeteorControler',
 		this.listeventsexecution="";
 		
 		// prepare the string
-		var param = { "processes" :  this.processes, "scenarii":  this.scenarii, "experience": this.experience};
+		var param = {};
+		if (this.processes.enable)
+			param.processes = this.processes;
+		if (this.experience.enable)
+			param.experience = this.experience;
+		if (this.scenarii.enable)
+			param.scenarii = this.scenarii;
+		
 		var json = angular.toJson( param, false);
 
+		console.log("action["+action+"] Json="+json);
+		
 		// split the string by packet of 5000
 		while (json.length>0)
 		{
@@ -407,7 +454,14 @@ appCommand.controller('MeteorControler',
 		self.listUrlPercent= Math.round( (100 *  self.listUrlIndex) / self.listUrlCall.length);
 		
 		$http.get( '?page=custompage_meteor&'+self.listUrlCall[ self.listUrlIndex ]+'&t='+Date.now() )
-			.success( function ( jsonResult ) {
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+			
 				// console.log("Correct, advance one more",
 				// angular.toJson(jsonResult));
 				self.listUrlIndex = self.listUrlIndex+1;
@@ -418,7 +472,7 @@ appCommand.controller('MeteorControler',
 				{
 					console.log("Finish", angular.toJson(jsonResult));
 					self.wait=false;
-					self.wait=false;
+				
 					self.listUrlPercent= 100; 
 					
 					// post depending of the action
@@ -458,10 +512,10 @@ appCommand.controller('MeteorControler',
 
 			this.sendAllOnServer( this, "saveConfig", "saveconfig&paramjson="+json);
 		};
+		
 		this.postSaveConfig = function ( jsonResult ) {
-			
-			self.listeventsconfig 				= jsonResult.listeventsconfig;
-
+			self.listeventsconfig 		= jsonResult.listeventsconfig;
+			self.config.list 			= jsonResult.configList;
 		}
 		// -----------------------
 		// export the configuration
@@ -487,7 +541,14 @@ appCommand.controller('MeteorControler',
 			self.listeventsconfig ='';
 			self.wait=true;
 			$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported+'&t='+Date.now() )
-			.success( function ( jsonResult ) {
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+			
 				self.config.list 			= jsonResult.configList;
 				self.listeventsconfig 		= jsonResult.listeventsconfig;
 				
@@ -513,27 +574,39 @@ appCommand.controller('MeteorControler',
 			var param = { "confname": this.config.currentname};
 			var json = encodeURI( angular.toJson( param, false));
 
-			var selfconfig=this;
-			selfconfig.listeventsconfig="";
-			selfconfig.listeventslistprocesses="";
-			selfconfig.listUrlPercent=0;
-			selfconfig.wait=true;
+			var self =this;
+			self.listeventsconfig="";
+			self.listeventslistprocesses="";
+			self.listUrlPercent=0;
+			self.wait=true;
 			
 			$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json+'&t='+Date.now() )
-			.success( function ( jsonResult ) {
-				selfconfig.wait=false;
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+			
+				self.wait=false;
 				// ready to save it
-				selfconfig.config.newname=selfconfig.config.currentname; 
-				selfconfig.config.newdescription=jsonResult.description; 
+				self.config.newname        = self.config.currentname; 
+				self.config.newdescription = jsonResult.description; 
 				
-				selfconfig.processes = jsonResult.config.processes;
-				if (!selfconfig.processes)
-					selfconfig.processes=[];
-				selfconfig.scenarii  = jsonResult.config.scenarii;
-				if (!selfconfig.scenarii)
-					selfconfig.scenarii=[];
-				selfconfig.listeventsconfig = jsonResult.listeventsconfig;
-				selfconfig.showonlyactive=true;
+				self.processes = jsonResult.config.processes;
+				if (! self.processes)
+					self.processes=[];
+				self.scenarii  = jsonResult.config.scenarii;
+				if (! self.scenarii)
+					self.scenarii=[];
+				self.experience = jsonResult.config.experience;
+				console.log("Load experience="+self.experience);
+				if (! self.experience)
+					self.experience={};
+				
+				self.listeventsconfig = jsonResult.listeventsconfig;
+				self.showonlyactive=true;
 
 			})
 			.error( function() {
@@ -556,7 +629,14 @@ appCommand.controller('MeteorControler',
 			self.config.newname			= self.config.currentname;
 			
 			$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json+'&t='+Date.now() )
-			.success( function ( jsonResult ) {
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+					
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+			
 				self.wait						= false;
 				self.config.newdescription	= jsonResult.description; 
 				
@@ -592,22 +672,29 @@ appCommand.controller('MeteorControler',
 
 				var json = encodeURI( angular.toJson( param, false));
 
-				var selfconfig=this;
-				selfconfig.listeventsconfig="";
-				selfconfig.listeventslistprocesses="";
+				var self = this;
+				self.listeventsconfig="";
+				self.listeventslistprocesses="";
 
-				selfconfig.listUrlPercent=0;
-				selfconfig.wait=true;
+				self.listUrlPercent=0;
+				self.wait=true;
 
 				$http.get( '?page=custompage_meteor&action=deleteconfig&paramjson='+json+'&t='+Date.now() )
-				.success( function ( jsonResult ) {
-					selfconfig.wait=false;
-					selfconfig.config.newname=""; // ready to save it
-					selfconfig.config.newdescription=""; // ready to save it
+				.success( function ( jsonResult, statusHttp, headers, config ) {
 					
-					selfconfig.config.currentname="";
-					selfconfig.listeventsconfig = jsonResult.listeventsconfig;
-					selfconfig.config.list = jsonResult.configList;
+					// connection is lost ?
+					if (statusHttp==401 || typeof jsonResult === 'string') {
+						console.log("Redirected to the login page !");
+						window.location.reload();
+					}
+			
+					self.wait=false;
+					self.config.newname=""; // ready to save it
+					self.config.newdescription=""; // ready to save it
+					
+					self.config.currentname="";
+					self.listeventsconfig = jsonResult.listeventsconfig;
+					self.config.list = jsonResult.configList;
 
 				})
 				.error( function() {
@@ -619,7 +706,11 @@ appCommand.controller('MeteorControler',
 		var me = this;
 		$scope.$watch('importfiles', function() {
 			
-			
+			console.log("Watch import file");
+			if (! $scope.importfiles) {
+				return;
+			}
+			console.log("Watch import file.lenght="+ $scope.importfiles.length);
 			for (var i = 0; i < $scope.importfiles.length; i++) {
 				me.wait=true;
 				var file = $scope.importfiles[i];
