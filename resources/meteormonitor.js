@@ -36,16 +36,15 @@ appCommand.controller('TitleController',
 appCommand.controller('MeteorControler',
 	function ( $http, $scope,  $sce, $interval, $timeout, $upload ) {
 
-	this.processes= [  ];
+	this.processes 	= { "enable": false};
+	this.experience	= { "enable": true};
+	this.scenarii  	= { "enable": false};
+	
 	this.status="";
 	this.statusrobot=" status robot";
 	this.statusexecution ="t";
 	this.statuslistrobots = [];
 	this.wait=false;
-	this.wait=false;
-	this.showprocess=false;
-	this.showscenarii=false;
-	this.showexperience = true;
 	this.isshowExportDialog=false;
 	
 	this.showmainscenarii=true;
@@ -92,7 +91,9 @@ appCommand.controller('MeteorControler',
 	// ------------------------------------------------------------------------------------------------------
 	this.collectProcesses = function()
 	{
-		this.wait=true;		
+		this.wait=true;
+		this.processes.enable=true;
+		
 		var self=this;
 		var postMsg = {
 					showcreatecases: true,
@@ -201,6 +202,7 @@ appCommand.controller('MeteorControler',
 	this.collectExperience = function( action )
 	{
 		this.wait=true;
+		this.experience.enable=true;
 		this.experience.action= action;
 		
 		console.log("collectExperience action["+action+"]");
@@ -318,12 +320,9 @@ appCommand.controller('MeteorControler',
 					window.location.reload();
 				}
 				
-				self.config.list 				= jsonResult.configList;
-				self.processes 					= jsonResult.processes;
-				self.listeventslistprocesses 	= jsonResult.listevents;
-				
-				self.wait=false;
-				self.listeventsconfig = jsonResult.listeventsconfig;
+				self.config.list 		= jsonResult.configList;
+				self.listeventsconfig 	= jsonResult.listeventsconfig;
+				self.wait				= false;
 			})
 		.error( function() {
 			self.wait=false;
@@ -514,8 +513,9 @@ appCommand.controller('MeteorControler',
 		};
 		
 		this.postSaveConfig = function ( jsonResult ) {
-			self.listeventsconfig 		= jsonResult.listeventsconfig;
-			self.config.list 			= jsonResult.configList;
+			console.log("postSaveConfig");
+			this.listeventsconfig 		= jsonResult.listeventsconfig;
+			this.config.list 			= jsonResult.configList;
 		}
 		// -----------------------
 		// export the configuration
@@ -524,7 +524,7 @@ appCommand.controller('MeteorControler',
 			var list=[];
 			for (var i in this.config.list)
 			{
-				console.log("One conf="+this.config.list[i]);
+				console.log("getExportConfiguration:conf="+this.config.list[i]);
 				if (this.config.list[i].selected)
 					list.push( this.config.list[i].name );
 			}

@@ -20,48 +20,6 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>custompage/00-git/Actions.groovy</name>
-			<type>1</type>
-			<locationURI>copy_PARENT/Actions.groovy</locationURI>
-		</link>
-		<link>
-			<name>custompage/00-git/Index.groovy</name>
-			<type>1</type>
-			<locationURI>copy_PARENT/Index.groovy</locationURI>
-		</link>
-		<link>
-			<name>custompage/00-git/index.html</name>
-			<type>1</type>
-			<locationURI>copy_PARENT/index.html</locationURI>
-		</link>
-		<link>
-			<name>custompage/00-git/meteormonitor.js</name>
-			<type>1</type>
-			<locationURI>copy_PARENT/resources/meteormonitor.js</locationURI>
-		</link>
-		<link>
-			<name>custompage/7.9.0/Actions.groovy</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.9.0/workspace/tomcat/server/temp/bonita_portal_79864@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/Actions.groovy</locationURI>
-		</link>
-		<link>
-			<name>custompage/7.9.0/Index.groovy</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.9.0/workspace/tomcat/server/temp/bonita_portal_79864@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/Index.groovy</locationURI>
-		</link>
-		<link>
-			<name>custompage/7.9.0/index.html</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.9.0/workspace/tomcat/server/temp/bonita_portal_79864@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/index.html</locationURI>
-		</link>
-		<link>
-			<name>custompage/7.9.0/meteormonitor.js</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.9.0/workspace/tomcat/server/temp/bonita_portal_79864@Dragon-Pierre-Yves/tenants/1/pages/custompage_meteor/resources/meteormonitor.js</locationURI>
-		</link>
-	</linkedResources>
 	<variableList>
 		<variable>
 			<name>copy_PARENT</name>

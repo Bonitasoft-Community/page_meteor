@@ -229,22 +229,19 @@ public class MeteorAPI {
                     logger.info(logHeader + "MeteorAPI.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a HASHMAP");
 
                     final HashMap<String, Object> jsonHash = (HashMap<String, Object>) jsonObject;
-                    if (jsonHash.get("processes") != null) {
-                        listOfProcesses.addAll((ArrayList<Map<String, Object>>) jsonHash.get("processes"));
-                    }
-                    // old way
-                    if (jsonHash.get("process") != null) {
-                        listOfProcesses.add((Map<String, Object>) jsonHash.get("process"));
+                    if (jsonHash.get("processes") != null && jsonHash.get("processes") instanceof Map) {
+                        final Map<String, Object> jsonHashProcess = (Map<String, Object>) jsonHash.get("processes") ;
+                        if (jsonHashProcess.get("scenarii") !=null)
+                            listOfProcesses.addAll((List<Map<String, Object>>) jsonHashProcess.get("scenarii"));
                     }
 
-                    if (jsonHash.get("scenarii") != null) {
-                        listOfScenarii.addAll((ArrayList<Map<String, Object>>) jsonHash.get("scenarii"));
+                    if (jsonHash.get("scenarii") != null && jsonHash.get("scenarii") instanceof Map) {
+                        final Map<String, Object> jsonHashScenarii = (Map<String, Object>) jsonHash.get("scenarii") ;
+                        if (jsonHashScenarii.get("actions") !=null)
+                            listOfScenarii.addAll((List<Map<String, Object>>) jsonHashScenarii.get("actions"));
                     }
-                    // old way
-                    if (jsonHash.get("scenario") != null) {
-                        listOfScenarii.add((Map<String, Object>) jsonHash.get("scenario"));
-                    }
-                    if (jsonHash.get("experience") != null) {
+                   
+                    if (jsonHash.get("experience") != null && jsonHash.get("experience") instanceof Map) {
                         mapOfExperience = (Map<String, Object>) jsonHash.get("experience");
                     }
                 } else if (jsonObject instanceof List) {

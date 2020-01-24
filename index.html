@@ -178,11 +178,11 @@
 			<button ng-click="ctrl.navbaractiv='execution';ctrl.start()" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
 		</center>
 		
-		<div class="alert alert-danger">{{ctrl.experience}}</div>
+
 	</div> <!-- end experience -->
 				
 	<!--  ************************************************************  -->	
-	<!--  Scenari        	 										-->
+	<!--  Process        	 										-->
 	<!--  ************************************************************  -->		
 	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'processscenarii'">
 		<p>
@@ -193,8 +193,7 @@
 					<span class="Loading">.</span> Collect in progress...
 					</span>
 					
-					<button id="collectbtn" ng-click="ctrl.collectProcesses()" class="btn btn-info" ng-disabled="ctrl.wait || ! ctrl.processes.enable">Collect
-						informations</button> {{ctrl.status}}
+					<button id="collectbtn" ng-click="ctrl.collectProcesses()" class="btn btn-info" ng-disabled="ctrl.wait || ! ctrl.processes.enable">Collect Processes</button> {{ctrl.status}}
 
 					<div ng-bind-html="ctrl.getListEvents(ctrl.listeventslistprocesses )"></div></td>
 				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -311,6 +310,7 @@
 		<center>
 			<button ng-click="ctrl.navbaractiv='execution';ctrl.start()" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
 		</center>
+
 		
 	</div> <!-- end process -->
 
@@ -329,7 +329,7 @@
 							<th style="background-color: #f2dede;text-align: center;">Text</th>
 							<th style="background-color: #f2dede;text-align: center;"></th>
 						</tr>
-						<tbody ng-repeat="scenarioinfo in ctrl.scenarii track by $index">
+						<tbody ng-repeat="scenarioinfo in ctrl.scenarii.actions track by $index">
 							<tr>
 								<td><input ng-model="scenarioinfo.name"></td>
 								<td><select ng-model="scenarioinfo.type">

@@ -101,6 +101,9 @@ public class MeteorDefProcess extends MeteorDefBase {
         return null;
     }
 
+    public String toString() {
+        return mProcessName+"("+mProcessVersion+") #"+mProcessDefinitionId;
+    }
     /**
      * return the list of activities
      * 
