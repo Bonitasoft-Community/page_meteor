@@ -82,6 +82,10 @@
 <div class="container-fluid" id="accordion" ng-controller="MeteorControler as ctrl">
 
 
+  
+	<!--  ************************************************************  -->	
+	<!--  Navigation        	 										-->
+	<!--  ************************************************************  -->		  
 	<ul class="nav nav-tabs"  ng-class="{'nav-stacked': vertical, 'nav-justified': justified}" style="border-bottom: 1px solid #c2c2c2;">
 		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="properties" active="true" title="Experience scenarii" select="ctrl.navbaractiv == 'experiencescenarii'" class="{{ctrl.getNavClass('experiencescenarii')}}" style="{{ctrl.getNavStyle('experiencescenarii')}}">
 			  <a ng-click="ctrl.navbaractiv = 'experiencescenarii';"   class="ng-binding">Experience scenarii</a>
@@ -95,12 +99,7 @@
 		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="differentiel" active="true" title="Save" select="ctrl.navbaractiv == 'save'" class="{{ctrl.getNavClass('save')}}" style="{{ctrl.getNavStyle('save')}}">
 			  <a  ng-click="ctrl.navbaractiv='save'" class="ng-binding">Save</a>
 		</li>
-		
-		
 	</ul>
-	
-	
-
 
 	<!--  ************************************************************  -->	
 	<!--  Experience        	 										-->
@@ -180,7 +179,8 @@
 		
 
 	</div> <!-- end experience -->
-				
+			
+			
 	<!--  ************************************************************  -->	
 	<!--  Process        	 										-->
 	<!--  ************************************************************  -->		
@@ -518,79 +518,65 @@
 					
 				 -->
 	</div> <!--  end execution -->
-	
+		
 	<!--  ************************************************************  -->	
 	<!--  Save        	 										-->
-	<!--  ************************************************************  -->		
-	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'save'">
-
-			<modal-dialog show='ctrl.isshowExportDialog' dialog-title='Export' width='75%' height='80%' 	close="ctrl.isshowExportDialog=false"> 
-				<div class="modal-content" width='100%' height='100%'>
-					<h2>Export configuration</h2>
-					<p>
-					<p>
-					<table class="table">
-						<tr>
-						 
-							<th><button ng-click="ctrl.selectAll(ctrl.config.list)" class="btn btn-info btn-xs">Select all</button>Configuration</th>
-						</tr>
-						<tr ng-repeat="oneconf in ctrl.config.list">
-							<td><input type="checkbox" ng-model="oneconf.selected"></input>{{oneconf.name}}</td>
-						</tr>
-						</table>
-					<p>
-					<a class="btn btn-info" href="?page=custompage_meteor&action=exportconf&paramjson={{ctrl.getExportConfiguration()}}" >Export</a> 
-				
-				</div>
-			</modal-dialog>
-	
+	<!--  ************************************************************  -->
+	<!--  attention, do not use ng-if : with this tag, the drop down will not work -->		
+	<div class="col-xs-12" ng-show="ctrl.navbaractiv == 'save'">
+		<modal-dialog show='ctrl.isshowExportDialog' dialog-title='Export' width='75%' height='80%' 	close="ctrl.isshowExportDialog=false"> 
+			<div class="modal-content" width='100%' height='100%'>
+				<h2>Export configuration</h2>
+				<p>
+				<p>
+				<table class="table">
+					<tr>
+					 
+						<th><button ng-click="ctrl.selectAll(ctrl.config.list)" class="btn btn-info btn-xs">Select all</button>Configuration</th>
+					</tr>
+					<tr ng-repeat="oneconf in ctrl.config.list">
+						<td><input type="checkbox" ng-model="oneconf.selected"></input>{{oneconf.name}}</td>
+					</tr>
+					</table>
+				<p>
+				<a class="btn btn-info" href="?page=custompage_meteor&action=exportconf&paramjson={{ctrl.getExportConfiguration()}}" >Export</a> 
 			
-			<table width="100%" style="border:3px">
-				<tr>
-					<td>Configuration name : <input ng-model="ctrl.config.newname" maxlength="30"/>
-						<button ng-click="ctrl.saveConfig()" class="btn btn-success" ng-disabled="ctrl.wait">Save</button><br>
-						
-						
-					</td><td colspan="2">
-						<select ng-model="ctrl.config.currentname" style="width: 150px;">
-							<option ng-repeat="oneconf in ctrl.config.list" value="{{oneconf.name}}">{{oneconf.name}}</option>
-						</select>
-					</td>
-				</tr><tr>
-					<td>
-						<textarea ng-model="ctrl.config.newdescription" cols="50" rows="5"></textarea><br>
-						<input type="checkbox" ng-model="ctrl.showRestApiCall">Show RestCall</input>
-						<div ng-show="ctrl.showRestApiCall">
-							Start :<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=loadandstart&amp;scenario={{ctrl.config.newname}}</span> <br>
-							Status:<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=status&amp;simulationid=&lt;simulationId&gt;</span>
-						</div>
-					</td>
-					<td>
-						<button ng-click="ctrl.loadConfig()" class="btn btn-info" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load</button>
-					</td><td>
-						<button ng-click="ctrl.loadAndStartConfig()" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load And Start</button>
-					</td><td>
-						<button ng-click="ctrl.deleteConfig()" class="btn btn-danger" ng-disabled="(! ctrl.config.currentname) || ctrl.wait">Delete&nbsp;{{ctrl.config.currentname}}</button></td>
-					</td>
-				</tr>
-				<tr><td coldspan="3">	
-					<span ng-show="ctrl.wait"> <span class="Loading">.</span> Operation in progress {{ctrl.listUrlPercent}}%...</span>
-					</td>
-				</tr>
-				<tr><td coldspan="3">
-						<div ng-bind-html="ctrl.getListEvents( ctrl.listeventsconfig )"></div>
-					</td>
-					<td>
-						<button ng-click="ctrl.isshowExportDialog=true" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Export</button>													
-					</td><td colspan="2">
-						<div ng-file-drop ng-model="importfiles" class="drop-box ng-isolate-scope ng-valid ng-dirty"
-							drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
-							multiple="true" allow-dir="false">Drop your saved scenario zip to be upload here</div>
-						<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>													
-					</td>			
-				</tr>											
-			</table>
+			</div>
+		</modal-dialog>
 	
+		<p>
+		<div class="col-xs-6">
+			Configuration name : <input ng-model="ctrl.config.newname" maxlength="30"/>
+			<button ng-click="ctrl.saveConfig()" class="btn btn-success" ng-disabled="ctrl.wait">Save</button><br>
+			<textarea ng-model="ctrl.config.newdescription" cols="50" rows="5"></textarea><br>
+			Start :<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=loadandstart&amp;scenario={{ctrl.config.newname}}</span> <br>
+			Status:<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=status&amp;simulationid=&lt;simulationId&gt;</span>
+		</div>
+
+		<div class="col-xs-6">
+			List of configurations:
+			<select ng-model="ctrl.config.currentname" style="width: 150px;">
+				<option ng-repeat="oneconf in ctrl.config.list" value="{{oneconf.name}}">{{oneconf.name}}</option>
+			</select>
+			<p>
+			
+			<button ng-click="ctrl.loadConfig()" class="btn btn-info" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load&nbsp;{{ctrl.config.currentname}}</button>
+			<button ng-click="ctrl.loadAndStartConfig()" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load And Start&nbsp;{{ctrl.config.currentname}}</button>
+			<button ng-click="ctrl.deleteConfig()" class="btn btn-danger" ng-disabled="(! ctrl.config.currentname) || ctrl.wait">Delete&nbsp;{{ctrl.config.currentname}}</button></td>
+			<p>
+
+			<div ng-bind-html="ctrl.getListEvents( ctrl.listeventsconfig )"></div>
+			<p>
+			
+			<button ng-click="ctrl.isshowExportDialog=true" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Export</button>													
+			<div ng-file-drop ng-model="importfiles" class="drop-box ng-isolate-scope ng-valid ng-dirty"
+						drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
+						multiple="true" allow-dir="false">Drop your saved scenario zip to be upload here</div>
+			<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>													
+		</div>
+		
+		<span ng-show="ctrl.wait"> <span class="Loading">.</span> Operation in progress {{ctrl.listUrlPercent}}%...</span>
+		
 	</div> <!--  end Save -->			
 			
 

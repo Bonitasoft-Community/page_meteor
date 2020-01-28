@@ -42,15 +42,15 @@ appCommand.controller('MeteorControler',
 	
 	this.status="";
 	this.statusrobot=" status robot";
-	this.statusexecution ="t";
+	this.statusexecution ="";
 	this.statuslistrobots = [];
 	this.wait=false;
 	this.isshowExportDialog=false;
 	
 	this.showmainscenarii=true;
-	
 	this.navbaractiv = 'experiencescenarii';
-	
+
+
 	this.getNavClass = function( tabtodisplay )
 	{
 		if (this.navbaractiv === tabtodisplay)
@@ -198,7 +198,7 @@ appCommand.controller('MeteorControler',
 	// ------------------------------------------------------------------------------------------------------
 	// Experience
 	// ------------------------------------------------------------------------------------------------------
-	this.experience = { "listCasesId" : "1,1000", "scenarii":[], "enable": true };
+	this.experience = { "listCasesId" : "", "scenarii":[], "enable": true };
 	this.collectExperience = function( action )
 	{
 		this.wait=true;
@@ -491,172 +491,222 @@ appCommand.controller('MeteorControler',
 				
 				// alert('an error occure');
 				});	
-		};
+	};
 	
 		
 		
-		// ------------------------------------------------------------------------------------------------------
-		// Manage configuration
-		// ------------------------------------------------------------------------------------------------------
-		this.config= { 'list':[] };
-		
-		// Save the current config
-		this.saveConfig= function()
+	// ------------------------------------------------------------------------------------------------------
+	// Manage configuration
+	// ------------------------------------------------------------------------------------------------------
+	this.config= { 'list':[] };
+	
+	// Save the current config
+	this.saveConfig= function()
+	{
+		var param = { "confname": this.config.newname, "confdescription" : this.config.newdescription };
+		var json = encodeURI( angular.toJson( param, false));
+
+ 		this.listeventsconfig="";
+		this.wait=true;
+
+		this.sendAllOnServer( this, "saveConfig", "saveconfig&paramjson="+json);
+	};
+	
+	this.postSaveConfig = function ( jsonResult ) {
+		console.log("postSaveConfig");
+		this.listeventsconfig 		= jsonResult.listeventsconfig;
+		this.config.list 			= jsonResult.configList;
+	}
+	// -----------------------
+	// export the configuration
+	this.getExportConfiguration=function()
+	{
+		var list=[];
+		for (var i in this.config.list)
 		{
-			var param = { "confname": this.config.newname, "confdescription" : this.config.newdescription };
-			var json = encodeURI( angular.toJson( param, false));
-
-	 		this.listeventsconfig="";
-			this.wait=true;
-
-			this.sendAllOnServer( this, "saveConfig", "saveconfig&paramjson="+json);
-		};
-		
-		this.postSaveConfig = function ( jsonResult ) {
-			console.log("postSaveConfig");
-			this.listeventsconfig 		= jsonResult.listeventsconfig;
-			this.config.list 			= jsonResult.configList;
+			console.log("getExportConfiguration:conf="+this.config.list[i]);
+			if (this.config.list[i].selected)
+				list.push( this.config.list[i].name );
 		}
-		// -----------------------
-		// export the configuration
-		this.getExportConfiguration=function()
-		{
-			var list=[];
-			for (var i in this.config.list)
-			{
-				console.log("getExportConfiguration:conf="+this.config.list[i]);
-				if (this.config.list[i].selected)
-					list.push( this.config.list[i].name );
+
+		var param = { "listconfname": list};
+		var json = encodeURI( angular.toJson( param, false));
+		return json;
+	}
+	
+	// import the configuratin
+	
+	this.fileIsDropped = function( testfileimported ) {
+		var self=this;
+		self.listeventsconfig ='';
+		self.wait=true;
+		$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported+'&t='+Date.now() )
+		.success( function ( jsonResult, statusHttp, headers, config ) {
+				
+			// connection is lost ?
+			if (statusHttp==401 || typeof jsonResult === 'string') {
+				console.log("Redirected to the login page !");
+				window.location.reload();
 			}
-
-			var param = { "listconfname": list};
-			var json = encodeURI( angular.toJson( param, false));
-			return json;
-		}
 		
-		// import the configuratin
-		
-		this.fileIsDropped = function( testfileimported ) {
-			var self=this;
-			self.listeventsconfig ='';
-			self.wait=true;
-			$http.get( '?page=custompage_meteor&action=importconfs&filename='+testfileimported+'&t='+Date.now() )
-			.success( function ( jsonResult, statusHttp, headers, config ) {
-					
-				// connection is lost ?
-				if (statusHttp==401 || typeof jsonResult === 'string') {
-					console.log("Redirected to the login page !");
-					window.location.reload();
-				}
+			self.config.list 			= jsonResult.configList;
+			self.listeventsconfig 		= jsonResult.listeventsconfig;
 			
-				self.config.list 			= jsonResult.configList;
-				self.listeventsconfig 		= jsonResult.listeventsconfig;
-				
-				self.config.newname=jsonResult.name; 
-				self.config.newdescription=jsonResult.description; 
-				
-				self.processes = jsonResult.config.processes;
-				if (!self.processes)
-					self.processes=[];
-				self.scenarii  = jsonResult.config.scenarii;
-				if (!self.scenarii)
-					self.scenarii=[];
-				self.wait=false;
-			})
-			.error( function ( jsonResult ) {
-				self.wait=false});
+			self.config.newname=jsonResult.name; 
+			self.config.newdescription=jsonResult.description; 
 			
-		}
-		// load the config
-		this.loadConfig = function() 
-		{
-			// load the config in the current process
-			var param = { "confname": this.config.currentname};
-			var json = encodeURI( angular.toJson( param, false));
-
-			var self =this;
-			self.listeventsconfig="";
-			self.listeventslistprocesses="";
-			self.listUrlPercent=0;
-			self.wait=true;
-			
-			$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json+'&t='+Date.now() )
-			.success( function ( jsonResult, statusHttp, headers, config ) {
-					
-				// connection is lost ?
-				if (statusHttp==401 || typeof jsonResult === 'string') {
-					console.log("Redirected to the login page !");
-					window.location.reload();
-				}
-			
-				self.wait=false;
-				// ready to save it
-				self.config.newname        = self.config.currentname; 
-				self.config.newdescription = jsonResult.description; 
-				
-				self.processes = jsonResult.config.processes;
-				if (! self.processes)
-					self.processes=[];
-				self.scenarii  = jsonResult.config.scenarii;
-				if (! self.scenarii)
-					self.scenarii=[];
+			self.experience={};
+			if ( jsonResult.config &&  jsonResult.config.experience)
 				self.experience = jsonResult.config.experience;
-				console.log("Load experience="+self.experience);
-				if (! self.experience)
-					self.experience={};
-				
-				self.listeventsconfig = jsonResult.listeventsconfig;
-				self.showonlyactive=true;
+			if (!self.experience)
+				self.experience={};
 
-			})
-			.error( function() {
-				self.wait=false;
-				// alert("Can't contact the server");
-				});
-		}
+			self.processes={};
+			if ( jsonResult.config &&  jsonResult.config.processes)
+				self.processes = jsonResult.config.processes;
+			if (!self.processes)
+				self.processes={};
+
+			self.scenarii=[];
+			if ( jsonResult.config &&  jsonResult.config.scenarii)
+				self.scenarii  = jsonResult.config.scenarii;
+			if (!self.scenarii)
+				self.scenarii=[];
+			
+			self.wait=false;
+		})
+		.error( function ( jsonResult ) {
+			self.wait=false});
 		
-		this.loadAndStartConfig = function( )
-		{		
+	}
+	// load the config
+	this.loadConfig = function() 
+	{
+		// load the config in the current process
+		var param = { "confname": this.config.currentname};
+		var json = encodeURI( angular.toJson( param, false));
+
+		var self =this;
+		self.listeventsconfig="";
+		self.listeventslistprocesses="";
+		self.listUrlPercent=0;
+		self.wait=true;
+		
+		$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json+'&t='+Date.now() )
+		.success( function ( jsonResult, statusHttp, headers, config ) {
+				
+			// connection is lost ?
+			if (statusHttp==401 || typeof jsonResult === 'string') {
+				console.log("Redirected to the login page !");
+				window.location.reload();
+			}
+		
+			self.wait=false;
+			// ready to save it
+			self.config.newname        = self.config.currentname; 
+			self.config.newdescription = jsonResult.description; 
+			
+			self.processes = jsonResult.config.processes;
+			if (! self.processes)
+				self.processes=[];
+			self.scenarii  = jsonResult.config.scenarii;
+			if (! self.scenarii)
+				self.scenarii=[];
+			self.experience = jsonResult.config.experience;
+			console.log("Load experience="+self.experience);
+			if (! self.experience)
+				self.experience={};
+			
+			self.listeventsconfig = jsonResult.listeventsconfig;
+			self.showonlyactive=true;
+
+		})
+		.error( function() {
+			self.wait=false;
+			// alert("Can't contact the server");
+			});
+	}
+	
+	this.loadAndStartConfig = function( )
+	{		
+		var param = { "confname": this.config.currentname};
+		var json = encodeURI( angular.toJson( param, false));
+
+		var self=this;
+		self.listeventsconfig="";
+		self.listeventslistprocesses="";
+		self.listUrlPercent=0;
+		self.listeventsconfig ='';
+		self.wait=true;
+		self.config.newname			= self.config.currentname;
+		
+		$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json+'&t='+Date.now() )
+		.success( function ( jsonResult, statusHttp, headers, config ) {
+				
+			// connection is lost ?
+			if (statusHttp==401 || typeof jsonResult === 'string') {
+				console.log("Redirected to the login page !");
+				window.location.reload();
+			}
+		
+			self.wait						= false;
+			self.config.newdescription	= jsonResult.description; 
+			
+			self.processes 						= jsonResult.config.processes;
+			if (!self.processes)
+				self.processes=[];
+			self.scenarii  						= jsonResult.config.scenarii;
+			if (!self.scenarii)
+				self.scenarii=[];
+			self.listeventsconfig 				= jsonResult.listeventsconfig;
+			self.showonlyactive					= true;
+			self.simulationid					= jsonResult.simulationid;
+			
+			if (self.simulationid)
+			{
+				// now arm the refresh timer
+				console.log("Arm the timer ");
+				console.log(self);
+				$scope.timer = $timeout(function() { self.refresh() }, 30000);
+			}
+
+		})
+		.error( function() {
+			self.wait=false;
+			// alert("Can't contact the server");
+			});
+	}
+	this.deleteConfig = function()
+	{
+		if (confirm("Do you want to delete the configuration "+this.config.currentname))
+		{
 			var param = { "confname": this.config.currentname};
+
 			var json = encodeURI( angular.toJson( param, false));
 
-			var self=this;
+			var self = this;
 			self.listeventsconfig="";
 			self.listeventslistprocesses="";
+
 			self.listUrlPercent=0;
-			self.listeventsconfig ='';
 			self.wait=true;
-			self.config.newname			= self.config.currentname;
-			
-			$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json+'&t='+Date.now() )
+
+			$http.get( '?page=custompage_meteor&action=deleteconfig&paramjson='+json+'&t='+Date.now() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
-					
+				
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
 					console.log("Redirected to the login page !");
 					window.location.reload();
 				}
-			
-				self.wait						= false;
-				self.config.newdescription	= jsonResult.description; 
+		
+				self.wait=false;
+				self.config.newname=""; // ready to save it
+				self.config.newdescription=""; // ready to save it
 				
-				self.processes 						= jsonResult.config.processes;
-				if (!self.processes)
-					self.processes=[];
-				self.scenarii  						= jsonResult.config.scenarii;
-				if (!self.scenarii)
-					self.scenarii=[];
-				self.listeventsconfig 				= jsonResult.listeventsconfig;
-				self.showonlyactive					= true;
-				self.simulationid					= jsonResult.simulationid;
-				
-				if (self.simulationid)
-				{
-					// now arm the refresh timer
-					console.log("Arm the timer ");
-					console.log(self);
-					$scope.timer = $timeout(function() { self.refresh() }, 30000);
-				}
+				self.config.currentname="";
+				self.listeventsconfig = jsonResult.listeventsconfig;
+				self.config.list = jsonResult.configList;
 
 			})
 			.error( function() {
@@ -664,89 +714,38 @@ appCommand.controller('MeteorControler',
 				// alert("Can't contact the server");
 				});
 		}
-		this.deleteConfig = function()
-		{
-			if (confirm("Do you want to delete the configuration "+this.config.currentname))
-			{
-				var param = { "confname": this.config.currentname};
-
-				var json = encodeURI( angular.toJson( param, false));
-
-				var self = this;
-				self.listeventsconfig="";
-				self.listeventslistprocesses="";
-
-				self.listUrlPercent=0;
-				self.wait=true;
-
-				$http.get( '?page=custompage_meteor&action=deleteconfig&paramjson='+json+'&t='+Date.now() )
-				.success( function ( jsonResult, statusHttp, headers, config ) {
-					
-					// connection is lost ?
-					if (statusHttp==401 || typeof jsonResult === 'string') {
-						console.log("Redirected to the login page !");
-						window.location.reload();
-					}
-			
-					self.wait=false;
-					self.config.newname=""; // ready to save it
-					self.config.newdescription=""; // ready to save it
-					
-					self.config.currentname="";
-					self.listeventsconfig = jsonResult.listeventsconfig;
-					self.config.list = jsonResult.configList;
-
-				})
-				.error( function() {
-					self.wait=false;
-					// alert("Can't contact the server");
-					});
-			}
+	}
+	var me = this;
+	$scope.$watch('importfiles', function() {
+		
+		console.log("Watch import file");
+		if (! $scope.importfiles) {
+			return;
 		}
-		var me = this;
-		$scope.$watch('importfiles', function() {
+		console.log("Watch import file.lenght="+ $scope.importfiles.length);
+		for (var i = 0; i < $scope.importfiles.length; i++) {
+			me.wait=true;
+			var file = $scope.importfiles[i];
 			
-			console.log("Watch import file");
-			if (! $scope.importfiles) {
-				return;
-			}
-			console.log("Watch import file.lenght="+ $scope.importfiles.length);
-			for (var i = 0; i < $scope.importfiles.length; i++) {
-				me.wait=true;
-				var file = $scope.importfiles[i];
-				
-				// V6 : url is fileUpload
-				// V7 : /bonita/portal/fileUpload
-				$scope.upload = $upload.upload({
-					url: '/bonita/portal/fileUpload',
-					method: 'POST',
-					data: {myObj: $scope.myModelObj},
-					file: file
-				}).progress(function(evt) {
+			// V6 : url is fileUpload
+			// V7 : /bonita/portal/fileUpload
+			$scope.upload = $upload.upload({
+				url: '/bonita/portal/fileUpload',
+				method: 'POST',
+				data: {myObj: $scope.myModelObj},
+				file: file
+			}).progress(function(evt) {
 // console.log('progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '% file
 // :'+ evt.config.file.name);
-				}).success(function(data, status, headers, config) {
-				
-					console.log('file ' + config.file.name + 'is uploaded successfully. Response: ' + data);
-					me.fileIsDropped(data);
-				});
-			} // end $scope.importfiles
-		}); 
+			}).success(function(data, status, headers, config) {
+			
+				console.log('file ' + config.file.name + 'is uploaded successfully. Response: ' + data);
+				me.fileIsDropped(data);
+			});
+		} // end $scope.importfiles
+	}); 
 	
-		// ------------------------------------------------------------------------------------------------------
-		// TOOLBOX
-		<!-- Manage the event -->
-		this.getListEvents = function ( listevents ) {
-			return $sce.trustAsHtml(  listevents );
-		}
-
-		this.selectAll = function ( list)
-		{
-			for (var i in list)
-			{
-				list[i].selected=true;
-			}
-		}
+	
 
 });
 
