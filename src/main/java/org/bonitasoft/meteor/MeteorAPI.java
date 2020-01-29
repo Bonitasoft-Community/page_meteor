@@ -340,7 +340,27 @@ public class MeteorAPI {
         logger.info(logHeader + "~~~~~~~~~~ MeteorAPI.start() : END " + resultCommand);
         return resultCommand;
     }
+    
+    /**
+     * 
+     * @param name
+     * @param processAPI
+     * @param commandAPI
+     * @param tenantId
+     * @return
+     */
+    public Map<String, Object> startFromScenarioName(String name, ProcessAPI processAPI, CommandAPI commandAPI, long tenantId) {
+        logger.info(logHeader + "~~~~~~~~~~ MeteorAPI.startFromName() name=" + name);
+        BonitaCommandDeployment bonitaCommand = BonitaCommandDeployment.getInstance(CmdMeteor.cstCommandName);
+        Map<String, Object> resultCommand = new HashMap<String, Object>();
 
+        final HashMap<String, Serializable> parameters = new HashMap<String, Serializable>();
+        parameters.put(CmdMeteor.cstParamCommandNameScenarioName, name);
+        resultCommand = bonitaCommand.callCommand(CmdMeteor.VERBE.STARTFROMSCENARIONAME.toString(), parameters, tenantId, commandAPI);
+        logger.info(logHeader + "~~~~~~~~~~ MeteorAPI.startFromName() : END " + resultCommand);
+        return resultCommand;
+        
+    }
     /*
      * *************************************************************************
      * *******

@@ -48,6 +48,7 @@ public class MeteorDAO {
     private static BEvent EventConfigurationImported = new BEvent(MeteorDAO.class.getName(), 8, Level.INFO, "Import done", "The import is done with success");
 
     private static BEvent EventConfigurationNameMissing = new BEvent(MeteorDAO.class.getName(), 9, Level.APPLICATIONERROR, "Configuration name missing", "A name is missing", "A name must be given to save it", "Configuration will not be saved");
+    private static BEvent EventNoConfiguration = new BEvent(MeteorDAO.class.getName(), 10, Level.APPLICATIONERROR, "Name does not exist", "This configuration name does not exist", "A existing name must exist", "Give a name");
 
     private static String cstPropertiesConfig = "config_";
     private static String cstPropertiesDescription = "description_";
@@ -70,7 +71,7 @@ public class MeteorDAO {
         public List<BEvent> listEvents = new ArrayList<BEvent>();
         public ByteArrayOutputStream containerZip;
         public String containerName;
-        Configuration configuration;
+        public Configuration configuration;
         public List<Map<String, Object>> listNamesAllConfigurations = null;
 
         public Map<String, Object> getMap() {
@@ -126,16 +127,17 @@ public class MeteorDAO {
         return statusDAO;
     }
 
+    private final static String pageNameMeteor= "custompage_meteor";
     /**
      * @param name
      * @param pageName
      * @param tenantId
      * @return
      */
-    public StatusDAO load(String name, String pageName, long tenantId) {
+    public StatusDAO load(String name, long tenantId) {
         StatusDAO statusDAO = new StatusDAO();
         // save it
-        BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
 
         statusDAO.listEvents.addAll(bonitaProperties.load());
 
@@ -164,6 +166,10 @@ public class MeteorDAO {
         statusDAO.configuration.name = name;
         statusDAO.configuration.content = bonitaProperties.getProperty(cstPropertiesConfig + name);
         statusDAO.configuration.description = bonitaProperties.getProperty(cstPropertiesDescription + name);
+        if ( statusDAO.configuration.content == null )
+        {
+            statusDAO.listEvents.add(new BEvent(EventNoConfiguration, "Name ["+name+"]"));
+        }
         logger.info("BonitaProperties.load store properties  done, events = " + statusDAO.listEvents.size() + " jsonConfiguration=" + statusDAO.configuration.content);
 
         if (!BEventFactory.isError(statusDAO.listEvents))

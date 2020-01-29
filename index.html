@@ -140,7 +140,9 @@
 					<td style="background-color: #D9EDF7;border-width: 1px 1px"><span title="Name"><input ng-model="scenario.name" ng-disabled="! ctrl.experience.enable"></span></td>
 							
 					<td style="background-color: #D9EDF7;border-width: 1px 1px">
-						<span title="Process name and version">{{scenario.processname}} ({{scenario.processversion}})</span></td>
+						<span title="Process name and version">{{scenario.processname}} ({{scenario.processversion}})</span>						
+						<input type="checkbox" ng-model="scenario.allowrecentversion" title="If the version does not exist, use the last recent version">
+						</td>
 					<td style="background-color: #D9EDF7;border-width: 1px 1px;text-align: center;">
 						<input type="number" ng-model="scenario.nbrobs" style="text-align: right; width: 80px;"
 							title="The number of robot simulate multiple create IN PARRALLELE because robots runs undependably" ng-disabled="! ctrl.experience.enable"></td>

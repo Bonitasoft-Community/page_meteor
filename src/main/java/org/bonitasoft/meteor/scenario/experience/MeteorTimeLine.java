@@ -33,13 +33,14 @@ public abstract class MeteorTimeLine {
     private String processName;
 
     private String processVersion;
+    private boolean allowRecentVersion=true;
     private Long processDefinitionId;
     private long nbRobots = 1;
     private long nbCases = 1;
     private long delaySleepMS = 0;
     private long timeBetweenSleepMS = 0;
 
-    Map<String, Serializable> listContractValues;
+    private Map<String, Serializable> listContractValues;
 
     // private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH24:mm:ss SSS");
     private static String cstJsonName = "name";
@@ -47,6 +48,7 @@ public abstract class MeteorTimeLine {
     private static String cstJsonRootCaseId = "rootcaseid";
     private static String cstJsonProcessName = "processname";
     private static String cstJsonProcessVersion = "processversion";
+    private static String cstJsonProcessAllowRecentVersion ="allowrecentversion";
     private static String cstJsonTimeLines = "timelines";
     private static String cstJsonActivityName = "actname";
     private static String cstJsonActivityDefinitionId = "defid";
@@ -113,6 +115,8 @@ public abstract class MeteorTimeLine {
         timeLine.rootCaseId = MeteorToolbox.getParameterLong(json, cstJsonRootCaseId, null);
         timeLine.processName = MeteorToolbox.getParameterString(json, cstJsonProcessName, "");
         timeLine.processVersion = MeteorToolbox.getParameterString(json, cstJsonProcessVersion, "");
+        timeLine.allowRecentVersion = MeteorToolbox.getParameterBoolean(json, cstJsonProcessAllowRecentVersion);
+        
         String jsonContract = MeteorToolbox.getParameterString(json, cstJsonListContractValues, "");
         Object tempList = JSONValue.parse(jsonContract);
         timeLine.listContractValues = (Map<String, Serializable>) (Map<?,?>) tempList;
@@ -153,18 +157,14 @@ public abstract class MeteorTimeLine {
     public List<BEvent> initialize(APIAccessor apiAccessor) {
         List<BEvent> listEvents = new ArrayList<BEvent>();
         ProcessAPI processAPI = apiAccessor.getProcessAPI();
-        // calculated the processID
-        SearchOptionsBuilder searchOptions = new SearchOptionsBuilder(0, 10);
-        searchOptions.filter(ProcessDeploymentInfoSearchDescriptor.NAME, getProcessName());
-        if (getProcessVersion().trim().length() > 0)
-            searchOptions.filter(ProcessDeploymentInfoSearchDescriptor.VERSION, getProcessVersion());
-        searchOptions.sort(ProcessDeploymentInfoSearchDescriptor.DEPLOYMENT_DATE, Order.DESC);
-        SearchResult<ProcessDeploymentInfo> searchResult;
         try {
-            searchResult = processAPI.searchProcessDeploymentInfos(searchOptions.done());
-
-            if (searchResult.getCount() == 0) {
-                listEvents.add(new BEvent(EVENT_NOPROCESS_FOUND, "Process[" + getProcessName() + "] version[" + getProcessVersion() + "]"));
+            SearchResult<ProcessDeploymentInfo> searchResult = searchVersion( getProcessName(), getProcessVersion(), true, processAPI);
+            if (searchResult.getCount()==0 && getAllowRecentVersion())
+                searchResult = searchVersion( getProcessName(), null, false, processAPI);
+                
+     
+                if (searchResult.getCount() == 0) {
+                    listEvents.add(new BEvent(EVENT_NOPROCESS_FOUND, "Process[" + getProcessName() + "] version[" + getProcessVersion() + "]"));
             } else if (searchResult.getResult().get(0).getActivationState().equals(ActivationState.DISABLED)) {
                 listEvents.add(new BEvent(EVENT_PROCESS_DISABLED, "Process[" + getProcessName() + "] version[" + getProcessVersion() + "]"));
             } else {
@@ -177,6 +177,16 @@ public abstract class MeteorTimeLine {
 
     }
 
+    public SearchResult<ProcessDeploymentInfo> searchVersion(String processName, String processVersion, boolean exactVersion, ProcessAPI processAPI ) throws SearchException {
+        // calculated the processID
+        SearchOptionsBuilder searchOptions = new SearchOptionsBuilder(0, 10);
+        searchOptions.filter(ProcessDeploymentInfoSearchDescriptor.NAME, processName);
+        if (exactVersion)
+            searchOptions.filter(ProcessDeploymentInfoSearchDescriptor.VERSION, processVersion);
+        searchOptions.sort(ProcessDeploymentInfoSearchDescriptor.DEPLOYMENT_DATE, Order.DESC);
+        SearchResult<ProcessDeploymentInfo> searchResult;
+        return processAPI.searchProcessDeploymentInfos(searchOptions.done());
+    }
     /* ************************************************************************ */
     /*                                                                          */
     /* getter/setter */
@@ -211,6 +221,9 @@ public abstract class MeteorTimeLine {
         return processVersion;
     }
 
+    public boolean getAllowRecentVersion() {
+        return allowRecentVersion;
+    }
     public void setProcessVersion(String processVersion) {
         this.processVersion = processVersion;
     }

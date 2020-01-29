@@ -22,15 +22,18 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
     static Logger logger = Logger.getLogger(CmdMeteor.class.getName());
     private static String logHeader = "CommandMeteor ~~~~~~ ";
 
+    /** Start From Name : to be call by a simple command, only parameters is the configuration name */
     public enum VERBE {
-        START, PING, STATUS, ABORT
+        START, PING, STATUS, ABORT, STARTFROMSCENARIONAME
     };
 
     // public final static String cstParamCommandName = "CommandName";
     // public final static String cstParamCommandNameStart = "START";
     public final static String cstParamCommandNameStartParams = "startparameters";
     public final static String cstParamCommandNameStatusParams = "statusparameters";
-
+    public final static String cstParamCommandNameScenarioName = "scenarioname";
+    
+    
     // public final static String cstParamCommandNamePing = "PING";
     // public final static String cstParamCommandNameStatus = "STATUS";
     // public final static String cstParamCommandNameAbort = "ABORT";
@@ -85,12 +88,26 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
             logger.fine(logHeader+"COMMANDMETEOR.Start params[" + startParameters.toString() + "]");
             startParameters.tenantId = tenantId;
             executeAnswer.result = MeteorOperation.start(startParameters, connectorAccessorAPI).getMap();
+
         } else if (VERBE.STATUS.toString().equals(commandName)) {
             logger.fine(logHeader+"COMMANDMETEOR.Status ");
             final StatusParameters statusParameters = StatusParameters.getInstanceFromJsonSt((String) executeParameters.parametersCommand.get(cstParamCommandNameStatusParams));
 
             executeAnswer.result = MeteorOperation.getStatus(statusParameters, connectorAccessorAPI).getMap();
-
+        
+        }  else if (VERBE.STARTFROMSCENARIONAME.toString().equals(commandName)) {
+            String name = (String) executeParameters.parametersCommand.get( cstParamCommandNameScenarioName );
+            MeteorDAO meteorDAO = MeteorDAO.getInstance();
+            MeteorDAO.StatusDAO statusDao= meteorDAO.load( name, tenantId);
+            if (BEventFactory.isError( statusDao.listEvents) ) {
+                executeAnswer.result.put(CmdMeteor.cstParamResultListEventsSt, BEventFactory.getHtml(statusDao.listEvents));    
+            }
+            else {
+                String accumulateJson=statusDao.configuration.content;
+                final StartParameters startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
+                executeAnswer.result = MeteorOperation.start(startParameters, connectorAccessorAPI).getMap();
+            }
+            
         } else if (VERBE.ABORT.toString().equals(commandName)) {
             logger.fine(logHeader+"COMMANDMETEOR.Abort ");
 

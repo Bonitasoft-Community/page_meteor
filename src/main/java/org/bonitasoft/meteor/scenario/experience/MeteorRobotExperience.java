@@ -53,7 +53,7 @@ public class MeteorRobotExperience extends MeteorRobot {
         ProcessAPI processAPI = apiAccessor.getProcessAPI();
         Map<String, Serializable> mapContract=null;
         try {
-            mapContract = CaseContract.recalculateContractValue(meteorTimeLine.listContractValues);
+            mapContract = CaseContract.recalculateContractValue( meteorTimeLine.getListContractValues());
 
             for (mCollectPerformance.mOperationIndex = 0; mCollectPerformance.mOperationIndex < meteorTimeLine.getNbCases(); mCollectPerformance.mOperationIndex++) {
                 long timeStart = System.currentTimeMillis();
