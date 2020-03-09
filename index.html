@@ -122,7 +122,6 @@
 		<!-- style="background-color: #f9f9f9;" -->
 		<table class="table table-striped table-hover table-condensed">
 			<tr>
-				<th style="background-color: #f2dede; text-align: center;"></th>
 				<th style="background-color: #f2dede; text-align: center;">Name</th>
 				<th style="background-color: #f2dede; text-align: center;">Process</th>
 				<th style="background-color: #f2dede; text-align: center;"><span title="number of robots ">Robots</span></th>
@@ -131,12 +130,10 @@
 				<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep before the start">Delay start (ms)</span></th>
 				<th style="background-color: #f2dede; text-align: center;"><span title="Time to sleep between each execution, in millisecond">sleep (ms)</span></th>
 				<th style="background-color: #f2dede; text-align: center;"></th>
+				<th style="background-color: #f2dede; text-align: center;"></th>
 			</tr>
 			<tbody ng-repeat="scenario in ctrl.experience.scenarii track by $index">
 				<tr style="background-color: ##D9EDF7;border-width: 1px 1px" >
-					<td style="background-color: #D9EDF7;border-width: 1px 1px"><span ><input type="checkbox" ng-model="scenario.showtimeline" title="Display the detail of the case execution"></span>
-						
-					</td>
 					<td style="background-color: #D9EDF7;border-width: 1px 1px"><span title="Name"><input ng-model="scenario.name" ng-disabled="! ctrl.experience.enable"></span></td>
 							
 					<td style="background-color: #D9EDF7;border-width: 1px 1px">
@@ -153,16 +150,21 @@
 						<input type="number" ng-model="scenario.delaysleep" style="text-align: right; width: 80px;" title="Before start, robots will sleep this time (in ms)" ng-disabled="! ctrl.experience.enable"></td>
 					<td style="background-color: #D9EDF7; text-align: center">
 						<input type="number" ng-model="scenario.timesleep" style="text-align: right; width: 80px;" title="Between each execution, robots will sleep this time (in ms)" ng-disabled="! ctrl.experience.enable"></td>
+					<td style="background-color: #D9EDF7; text-align: center">
+						<select ng-model="scenario.showtimeline">
+							<option value="show">Show detail</option>
+							<option value="hide">Hide detail</option>
+						</select>	</td>				
 					<td style="background-color: #D9EDF7; text-align: center"><button ng-click="ctrl.experience.scenarii.splice(index, 1)" class="btn btn-danger btn-xs">Remove</button></td>
 				</tr>
-				<tr ng-if="scenario.showtimeline">
-					<td colspan="4" style="background-color: #D9EDF7;">
+				<tr ng-if="scenario.showtimeline == 'show'">
+					<td colspan="4">
 					</td>
-					<td colspan="5" style="background-color: #D9EDF7;">
+					<td colspan="5">
 						<textarea  cols="70" rows="5" ng-model="scenario.contract"  ng-disabled="true"></textarea>
 					</td>
 				</tr>
-				<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline">
+				<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline == 'show'">
 					<td colspan="1">
 					</td>	
 					<td >{{timeline.actname}}</td>
@@ -178,6 +180,7 @@
 		<center>
 			<button ng-click="ctrl.navbaractiv='execution';ctrl.start()" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
 		</center>
+		
 		
 
 	</div> <!-- end experience -->
@@ -404,6 +407,7 @@
 				<th style="background-color: #99D9EA">Advance</th>
 				<th style="background-color: #99D9EA">Time(ms)</th>
 				<th style="background-color: #99D9EA">Average(ms)</th>
+				<th style="background-color: #99D9EA"></th>
 			</tr>
 			<tbody ng-repeat="robotinfo in ctrl.execution.robots track by $index">
 				<tr> 
@@ -421,18 +425,17 @@
 					<td style="{{ctrl.getRobotStyle( robotinfo )}}">{{robotinfo.adv}}</td>
 					<td style="{{ctrl.getRobotStyle( robotinfo )}}">{{robotinfo.time}}</td>
 					<td style="{{ctrl.getRobotStyle( robotinfo )}}">{{robotinfo.timeavg}}</td>
+					<td style="{{ctrl.getRobotStyle( robotinfo )}}">
+						<select ng-model="robotinfo.showlog">
+							<option value="show">Show detail</option>
+							<option value="hide">Hide detail</option>
+						</select>	</td>	
+						
 				</tr>
-				<tr>
+				<tr ng-if="robotinfo.showlog == 'show'">
 					<td></td>
-					<td colspan="5">
-					<a href="#" ng-click="robotinfo.showlog = ! robotinfo.showlog" style="text-decoration:none">					
- 							<span ng-show="robotinfo.showlog" class="glyphicon glyphicon-chevron-down" style="font-size: 10px;"></span>
-							</a>
-					<a href="#" ng-click="robotinfo.showlog = ! robotinfo.showlog" style="text-decoration:none">					
-						<span ng-show="! robotinfo.showlog" class="glyphicon glyphicon-chevron-right"  style="font-size: 10px;"></span>
-					</a>	
-					<div ng-show="robotinfo.showlog">{{robotinfo.log}}</div>	
-	
+					<td colspan="5">						
+						{{robotinfo.log}}		
 					</td>
 				</tr>
 			</tbody>
@@ -551,8 +554,6 @@
 			Configuration name : <input ng-model="ctrl.config.newname" maxlength="30"/>
 			<button ng-click="ctrl.saveConfig()" class="btn btn-success" ng-disabled="ctrl.wait">Save</button><br>
 			<textarea ng-model="ctrl.config.newdescription" cols="50" rows="5"></textarea><br>
-			Start :<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=loadandstart&amp;scenario={{ctrl.config.newname}}</span> <br>
-			Status:<br><span class="explanation">/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=status&amp;simulationid=&lt;simulationId&gt;</span>
 		</div>
 
 		<div class="col-xs-6">
@@ -562,8 +563,8 @@
 			</select>
 			<p>
 			
-			<button ng-click="ctrl.loadConfig()" class="btn btn-info" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load&nbsp;{{ctrl.config.currentname}}</button>
-			<button ng-click="ctrl.loadAndStartConfig()" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load And Start&nbsp;{{ctrl.config.currentname}}</button>
+			<button ng-click="ctrl.loadConfig('loadconfig')" class="btn btn-info" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load&nbsp;{{ctrl.config.currentname}}</button>
+			<button ng-click="ctrl.navbaractiv='execution';ctrl.loadConfig('loadandstart')" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Load And Start&nbsp;{{ctrl.config.currentname}}</button>
 			<button ng-click="ctrl.deleteConfig()" class="btn btn-danger" ng-disabled="(! ctrl.config.currentname) || ctrl.wait">Delete&nbsp;{{ctrl.config.currentname}}</button></td>
 			<p>
 
@@ -573,11 +574,55 @@
 			<button ng-click="ctrl.isshowExportDialog=true" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Export</button>													
 			<div ng-file-drop ng-model="importfiles" class="drop-box ng-isolate-scope ng-valid ng-dirty"
 						drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
-						multiple="true" allow-dir="false">Drop your saved scenario zip to be upload here</div>
+						multiple="true" allow-dir="false">Drop your scenario (zip file) here</div>
 			<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>													
 		</div>
 		
 		<span ng-show="ctrl.wait"> <span class="Loading">.</span> Operation in progress {{ctrl.listUrlPercent}}%...</span>
+		
+		<div class="col-xs-12">
+			<h3>Automate tests</h3>
+			To automate the test, first, load the scenario on your server.
+			Then, you can execute it on-demand, via these different options:
+			<li>use an external scheduler (Jenkins, Cron) and REST API</li>
+			Using the REST API, you have first to log on to the server, via the Login Rest API.
+			Second, call this REST API to start the execution:<br>
+			Start:
+			<div class="well">
+				/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=loadandstart&amp;scenario={{ctrl.config.newname}}
+			</div>
+			Status: (you have to wait the end of execution)<br>
+			<div class="well">
+				/bonita/portal/custom-page/custompage_meteor?page=custompage_meteor&amp;action=status&amp;simulationid=&lt;simulationId&gt;
+			</div>
+			
+			
+			<li>use an external scheduler and JAVA API</li>
+			You have first to log on to the server via the JAVA API.
+			Second, use the MeteorAPI
+			<div class="well">
+				import org.bonitasoft.meteor.MeteorClientAPI;<br>
+				Map<String, Object> resultCommand = meteorClientAPI.startFromScenarioName(scenarioName, apiAccessor.getProcessAPI(), apiAccessor.getCommandAPI(), 1L /* Tenantid */);<br>
+				<br>
+				String simulationId = (String) resultCommand.get( CmdMeteor.cstParamResultSimulationId);<br>
+				<br>
+				if (simulationId!=null)<br>
+				{<br>
+				    /* you have to wait the end of execution */<br>
+				    /* Check the status */<br>
+        			Map<String, Object> resultStatus = meteorClientAPI.getStatus(statusParameters, apiAccessor.getProcessAPI(),  apiAccessor.getCommandAPI(), jobExecution.tenantId);<br>
+            	    String statusSimulation = (String) resultStatus.get( MeteorSimulation.CSTJSON_STATUS);<br>
+            		Integer percentAdvance = (Integer) resultStatus.get( MeteorSimulation.CSTJSON_PERCENTADVANCE );<br>
+		            if (MeteorSimulation.STATUS.DONE.toString().equals( statusSimulation )) { <br>
+		            	/** we are successfull */<br>
+		            }<br>
+              }<br>
+			</div>
+
+			<li>Use the TruckMilk plugin Meteor</li>
+			Create a job, and gives the scenario name.
+
+		</div>
 		
 	</div> <!--  end Save -->			
 			

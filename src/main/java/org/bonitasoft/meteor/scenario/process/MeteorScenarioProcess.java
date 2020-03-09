@@ -42,38 +42,38 @@ public class MeteorScenarioProcess extends MeteorScenario {
     private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
 
     // todo : rename html => json
-    public static String cstJsonNumberOfCases = "nbcases";
-    public static String cstHtmlType = "type";
-    public static String cstHtmlTypeProcess = "pro";
-    public static String cstHtmlTypeActivity = "act";
-    public static String cstHtmlTypeUser = "usr";
+    public final static String cstJsonNumberOfCases = "nbcases";
+    public final static String cstHtmlType = "type";
+    public final static String cstHtmlTypeProcess = "pro";
+    public final static String cstHtmlTypeActivity = "act";
+    public final static String cstHtmlTypeUser = "usr";
 
-    public static String cstHtmlId = "id";
-    public static String cstHtmlNumberOfRobots = "nbrob";
-    public static String cstHtmlTimeSleep = "timesleep";
-    public static String cstHtmlDelaySleep = "delaysleep";
-    public static String cstHtmlInputPercent = "percent";
-    public static String cstHtmlInputContent = "content";
-    public static String cstHtmlInputProposeContent = "proposecontent";
+    public final static String cstHtmlId = "id";
+    public final static String cstHtmlNumberOfRobots = "nbrob";
+    public final static String cstHtmlTimeSleep = "timesleep";
+    public final static String cstHtmlDelaySleep = "delaysleep";
+    public final static String cstHtmlInputPercent = "percent";
+    public final static String cstHtmlInputContent = "content";
+    public final static String cstHtmlInputProposeContent = "proposecontent";
 
-    public static String cstHtmlInputs = "inputs";
-    public static String cstHtmlUserName = "username";
-    public static String cstHtmlUserPassword = "userpassword";
-    public static String cstHtmlDocumentName = "documentname";
-    public static String cstHtmlDocumentValue = "documentvalue";
-    public static String cstJsonProcessName = "processname";
-    public static String cstHtmlProcessVersion = "processversion";
-    public static String cstHtmlActivityName = "activityname";
-    public static String cstHtmlProcessDefId = "processid";
-    public static String cstHtmlCoverAll = "coverall";
-    public static String cstHtmlCoverPercent = "coverpercent";
-    public static String cstHtmlCoverHappyPathPercent = "coverhappypathpercent";
-    public static String cstJsonActivitiesNotCovered = "activitiesnotcovered";
+    public final static String cstHtmlInputs = "inputs";
+    public final static String cstHtmlUserName = "username";
+    public final static String cstHtmlUserPassword = "userpassword";
+    public final static String cstHtmlDocumentName = "documentname";
+    public final static String cstHtmlDocumentValue = "documentvalue";
+    public final static String CSTJSON_PROCESSNAME = "processname";
+    public final static String CSTJSON_PROCESSVERSION = "processversion";
+    public final static String CSTJSON_ACTIVITYNAME = "activityname";
+    public final static String cstHtmlProcessDefId = "processid";
+    public final static String cstHtmlCoverAll = "coverall";
+    public final static String cstHtmlCoverPercent = "coverpercent";
+    public final static String cstHtmlCoverHappyPathPercent = "coverhappypathpercent";
+    public final static String cstJsonActivitiesNotCovered = "activitiesnotcovered";
 
-    public static String cstJsonListEvents = "listevents";
+    public final static String cstJsonListEvents = "listevents";
 
-    public static String cstHtmlPrefixActivity = "ACT_";
-    public static String cstHtmlPrefixDocument = "DOC_";
+    public final static String cstHtmlPrefixActivity = "ACT_";
+    public final static String cstHtmlPrefixDocument = "DOC_";
     public static int cstCurrentSimulation = 2;
 
     private static BEvent EventGetListProcesses = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
@@ -128,7 +128,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                     }
 
                     try {
-                        final MeteorDefProcess meteorDefProcess = new MeteorDefProcess(processDeploymentInfos.getProcessId());
+                        final MeteorDefProcess meteorDefProcess = new MeteorDefProcess(null, null, processDeploymentInfos.getProcessId());
                         meteorDefProcess.initialise( processAPI );
 
                         meteorDefProcess.calculContractDefinition(processAPI);

@@ -5,9 +5,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.bonitasoft.casedetails.CaseDetails;
-import org.bonitasoft.casedetails.CaseDetailsAPI;
 import org.bonitasoft.casedetails.CaseDetails.CaseDetailFlowNode;
 import org.bonitasoft.casedetails.CaseDetails.ProcessInstanceDescription;
+import org.bonitasoft.casedetails.CaseDetailsAPI;
 import org.bonitasoft.casedetails.CaseDetailsAPI.CaseHistoryParameter;
 import org.bonitasoft.engine.api.IdentityAPI;
 import org.bonitasoft.engine.api.ProcessAPI;
@@ -17,7 +17,7 @@ import org.bonitasoft.log.event.BEvent;
 
 public class MeteorTimeLineBasic extends MeteorTimeLine {
 
-    public static String policy = "BASIC";
+    public final static String POLICY = "BASIC";
 
     public MeteorTimeLineBasic() {
         super();
@@ -33,7 +33,7 @@ public class MeteorTimeLineBasic extends MeteorTimeLine {
 
         caseHistoryParameter.loadSubProcess = true;
         caseHistoryParameter.loadContract = true;
-        caseHistoryParameter.loadArchivedData = true;;
+        caseHistoryParameter.loadArchivedData = true;
         caseHistoryParameter.loadBdmVariables = false;
         caseHistoryParameter.loadActivities = true;
         caseHistoryParameter.loadEvents = false;
@@ -50,6 +50,7 @@ public class MeteorTimeLineBasic extends MeteorTimeLine {
             if (processDescription.processInstanceId == rootProcessInstanceId) {
                 setProcessName(processDescription.processDefinition.getName());
                 setProcessVersion(processDescription.processDefinition.getVersion());
+                setUserNameCreatedBy(processDescription.userCreatedBy ==null ? null : processDescription.userCreatedBy.getUserName());
                 setListContractValues(processDescription.contractInstanciation);
                 dateCreateCase = processDescription.startDate == null ? 0 : processDescription.startDate.getTime();
             }
@@ -67,7 +68,7 @@ public class MeteorTimeLineBasic extends MeteorTimeLine {
                     return -1;
 
                 return s1.getDate().compareTo(s2.getDate());
-            };
+            }
         });
 
         for (CaseDetailFlowNode detailFlowNode : listCaseDetails) {
@@ -76,22 +77,35 @@ public class MeteorTimeLineBasic extends MeteorTimeLine {
                 if (ActivityStates.READY_STATE.equals(detailFlowNode.getState()) && detailFlowNode.isArchived()) {
                     TimeLineStep timeLineStep = addOneStep();
                     timeLineStep.activityName = detailFlowNode.getName();
+                    timeLineStep.sourceObjectId = detailFlowNode.getArchFlownNodeInstance().getSourceObjectId();
                     timeLineStep.sourceActivityDefinitionId = detailFlowNode.getFlownodeDefinitionId();
                     timeLineStep.listContractValues = detailFlowNode.getListContractValues();
                     timeLineStep.timelinems = detailFlowNode.getDate().getTime();
                     timeLineStep.timeFromBeginingms = timeLineStep.timelinems - dateCreateCase;
-
                     // basic time line: do not wait
                     timeLineStep.timeWaitms = 0;
                 }
             }
         }
+        // second pass : search the Executed by. Executed by are attached on DIFFERENT task, so we must run a second pass, then find the corresponding task in the timeLineStep
+        for (CaseDetailFlowNode detailFlowNode : listCaseDetails) {
+            if (detailFlowNode.userExecutedBy !=null) {
+                // search in the time line the READY_STATE for this task
+                for (TimeLineStep timeLineActivity : getListTimeLineSteps())
+                {
+                    // How to retrieve the attached activity ? Same definitionID but it's not enought: we may face a loop in the process
+                    if (detailFlowNode.getArchFlownNodeInstance().getSourceObjectId() == timeLineActivity.sourceObjectId)
+                        timeLineActivity.setExecutedByUserName(detailFlowNode.userExecutedBy.getUserName());
+                }
+            }
+        }
+        
         return caseDetail.listEvents;
     }
 
     @Override
     public String getPolicy() {
-        return policy;
+        return POLICY;
     }
 
 }

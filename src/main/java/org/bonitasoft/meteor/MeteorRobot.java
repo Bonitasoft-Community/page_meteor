@@ -250,10 +250,10 @@ public abstract class MeteorRobot implements Runnable {
         resultRobot.put("id", mRobotId); // mProcessDefinition.getInformation()+"
                                          // #"+mRobotId+" ";
         int percent = 0;
-        resultRobot.put(MeteorSimulation.cstJsonStatus, mStatus.toString());
+        resultRobot.put(MeteorSimulation.CSTJSON_STATUS, mStatus.toString());
         resultRobot.put("finalstatus", mFinalStatus == null ? "" : mFinalStatus.toString());
         resultRobot.put("log", mLogExecution.getLogExecution());
-        resultRobot.put(MeteorSimulation.cstJsonNbErrors, mLogExecution.getNbErrors());
+        resultRobot.put(MeteorSimulation.CSTJSON_NBERRORS, mLogExecution.getNbErrors());
 
         if (mCollectPerformance.mOperationTotal == -1) {
             if (mStatus == RobotStatus.DONE) {
@@ -271,7 +271,7 @@ public abstract class MeteorRobot implements Runnable {
             percent = 100;
         }
 
-        resultRobot.put(MeteorSimulation.cstJsonPercentAdvance, percent);
+        resultRobot.put(MeteorSimulation.CSTJSON_PERCENTADVANCE, percent);
         // status.append("<td><progress max=\"100\"
         // value=\""+percent+"\"></progress>("+percent+" %)</td>");
         resultRobot.put("time", MeteorToolbox.getHumanDelay(mCollectPerformance.mCollectTimeSteps) + " for " + mCollectPerformance.getNbSteps() + " step");

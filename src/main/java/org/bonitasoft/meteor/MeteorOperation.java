@@ -24,9 +24,9 @@ import org.bonitasoft.meteor.scenario.process.MeteorScenarioProcess;
 
 public class MeteorOperation {
 
-    private static BEvent EventNoSimulation = new BEvent(MeteorOperation.class.getName(), 1, Level.APPLICATIONERROR, "No simulation", "No simulation found with this ID", "No status can't be give because the simulation is not retrieved", "Check simulationId");
+    private static BEvent eventNoSimulation = new BEvent(MeteorOperation.class.getName(), 1, Level.APPLICATIONERROR, "No simulation", "No simulation found with this ID", "No status can't be give because the simulation is not retrieved", "Check simulationId");
 
-    private static BEvent EventCheckNothingToStart = new BEvent(MeteorOperation.class.getName(), 2, Level.APPLICATIONERROR, "Nothing to start", "No robots can start", "No test can be done if all Robot and Case are equals to 0", "If you set a number of robot, then set a number of case(or inverse)");
+    private static BEvent eventCheckNothingToStart = new BEvent(MeteorOperation.class.getName(), 2, Level.APPLICATIONERROR, "Nothing to start", "No robots can start", "No test can be done if all Robot and Case are equals to 0", "If you set a number of robot, then set a number of case(or inverse)");
 
     public static boolean simulation = false;
     public static int countRefresh = 0;
@@ -35,10 +35,14 @@ public class MeteorOperation {
 
     public static class MeteorResult {
 
-        public HashMap<String, Object> result = new HashMap<String, Object>();
-        public List<BEvent> listEvents = new ArrayList<BEvent>();
+        public HashMap<String, Object> result = new HashMap<>();
+        public List<BEvent> listEvents = new ArrayList<>();
         public MeteorSimulation.STATUS status;
 
+        /**
+         * We must keep MashMap because the JSON parser don't know how to JSONify a Map object
+         * @return
+         */
         public HashMap<String, Object> getMap() {
             result.put(CmdMeteor.cstParamResultListEventsSt, BEventFactory.getHtml(listEvents));
             // result.put(MeteorAccess.cstParamResultStatus, status == null ? ""
@@ -58,7 +62,7 @@ public class MeteorOperation {
      * @return
      */
     public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor) {
-       final MeteorResult meteorResult = new MeteorResult();
+        final MeteorResult meteorResult = new MeteorResult();
         final MeteorSimulation meteorSimulation = new MeteorSimulation(startParameters.tenantId, apiAccessor);
 
         try {
@@ -127,7 +131,7 @@ public class MeteorOperation {
                 logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] : Nothing to start");
                 // listEvents.add()
                 // it's possible if we have a scenario
-                meteorResult.listEvents.add(new BEvent(EventCheckNothingToStart, "Nothing to start"));
+                meteorResult.listEvents.add(new BEvent(eventCheckNothingToStart, "Nothing to start"));
 
                 meteorResult.status = MeteorSimulation.STATUS.NOROBOT;
             } else {
@@ -175,18 +179,18 @@ public class MeteorOperation {
         List<Map<String, Object>> listSimulations = new ArrayList<Map<String, Object>>();
         for (final MeteorSimulation simulation : simulationInProgress.values()) {
             Map<String, Object> oneSimulation = new HashMap<String, Object>();
-            oneSimulation.put(MeteorSimulation.cstJsonId, simulation.getId());
-            oneSimulation.put(MeteorSimulation.cstJsonStatus, simulation.getStatus().toString());
+            oneSimulation.put(MeteorSimulation.CSTJSON_ID, simulation.getId());
+            oneSimulation.put(MeteorSimulation.CSTJSON_STATUS, simulation.getStatus().toString());
             Estimation estimation = simulation.getEstimatedAdvance();
-            oneSimulation.put(MeteorSimulation.cstJsonPercentAdvance, estimation.percentAdvance);
+            oneSimulation.put(MeteorSimulation.CSTJSON_PERCENTADVANCE, estimation.percentAdvance);
             if (estimation.percentAdvance == 0) {
                 // can't calculated any time
             }
             if (estimation.percentAdvance < 100) {
-                oneSimulation.put(MeteorSimulation.cstJsonTimeEstimatedDelay, MeteorToolbox.getHumanDelay(estimation.timeNeedInMs));
-                oneSimulation.put(MeteorSimulation.cstJsonTimeEstimatedEnd, MeteorToolbox.getHumanDate(new Date(currentTime + estimation.timeNeedInMs)));
+                oneSimulation.put(MeteorSimulation.CSTJSON_TIMEESTIMATEDDELAY, MeteorToolbox.getHumanDelay(estimation.timeNeedInMs));
+                oneSimulation.put(MeteorSimulation.CSTJSON_TIMEESTIMATEDEND, MeteorToolbox.getHumanDate(new Date(currentTime + estimation.timeNeedInMs)));
             } else
-                oneSimulation.put(MeteorSimulation.cstJsonTimeEstimatedEnd, MeteorToolbox.getHumanDate(simulation.getDateEndSimulation()));
+                oneSimulation.put(MeteorSimulation.CSTJSON_TIMEESTIMATEDEND, MeteorToolbox.getHumanDate(simulation.getDateEndSimulation()));
 
             listSimulations.add(oneSimulation);
         }
@@ -198,9 +202,9 @@ public class MeteorOperation {
             for (final MeteorSimulation simulation : simulationInProgress.values()) {
                 allSimulations += simulation.getId() + ",";
             }
-            meteorResult.listEvents.add(new BEvent(EventNoSimulation, "SimulationId[" + statusParameters.simulationId + "] allSimulation=[" + allSimulations + "]"));
+            meteorResult.listEvents.add(new BEvent(eventNoSimulation, "SimulationId[" + statusParameters.simulationId + "] allSimulation=[" + allSimulations + "]"));
             meteorResult.status = MeteorSimulation.STATUS.NOSIMULATION;
-            meteorResult.result.put("status", MeteorSimulation.STATUS.NOSIMULATION.toString());
+            meteorResult.result.put(MeteorSimulation.CSTJSON_STATUS, MeteorSimulation.STATUS.NOSIMULATION.toString());
             return meteorResult;
         }
 

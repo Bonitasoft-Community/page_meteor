@@ -117,7 +117,7 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
         }
         return executeAnswer;
     }
-
+    @Override
     public ExecuteAnswer afterDeployment(ExecuteParameters executeParameters, TenantServiceAccessor serviceAccessor) {
         ExecuteAnswer executeAnswer = new ExecuteAnswer();
         executeAnswer.listEvents = MeteorDAO.getInstance().checkAndUpdateEnvironment(executeParameters.tenantId);
@@ -137,8 +137,8 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
      * *************************************************************************
      * *******
      */
-    public static String cstCommandName = "meteorcmd";
-    public static String cstCommandDescription = "Run the meteor robots, to creates cases / execute task";
+    public final static String CSTCOMMANDNAME = "meteorcmd";
+    public final static String CSTCOMMANDDESCRIPTION = "Run the meteor robots, to creates cases / execute task";
 
     // public static String jarName = "CustomPageMeteor-1.0.0.jar";
 

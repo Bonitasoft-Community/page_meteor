@@ -53,7 +53,7 @@ public class MeteorDefActivity extends MeteorDefBase {
         // MeteorProcessDefinitionList.cstHtmlProcessName, "");
         // mProcessVersion = MeteorToolbox.getParameterString(oneProcess,
         // MeteorProcessDefinitionList.cstHtmlProcessVersion, "");
-        meteorActivity.mActivityName = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.cstHtmlActivityName, "");
+        meteorActivity.mActivityName = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.CSTJSON_ACTIVITYNAME, "");
 
         meteorActivity.decodeFromMap(oneProcess, processAPI);
         return meteorActivity;
@@ -64,7 +64,7 @@ public class MeteorDefActivity extends MeteorDefBase {
             ContractDefinition contractDefinition = processAPI.getUserTaskContract(mActivityDefinitionId);
             setContractDefinition(contractDefinition);
         } catch (Exception e) {
-            mListEvents.add(new BEvent(EventGetContract, e, "Task[" + mActivityName + "]"));
+            mListEvents.add(new BEvent(eventGetContract, e, "Task[" + mActivityName + "]"));
         }
 
     }
@@ -77,13 +77,13 @@ public class MeteorDefActivity extends MeteorDefBase {
     public Map<String, Object> getMap() {
         final Map<String, Object> oneActivity = new HashMap<String, Object>();
 
-        oneActivity.put(MeteorScenarioProcess.cstHtmlActivityName, mActivityName);
+        oneActivity.put(MeteorScenarioProcess.CSTJSON_ACTIVITYNAME, mActivityName);
         // attention, the activityId is very long it has to be
         // transform in STRING else JSON will mess it
         oneActivity.put(MeteorScenarioProcess.cstHtmlId, mActivityDefinitionId.toString());
         oneActivity.put(MeteorScenarioProcess.cstHtmlProcessDefId, mMeteorProcess.mProcessDefinitionId.toString());
-        oneActivity.put(MeteorScenarioProcess.cstJsonProcessName, mMeteorProcess.mProcessName);
-        oneActivity.put(MeteorScenarioProcess.cstHtmlProcessVersion, mMeteorProcess.mProcessVersion);
+        oneActivity.put(MeteorScenarioProcess.CSTJSON_PROCESSNAME, mMeteorProcess.mProcessName);
+        oneActivity.put(MeteorScenarioProcess.CSTJSON_PROCESSVERSION, mMeteorProcess.mProcessVersion);
         fullfillMap(oneActivity);
         return oneActivity;
     }

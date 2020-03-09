@@ -5,7 +5,7 @@
 	<version>3.0.0</version>
 	<name>CustomPageMeteor</name>
 	<properties>
-        <bonita.version>7.9.0</bonita.version>
+        <bonita.version>7.8.4</bonita.version>
 	   	<maven.compiler.source>1.8</maven.compiler.source>
    		<maven.compiler.target>1.8</maven.compiler.target>
   	</properties>
@@ -38,7 +38,13 @@
 			<artifactId>bonita-casedetails</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		
+		<!--  update your eclipse with the projectlombok visit https://projectlombok.org/  component -->
+		  <dependency>
+		      <groupId>org.projectlombok</groupId>
+		      <artifactId>lombok</artifactId>
+		      <version>1.18.12</version>
+		      <scope>provided</scope>
+		   </dependency>
 	
 		<dependency>
 			<groupId>org.bonitasoft.command</groupId>

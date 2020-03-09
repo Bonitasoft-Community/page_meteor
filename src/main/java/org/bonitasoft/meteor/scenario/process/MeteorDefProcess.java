@@ -18,9 +18,14 @@ import org.bonitasoft.engine.bpm.flownode.FlowElementContainerDefinition;
 import org.bonitasoft.engine.bpm.flownode.FlowNodeDefinition;
 import org.bonitasoft.engine.bpm.flownode.StartEventDefinition;
 import org.bonitasoft.engine.bpm.flownode.TransitionDefinition;
+import org.bonitasoft.engine.bpm.process.ActivationState;
 import org.bonitasoft.engine.bpm.process.DesignProcessDefinition;
 import org.bonitasoft.engine.bpm.process.ProcessDefinition;
 import org.bonitasoft.engine.bpm.process.ProcessDefinitionNotFoundException;
+import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfo;
+import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfoSearchDescriptor;
+import org.bonitasoft.engine.exception.SearchException;
+import org.bonitasoft.engine.search.Order;
 import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.log.event.BEvent;
@@ -34,16 +39,15 @@ import org.bonitasoft.meteor.MeteorToolbox;
  */
 public class MeteorDefProcess extends MeteorDefBase {
 
-    private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
+    private final Logger logger = Logger.getLogger(MeteorDefProcess.class.getName());
 
     /**
      * Keep information on a process A MeteorProcessDefinition will create one
      * or multiple robot.
      */
-    private static BEvent EventGetContract = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
-    private static BEvent EventGetProcessDesign = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.ERROR, "Accessing Process Design", "Check error ", "The happyPath can't be calculated, and then the cover percentage", "Check Exception");
-    private static BEvent EventSearchActivities = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.ERROR, "Searching activities", "Check error", "To calculate the cover, all activities ran from the list of process is searched. The operation failed", "Check Exception");
-    private static BEvent EventGetProcess = new BEvent(MeteorScenarioProcess.class.getName(), 3, Level.ERROR, "Accessing process information", "Can't get information about the process", "The call to collect information about the process failed ", "Check Exception");
+    private final static BEvent eventGetProcessDesign = new BEvent(MeteorDefProcess.class.getName(), 2, Level.ERROR, "Accessing Process Design", "Check error ", "The happyPath can't be calculated, and then the cover percentage", "Check Exception");
+    private final static BEvent eventSearchActivities = new BEvent(MeteorDefProcess.class.getName(), 2, Level.ERROR, "Searching activities", "Check error", "To calculate the cover, all activities ran from the list of process is searched. The operation failed", "Check Exception");
+    private final static BEvent eventGetProcess = new BEvent(MeteorDefProcess.class.getName(), 3, Level.ERROR, "Accessing process information", "Can't get information about the process", "The call to collect information about the process failed ", "Check Exception");
        // Attention, the processDefinitionID must be recalculated each time:
     // process may be redeployed
     public Long mProcessDefinitionId;
@@ -59,7 +63,9 @@ public class MeteorDefProcess extends MeteorDefBase {
      */
     private List<ActivityDefinition> mListAllActivities = new ArrayList<ActivityDefinition>();
 
-    public MeteorDefProcess(Long processDefinitionId) {
+    public MeteorDefProcess(String processName, String processVersion, Long processDefinitionId) {
+        mProcessName = processName;
+        mProcessVersion = processVersion;
         mProcessDefinitionId = processDefinitionId;
     }
 
@@ -72,13 +78,41 @@ public class MeteorDefProcess extends MeteorDefBase {
     public List<BEvent> initialise(ProcessAPI processAPI) {
         List<BEvent> listEvents = new ArrayList<BEvent>();
         ProcessDefinition processDefinition;
-        try {
-            processDefinition = processAPI.getProcessDefinition(mProcessDefinitionId);
-            mProcessName = processDefinition.getName();
-            mProcessVersion = processDefinition.getVersion();
-        } catch (ProcessDefinitionNotFoundException e) {
-            listEvents.add( new BEvent( EventGetProcess, e, "ProcessDefinitionId ["+mProcessDefinitionId+"]"));
+        if (mProcessName ==null) {
+                
+            
+            try {
+                processDefinition = processAPI.getProcessDefinition(mProcessDefinitionId);
+                mProcessName = processDefinition.getName();
+                mProcessVersion = processDefinition.getVersion();
+            } catch (ProcessDefinitionNotFoundException e) {
+                listEvents.add( new BEvent( eventGetProcess, e, "ProcessDefinitionId ["+mProcessDefinitionId+"]"));
+            }
         }
+        else {
+            // find the processId from the processName / Version
+            SearchOptionsBuilder searchOptionsBuilder = new SearchOptionsBuilder(0,100);
+            searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.NAME, mProcessName);
+            searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.ACTIVATION_STATE, ActivationState.ENABLED.name());
+            if (mProcessVersion!=null)
+            {
+                searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.VERSION, mProcessVersion);
+            }
+            searchOptionsBuilder.sort(ProcessDeploymentInfoSearchDescriptor.DEPLOYMENT_DATE, Order.DESC);
+            try {
+                SearchResult<ProcessDeploymentInfo> search = processAPI.searchProcessDeploymentInfos(searchOptionsBuilder.done());
+                if (search.getCount()>0)
+                    mProcessDefinitionId = search.getResult().get(0).getProcessId();
+                else
+                    listEvents.add( new BEvent( eventGetProcess, "No process found with ProcessName["+mProcessName+"] Version["+mProcessVersion+"]"));
+                    
+                
+            } catch (SearchException e) {
+
+                listEvents.add( new BEvent( eventGetProcess, e, "ProcessName["+mProcessName+"] Version["+mProcessVersion+"]"));
+            }
+        }
+            
         return listEvents;
     }
     /* ******************************************************************** */
@@ -128,8 +162,8 @@ public class MeteorDefProcess extends MeteorDefBase {
         // in STRING else JSON will do an error
         oneProcess.put(MeteorScenarioProcess.cstHtmlId, mProcessDefinitionId.toString());
 
-        oneProcess.put(MeteorScenarioProcess.cstJsonProcessName, mProcessName);
-        oneProcess.put(MeteorScenarioProcess.cstHtmlProcessVersion, mProcessVersion);
+        oneProcess.put(MeteorScenarioProcess.CSTJSON_PROCESSNAME, mProcessName);
+        oneProcess.put(MeteorScenarioProcess.CSTJSON_PROCESSVERSION, mProcessVersion);
         fullfillMap(oneProcess);
         return oneProcess;
     }
@@ -139,7 +173,10 @@ public class MeteorDefProcess extends MeteorDefBase {
         // attention : the processdefinitionId is very long it has to be set
         // in STRING else JSON will do an error
         Long processDefinitionId = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlId, -1L);
-        MeteorDefProcess meteorDefProcess = new MeteorDefProcess(processDefinitionId);
+        String processName = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.CSTJSON_PROCESSNAME, null);
+        String processVersion = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.CSTJSON_PROCESSVERSION, null);
+        MeteorDefProcess meteorDefProcess = new MeteorDefProcess(processName, processVersion, processDefinitionId);
+        
         meteorDefProcess.initialise( processAPI );
 
      
@@ -159,7 +196,7 @@ public class MeteorDefProcess extends MeteorDefBase {
             ContractDefinition contractDefinition = processAPI.getProcessContract(mProcessDefinitionId);
             setContractDefinition(contractDefinition);
         } catch (Exception e) {
-            mListEvents.add(new BEvent(EventGetContract, e, "Process[" + mProcessName + "] Version[" + mProcessVersion + "]"));
+            mListEvents.add(new BEvent(eventGetContract, e, "Process[" + mProcessName + "] Version[" + mProcessVersion + "]"));
         }
 
     }
@@ -193,18 +230,18 @@ public class MeteorDefProcess extends MeteorDefBase {
         /**
          * activity Not Executed
          */
-        List<String> mActivitiesNotExecuted = new ArrayList<String>();
+        List<String> mActivitiesNotExecuted = new ArrayList<>();
         /*
          * Activities of the Happypath : this activities can be reach not on an error, or timer
          */
-        List<String> mDefinitionActivitiesHappyPath = new ArrayList<String>();
+        List<String> mDefinitionActivitiesHappyPath = new ArrayList<>();
 
         public List<BEvent> mListEvents = new ArrayList<BEvent>();
 
         public Map<String, Object> getMap() {
             Map<String, Object> result = new HashMap<String, Object>();
-            result.put(MeteorScenarioProcess.cstJsonProcessName, mProcessName);
-            result.put(MeteorScenarioProcess.cstHtmlProcessVersion, mProcessVersion);
+            result.put(MeteorScenarioProcess.CSTJSON_PROCESSNAME, mProcessName);
+            result.put(MeteorScenarioProcess.CSTJSON_PROCESSVERSION, mProcessVersion);
             result.put(MeteorScenarioProcess.cstHtmlCoverAll, mCoverAll);
             result.put(MeteorScenarioProcess.cstHtmlCoverPercent, mCoverPercent);
             result.put(MeteorScenarioProcess.cstHtmlCoverHappyPathPercent, mCoverHappyPathPercent);
@@ -298,9 +335,9 @@ public class MeteorDefProcess extends MeteorDefBase {
      * @return
      */
     private List<String> calculHappyPath(ProcessAPI processAPI) {
-        List<String> listHappyPath = new ArrayList<String>();
+        List<String> listHappyPath = new ArrayList<>();
         // We have to identify all the activity in the Happy Path. Start by the Start Event
-        List<Long> exploreList = new ArrayList<Long>();
+        List<Long> exploreList = new ArrayList<>();
         try {
             final DesignProcessDefinition designProcessDefinition = processAPI.getDesignProcessDefinition(mProcessDefinitionId);
             final FlowElementContainerDefinition flowElementContainerDefinition = designProcessDefinition.getFlowElementContainer();
@@ -311,18 +348,19 @@ public class MeteorDefProcess extends MeteorDefBase {
             for (StartEventDefinition startEvent : listStartEventsDefinition)
                 exploreList.add(startEvent.getId());
 
-            Set<Long> markList = new HashSet<Long>();
-            while (exploreList.size() > 0) {
+            Set<Long> markList = new HashSet<>();
+            while (! exploreList.isEmpty()) {
                 Long idToExplore = exploreList.get(0);
                 exploreList.remove(0);
 
                 markList.add(idToExplore);
                 FlowNodeDefinition flowNodeDefinition = flowElementContainerDefinition.getFlowNode(idToExplore);
-                logger.info("MeteorDefProcess.calculHappyPath on [" + flowNodeDefinition.getName() + "]");
+                logger.fine("MeteorDefProcess.calculHappyPath on [" + flowNodeDefinition.getName() + "]");
                 if (flowNodeDefinition instanceof ActivityDefinition) {
 
                     // manage only the activityDefinition
-                    listHappyPath.add(flowNodeDefinition.getName());
+                    if (!listHappyPath.contains(flowNodeDefinition.getName()))
+                        listHappyPath.add(flowNodeDefinition.getName());
                 }
 
                 List<TransitionDefinition> listOutgoing = flowNodeDefinition.getOutgoingTransitions();
@@ -340,7 +378,7 @@ public class MeteorDefProcess extends MeteorDefBase {
 
             }
         } catch (Exception e) {
-            mListEvents.add(new BEvent(EventGetProcessDesign, e, "ProcessId[" + mProcessDefinitionId + "] Name[" + mProcessName + "] Version[" + mProcessVersion + "]"));
+            mListEvents.add(new BEvent(eventGetProcessDesign, e, "ProcessId[" + mProcessDefinitionId + "] Name[" + mProcessName + "] Version[" + mProcessVersion + "]"));
         }
         return listHappyPath;
     }
@@ -353,7 +391,7 @@ public class MeteorDefProcess extends MeteorDefBase {
      * @return
      */
     private Map<Long, Long> calculActivities(List<Long> listProcessInstances, ProcessAPI processAPI) {
-        Map<Long, Long> activitiesExecutedNb = new HashMap<Long, Long>();
+        Map<Long, Long> activitiesExecutedNb = new HashMap<>();
         // listprocessinstance maybe big, search by page of pageProcess 
         int pageProcessInstance = 50; /* limited by the filter size construction */
         int processIndex = 0;
@@ -386,14 +424,14 @@ public class MeteorDefProcess extends MeteorDefBase {
         SearchResult<ArchivedActivityInstance> searchResult = null;
         do {
             protectTheLoop++;
-            String listInstanceSearched = "";
+            StringBuilder listInstanceSearched = new StringBuilder();
             SearchOptionsBuilder searchOptionsBuilder = new SearchOptionsBuilder(activityIndex * pageActivity, pageActivity);
             // build the filter from processIndex -> processIndex+pageProcess
 
             for (int i = firstIndex; i <= lastIndex; i++) {
                 searchOptionsBuilder.filter(ArchivedActivityInstanceSearchDescriptor.PARENT_PROCESS_INSTANCE_ID, listProcessInstances.get(i));
                 searchOptionsBuilder.or();
-                listInstanceSearched += listProcessInstances.get(i) + ",";
+                listInstanceSearched.append( listProcessInstances.get(i) + "," );
             }
             // remember that we have a or()
             searchOptionsBuilder.filter(ArchivedActivityInstanceSearchDescriptor.PARENT_PROCESS_INSTANCE_ID, -1);
@@ -406,7 +444,7 @@ public class MeteorDefProcess extends MeteorDefBase {
                 }
             } catch (Exception e) {
                 logger.severe("MeteorDefProcess.calculActivity " + e.toString());
-                mListEvents.add(new BEvent(EventSearchActivities, e, listInstanceSearched));
+                mListEvents.add(new BEvent(eventSearchActivities, e, listInstanceSearched.toString()));
                 searchResult = null; // stop the loop
             }
             activityIndex += pageActivity;

@@ -35,11 +35,18 @@ public class MeteorScenarioExperience extends MeteorScenario {
             "This case ID is not collected to the scenario",
             "Give a correct number");
 
+    
+    private final static String CSTJSON_SCENARII = "scenarii";
+    private final static String CSTJSON_EXPERIENCE = "experience";
+    private final static String CSTJSON_LISTCASESID = "listCasesId";
+    private final static String CSTJSON_ACTION = "action";
+
+    
     public static class MeteorExperienceParameter {
 
         public String listCasesId;
         public String action;
-        public String policyTimeLine = MeteorTimeLineBasic.policy;
+        public String policyTimeLine = MeteorTimeLineBasic.POLICY;
         List<Map<String, Object>> scenarii;
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -51,10 +58,10 @@ public class MeteorScenarioExperience extends MeteorScenario {
 
             final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
 
-            Map<String, Object> experience = (Map) jsonHash.get("experience");
-            meteorExperienceParameter.listCasesId = (String) experience.get("listCasesId");
-            meteorExperienceParameter.action = (String) experience.get("action");
-            meteorExperienceParameter.scenarii = (List) experience.get("scenarii");
+            Map<String, Object> experience = (Map) jsonHash.get( CSTJSON_EXPERIENCE );
+            meteorExperienceParameter.listCasesId = (String) experience.get( CSTJSON_LISTCASESID );
+            meteorExperienceParameter.action = (String) experience.get( CSTJSON_ACTION );
+            meteorExperienceParameter.scenarii = (List) experience.get( CSTJSON_SCENARII );
 
             return meteorExperienceParameter;
         }
@@ -65,15 +72,15 @@ public class MeteorScenarioExperience extends MeteorScenario {
          * @param experience
          * @return
          */
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         public static MeteorExperienceParameter getInstanceFromMap(final Map<String, Object> experience) {
             final MeteorExperienceParameter meteorExperienceParameter = new MeteorExperienceParameter();
             if (experience == null) {
                 return meteorExperienceParameter;
             }
-            meteorExperienceParameter.listCasesId = (String) experience.get("listCasesId");
-            meteorExperienceParameter.action = (String) experience.get("action");
-            meteorExperienceParameter.scenarii = (List) experience.get("scenarii");
+            meteorExperienceParameter.listCasesId = (String) experience.get( CSTJSON_LISTCASESID );
+            meteorExperienceParameter.action = (String) experience.get( CSTJSON_ACTION );
+            meteorExperienceParameter.scenarii = (List) experience.get( CSTJSON_SCENARII );
             return meteorExperienceParameter;
         }
 
@@ -88,11 +95,11 @@ public class MeteorScenarioExperience extends MeteorScenario {
      * @return
      */
     public Map<String, Object> action(MeteorExperienceParameter meteorExperienceParameter, ProcessAPI processAPI, IdentityAPI identityAPI) {
-        List<BEvent> listEvents = new ArrayList<BEvent>();
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, Object> experience = new HashMap<String, Object>();
-        result.put("experience", experience);
-        experience.put("scenarii", meteorExperienceParameter.scenarii);
+        List<BEvent> listEvents = new ArrayList<>();
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> experience = new HashMap<>();
+        result.put( CSTJSON_EXPERIENCE, experience);
+        experience.put(CSTJSON_SCENARII, meteorExperienceParameter.scenarii);
         List<Map<String, Object>> listScenarii = meteorExperienceParameter.scenarii;
         if ("addCasesId".equals(meteorExperienceParameter.action)) {
             String[] listCases = meteorExperienceParameter.listCasesId == null ? new String[0] : meteorExperienceParameter.listCasesId.split(",");
@@ -104,7 +111,7 @@ public class MeteorScenarioExperience extends MeteorScenario {
                     meteorTimeLine.setName("Case " + caseIdSt);
                     meteorTimeLine.setNbCases(1);
                     meteorTimeLine.setNbRobots(1);
-                    List<BEvent> listEventCalculs = meteorTimeLine.calcul(Long.valueOf(caseId), processAPI, identityAPI);
+                    List<BEvent> listEventCalculs = meteorTimeLine.calcul(caseId, processAPI, identityAPI);
                     // add it only if there are no error
                     if (!MeteorToolbox.isApplicationError(listEventCalculs))
                         listScenarii.add(meteorTimeLine.getJson());
@@ -119,12 +126,16 @@ public class MeteorScenarioExperience extends MeteorScenario {
         return result;
     }
 
-    private List<MeteorTimeLine> listTimeLine = new ArrayList<MeteorTimeLine>();
+    private List<MeteorTimeLine> listTimeLine = new ArrayList<>();
 
+    
+    /**
+     * registerInSimulation
+     */
     @Override
     public List<BEvent> registerInSimulation(StartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
 
-        List<BEvent> listEvents = new ArrayList<BEvent>();
+        List<BEvent> listEvents = new ArrayList<>();
         MeteorExperienceParameter meteorExperienceParameter = MeteorExperienceParameter.getInstanceFromMap(startParameters.mapOfExperience);
         for (Map<String, Object> scenario : meteorExperienceParameter.scenarii) {
             MeteorTimeLine timeLine = MeteorTimeLine.getInstanceFromJson(scenario);
@@ -139,7 +150,7 @@ public class MeteorScenarioExperience extends MeteorScenario {
 
     @Override
     public List<MeteorRobot> generateRobots(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
-        List<MeteorRobot> listRobots = new ArrayList<MeteorRobot>();
+        List<MeteorRobot> listRobots = new ArrayList<>();
         /**
          * explode the scenarii to generate all robots
          */
@@ -154,16 +165,16 @@ public class MeteorScenarioExperience extends MeteorScenario {
 
     @Override
     public List<MeteorDefProcess> collectProcess(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
-        Map<Long, MeteorDefProcess> mapProcesses = new HashMap<Long, MeteorDefProcess>();
+        Map<Long, MeteorDefProcess> mapProcesses = new HashMap<>();
         // multiple time lines can work on the same process
         for (MeteorTimeLine meteorTimeLine : listTimeLine) {
             if (! mapProcesses.containsKey(meteorTimeLine.getProcessDefinitionId())) {
-                MeteorDefProcess meteorDefProcess = new MeteorDefProcess(meteorTimeLine.getProcessDefinitionId());
+                MeteorDefProcess meteorDefProcess = new MeteorDefProcess(null, null, meteorTimeLine.getProcessDefinitionId());
                 meteorDefProcess.initialise( apiAccessor.getProcessAPI());
                 mapProcesses.put( meteorDefProcess.mProcessDefinitionId, meteorDefProcess );
             }
         }
-        return  new ArrayList<MeteorDefProcess>(mapProcesses.values());
+        return  new ArrayList<>(mapProcesses.values());
     }
 
 }

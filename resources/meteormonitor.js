@@ -50,7 +50,8 @@ appCommand.controller('MeteorControler',
 	this.showmainscenarii=true;
 	this.navbaractiv = 'experiencescenarii';
 
-
+	this.name="MeteorControler";
+	
 	this.getNavClass = function( tabtodisplay )
 	{
 		if (this.navbaractiv === tabtodisplay)
@@ -247,8 +248,8 @@ appCommand.controller('MeteorControler',
 		if (this.timer.armAtEnd && this.simulationid)
 		{
 			// now arm the refresh timer
-			console.log("Arm the timer ");
-			console.log(self);
+			console.log("Arm the timer for["+this.name+"] object");
+			console.log( this );
 			$scope.timer = $timeout(function() { this.refresh() }, 30000);
 			// $scope.timer = $interval(function() { self.refresh()
 			// }, 30000);
@@ -432,9 +433,9 @@ appCommand.controller('MeteorControler',
 		// split the string by packet of 5000
 		while (json.length>0)
 		{
-			var jsonFirst = encodeURI( json.substring(0,5000));
+			var jsonFirst = encodeURIComponent( json.substring(0,2500));
 			this.listUrlCall.push( "action=collect_add&paramjson="+jsonFirst);
-			json =json.substring(5000);
+			json =json.substring(2500);
 		}
 		var self=this;
 		self.listUrlCall.push( "action="+action);
@@ -524,7 +525,7 @@ appCommand.controller('MeteorControler',
 		var list=[];
 		for (var i in this.config.list)
 		{
-			console.log("getExportConfiguration:conf="+this.config.list[i]);
+			// console.log("getExportConfiguration:conf="+angular.toJson(this.config.list[i]));
 			if (this.config.list[i].selected)
 				list.push( this.config.list[i].name );
 		}
@@ -580,7 +581,7 @@ appCommand.controller('MeteorControler',
 		
 	}
 	// load the config
-	this.loadConfig = function() 
+	this.loadConfig = function( action ) 
 	{
 		// load the config in the current process
 		var param = { "confname": this.config.currentname};
@@ -592,7 +593,7 @@ appCommand.controller('MeteorControler',
 		self.listUrlPercent=0;
 		self.wait=true;
 		
-		$http.get( '?page=custompage_meteor&action=loadconfig&paramjson='+json+'&t='+Date.now() )
+		$http.get( '?page=custompage_meteor&action='+action+'&paramjson='+json+'&t='+Date.now() )
 		.success( function ( jsonResult, statusHttp, headers, config ) {
 				
 			// connection is lost ?
@@ -600,7 +601,8 @@ appCommand.controller('MeteorControler',
 				console.log("Redirected to the login page !");
 				window.location.reload();
 			}
-		
+			console.log("-- Result action load");
+
 			self.wait=false;
 			// ready to save it
 			self.config.newname        = self.config.currentname; 
@@ -617,51 +619,10 @@ appCommand.controller('MeteorControler',
 			if (! self.experience)
 				self.experience={};
 			
-			self.listeventsconfig = jsonResult.listeventsconfig;
+			self.listeventsconfig 	= jsonResult.listeventsconfig;
 			self.showonlyactive=true;
-
-		})
-		.error( function() {
-			self.wait=false;
-			// alert("Can't contact the server");
-			});
-	}
-	
-	this.loadAndStartConfig = function( )
-	{		
-		var param = { "confname": this.config.currentname};
-		var json = encodeURI( angular.toJson( param, false));
-
-		var self=this;
-		self.listeventsconfig="";
-		self.listeventslistprocesses="";
-		self.listUrlPercent=0;
-		self.listeventsconfig ='';
-		self.wait=true;
-		self.config.newname			= self.config.currentname;
-		
-		$http.get( '?page=custompage_meteor&action=loadandstart&paramjson='+json+'&t='+Date.now() )
-		.success( function ( jsonResult, statusHttp, headers, config ) {
-				
-			// connection is lost ?
-			if (statusHttp==401 || typeof jsonResult === 'string') {
-				console.log("Redirected to the login page !");
-				window.location.reload();
-			}
-		
-			self.wait						= false;
-			self.config.newdescription	= jsonResult.description; 
 			
-			self.processes 						= jsonResult.config.processes;
-			if (!self.processes)
-				self.processes=[];
-			self.scenarii  						= jsonResult.config.scenarii;
-			if (!self.scenarii)
-				self.scenarii=[];
-			self.listeventsconfig 				= jsonResult.listeventsconfig;
-			self.showonlyactive					= true;
-			self.simulationid					= jsonResult.simulationid;
-			
+			self.simulationid					= jsonResult.simulationid;			
 			if (self.simulationid)
 			{
 				// now arm the refresh timer
@@ -670,12 +631,16 @@ appCommand.controller('MeteorControler',
 				$scope.timer = $timeout(function() { self.refresh() }, 30000);
 			}
 
+			console.log("-- End Result action load");
+
 		})
 		.error( function() {
 			self.wait=false;
 			// alert("Can't contact the server");
 			});
 	}
+	
+	
 	this.deleteConfig = function()
 	{
 		if (confirm("Do you want to delete the configuration "+this.config.currentname))

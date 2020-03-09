@@ -20,8 +20,8 @@ import org.bonitasoft.meteor.MeteorToolbox;
  */
 public class MeteorDefBase {
 
-    protected static BEvent EventGetContract = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
-    protected static BEvent EventNoInputs = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.INFO, "No inputs", "The process/activity does not have any input");
+    protected final static BEvent eventGetContract = new BEvent(MeteorDefBase.class.getName(), 1, Level.ERROR, "Error while accessing contract", "Check error ", "The contact can't be accessed", "Check Exception");
+    protected final static BEvent eventNoInputs = new BEvent(MeteorDefBase.class.getName(), 2, Level.INFO, "No inputs", "The process/activity does not have any input");
 
     // this is the robot part : how many robot do we have to start on this
     // activity ?

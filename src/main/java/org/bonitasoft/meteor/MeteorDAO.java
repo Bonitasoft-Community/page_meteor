@@ -34,7 +34,7 @@ public class MeteorDAO {
      * ********************************************************************************
      */
 
-    private static Logger logger = Logger.getLogger(MeteorAPI.class.getName());
+    private static Logger logger = Logger.getLogger(MeteorDAO.class.getName());
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:MM:ss");
 
     private static BEvent EventConfigurationSaved = new BEvent(MeteorDAO.class.getName(), 1, Level.INFO, "Configuration saved", "The configuration is saved with sucess");
@@ -84,10 +84,10 @@ public class MeteorDAO {
         }
     }
 
-    public StatusDAO getListNames(String pageName, long tenantId) {
+    public StatusDAO getListNames( long tenantId) {
         StatusDAO statusDAO = new StatusDAO();
         // save it
-        BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
         bonitaProperties.setCheckDatabase(false);
 
         statusDAO.listEvents.addAll(bonitaProperties.load());
@@ -96,10 +96,17 @@ public class MeteorDAO {
         return statusDAO;
     }
 
-    public StatusDAO save(Configuration configuration, boolean getListNameConfiguration, String pageName, long tenantId) {
+    /**
+     * 
+     * @param configuration
+     * @param getListNameConfiguration
+     * @param tenantId
+     * @return
+     */
+    public StatusDAO save(Configuration configuration, boolean getListNameConfiguration, long tenantId) {
         StatusDAO statusDAO = new StatusDAO();
         // save it
-        BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
         bonitaProperties.setCheckDatabase(false);
 
         statusDAO.listEvents.addAll(bonitaProperties.load());
@@ -184,10 +191,10 @@ public class MeteorDAO {
      * @param tenantId
      * @return
      */
-    public StatusDAO delete(String name, boolean getListNameConfiguration, String pageName, long tenantId) {
+    public StatusDAO delete(String name, boolean getListNameConfiguration, long tenantId) {
         StatusDAO statusDAO = new StatusDAO();
 
-        BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
         bonitaProperties.setCheckDatabase(false);
 
         statusDAO.listEvents.addAll(bonitaProperties.load());
@@ -213,7 +220,7 @@ public class MeteorDAO {
      */
     public List<BEvent> checkAndUpdateEnvironment(long tenantId) {
         List<BEvent> listEvents = new ArrayList<BEvent>();
-        BonitaProperties bonitaProperties = new BonitaProperties("pageName", tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
 
         bonitaProperties.setCheckDatabase(true);
         listEvents.addAll(bonitaProperties.load());
@@ -248,11 +255,11 @@ public class MeteorDAO {
      * @param tenantId
      * @return
      */
-    public StatusDAO exportConfs(List<String> listNames, String userName, String pageName, long tenantId) {
+    public StatusDAO exportConfs(List<String> listNames, String userName, long tenantId) {
 
         StatusDAO statusDAO = new StatusDAO();
 
-        BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
         bonitaProperties.setCheckDatabase(false);
 
         statusDAO.listEvents.addAll(bonitaProperties.load());
@@ -296,7 +303,14 @@ public class MeteorDAO {
 
             // remember close it
             zos.close();
+            logger.info("MeteorDAO.exportconf: end of exportConf ["+exportSentence+"]");
         } catch (IOException e) {
+            final StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            final String exceptionDetails = sw.toString();
+
+            logger.severe("MeteorDAO.exportconf: exportConf exception:"+e.getMessage()+" at "+exceptionDetails);
+
             statusDAO.listEvents.add(new BEvent(EventExportFailed, e, "export"));
         }
         return statusDAO;
@@ -309,10 +323,10 @@ public class MeteorDAO {
      * @param tenantId
      * @return
      */
-    public StatusDAO importConfs(String fileName, boolean getListNameConfiguration, File pageDirectory, String pageName, long tenantId) {
+    public StatusDAO importConfs(String fileName, boolean getListNameConfiguration, File pageDirectory,  long tenantId) {
         StatusDAO statusDAO = new StatusDAO();
 
-        BonitaProperties bonitaProperties = new BonitaProperties(pageName, tenantId);
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
         bonitaProperties.setCheckDatabase(false);
 
         statusDAO.listEvents.addAll(bonitaProperties.load());
@@ -403,7 +417,7 @@ public class MeteorDAO {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             final String exceptionDetails = sw.toString();
-            logger.severe("MeteorDAO.Import : " + exceptionDetails);
+            logger.severe("MeteorDAO.Import : exception:"+e.getMessage()+" at " + exceptionDetails);
             statusDAO.listEvents.add(new BEvent(EventConfigurationStructureFailed, e, ""));
 
         } finally {

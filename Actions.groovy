@@ -71,21 +71,21 @@ import org.bonitasoft.meteor.cmd.CmdMeteor.VERBE
 
 public class Actions {
 
-    private static Logger logger= Logger.getLogger("org.bonitasoft.custompage.longboard.groovy");
+    private static Logger logger= Logger.getLogger("org.bonitasoft.custompage.meteor.groovy");
 
 
     public static Index.ActionAnswer doAction(HttpServletRequest request, String paramJsonSt, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
 
-        logger.info("#### MeteorCustompage:Actions start");
+        logger.fine("#### MeteorCustompage:Actions start");
         Index.ActionAnswer actionAnswer = new Index.ActionAnswer();
         long timeBegin= System.currentTimeMillis();
 
         try {
             String action=request.getParameter("action");
-            logger.info("#### MeteorCustompage:Actions  action is["+action+"] !");
+            logger.fine("#### MeteorCustompage:Actions  action is["+action+"] !");
             if (action==null || action.length()==0 ) {
                 actionAnswer.isManaged=false;
-                logger.info("#### MeteorCustompage:Actions END No Actions");
+                logger.fine("#### MeteorCustompage:Actions END No Actions");
                 return actionAnswer;
             }
             actionAnswer.isManaged=true;
@@ -146,7 +146,7 @@ public class Actions {
             else if ("collect_add".equals(action))
             {
                 String paramJsonPartial = request.getParameter("paramjsonpartial");
-                logger.info("collect_add paramJsonPartial=["+paramJsonPartial+"] json=["+paramJsonSt+"]");
+                logger.fine("collect_add paramJsonPartial=["+paramJsonPartial+"] json=["+paramJsonSt+"]");
 
                 String accumulateJson = (String) httpSession.getAttribute("accumulate" );
                 accumulateJson+=paramJsonSt;
@@ -165,7 +165,7 @@ public class Actions {
             else if ("loadandstart".equals(action))
             {
                 String name="";
-                logger.info("loadandstart paramJson=["+paramJsonSt+"]");
+                logger.fine("loadandstart paramJson=["+paramJsonSt+"]");
 
                 if (paramJsonSt!=null && paramJsonSt.trim().length()>0)
                 {
@@ -223,7 +223,7 @@ public class Actions {
 
                 // second configuration
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
-                MeteorDAO.StatusDAO statusDao = meteorDAO.getListNames(pageResourceProvider.getPageName(), apiSession.getTenantId()  ) ;
+                MeteorDAO.StatusDAO statusDao = meteorDAO.getListNames( apiSession.getTenantId()  ) ;
                 actionAnswer.responseMap = statusDao.getMap();
                 /* .put("listeventsconfig",  BEventFactory.getHtml( statusDao.listEvents));
                  actionAnswer.responseMap.put("configList", statusDao.listNamesAllConfigurations);
@@ -249,7 +249,7 @@ public class Actions {
                 final Object jsonObject = JSONValue.parse(paramJsonSt);
                 String name 		= jsonObject.get("confname");
                 String description  = jsonObject.get("confdescription");
-                logger.info("BonitaProperties.saveConfig name=["+name+"] description ["+description+"]" );
+                logger.fine("BonitaProperties.saveConfig name=["+name+"] description ["+description+"]" );
 
 
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
@@ -257,7 +257,7 @@ public class Actions {
                 configuration.name=name;
                 configuration.description = description;
                 configuration.content=accumumlateJson;
-                MeteorDAO.StatusDAO statusDao= meteorDAO.save( configuration, true, pageResourceProvider.getPageName(), apiSession.getTenantId());
+                MeteorDAO.StatusDAO statusDao= meteorDAO.save( configuration, true,  apiSession.getTenantId());
                 actionAnswer.responseMap.put("listeventsconfig",  BEventFactory.getHtml( statusDao.listEvents));
                 actionAnswer.responseMap.put("configList", statusDao.listNamesAllConfigurations);
             }
@@ -267,7 +267,7 @@ public class Actions {
                 String name= jsonObject.get("confname");
 
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
-                MeteorDAO.StatusDAO statusDao= meteorDAO.load( name, pageResourceProvider.getPageName(), apiSession.getTenantId());
+                MeteorDAO.StatusDAO statusDao= meteorDAO.load( name, apiSession.getTenantId());
 
                 actionAnswer.responseMap.put("description",statusDao.configuration.description );
                 actionAnswer.responseMap.put("config", JSONValue.parse(statusDao.configuration.content) );
@@ -280,11 +280,11 @@ public class Actions {
             {
                 final Object jsonObject = JSONValue.parse(paramJsonSt);
                 String name= jsonObject.get("confname");
-                logger.info("BonitaProperties.loadConfig name=["+name+"]" );
+                logger.fine("BonitaProperties.loadConfig name=["+name+"]" );
                 // Load is
 
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
-                MeteorDAO.StatusDAO statusDao= meteorDAO.delete( name, true, pageResourceProvider.getPageName(), apiSession.getTenantId());
+                MeteorDAO.StatusDAO statusDao= meteorDAO.delete( name, true, apiSession.getTenantId());
 
                 actionAnswer.responseMap.put("listeventsconfig", BEventFactory.getHtml(statusDao.listEvents));
                 actionAnswer.responseMap.put("configList", statusDao.listNamesAllConfigurations);
@@ -309,11 +309,20 @@ public class Actions {
                 List<String> listconfname= jsonObject.get("listconfname");
 
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
-                MeteorDAO.StatusDAO statusDao= meteorDAO.exportConfs( listconfname, apiSession.getUserName(), pageResourceProvider.getPageName(), apiSession.getTenantId());
+                MeteorDAO.StatusDAO statusDao= meteorDAO.exportConfs( listconfname, apiSession.getUserName(),  apiSession.getTenantId());
 
                 // then add the name and the correct content type
                 response.addHeader("content-disposition", "attachment; filename="+statusDao.containerName);
                 response.addHeader("content-type", "application/zip");
+                
+                
+                File file = new File("c:/temp/meteor.zip");
+                OutputStream fop = new FileOutputStream(file);
+                statusDao.containerZip.writeTo( fop );
+                fop.flush();
+                fop.close();
+                
+                
                 OutputStream output = response.getOutputStream();
 
                 if (statusDao.containerZip!=null)
@@ -327,7 +336,7 @@ public class Actions {
             {
                 String filename= request.getParameter("filename");
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
-                MeteorDAO.StatusDAO statusDao= meteorDAO.importConfs( filename, true, pageResourceProvider.getPageDirectory(), pageResourceProvider.getPageName(), apiSession.getTenantId());
+                MeteorDAO.StatusDAO statusDao= meteorDAO.importConfs( filename, true, pageResourceProvider.getPageDirectory(),  apiSession.getTenantId());
                 actionAnswer.responseMap.put("listeventsconfig", BEventFactory.getHtml(statusDao.listEvents));
                 actionAnswer.responseMap.put("configList", statusDao.listNamesAllConfigurations);
                 if (statusDao.configuration!=null)
@@ -368,7 +377,7 @@ public class Actions {
 
         // logger.info("Json=["+paramJsonSt+"]");
         StartParameters startParameters;
-        logger.info(" We get a LIST JSON size=("+accumulateJson.length()+" - first value =["+ (accumulateJson==null ? null :(accumulateJson.length()>100 ? accumulateJson.substring(0,100) :accumulateJson))+ "]");
+        logger.fine(" We get a LIST JSON size=("+accumulateJson.length()+" - first value =["+ (accumulateJson==null ? null :(accumulateJson.length()>100 ? accumulateJson.substring(0,100) :accumulateJson))+ "]");
         startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
 
         answer.putAll( meteorAPI.start(startParameters, processAPI, commandAPI,tenantId));
@@ -395,7 +404,7 @@ public class Actions {
         {
             listEvents.addAll( deployStatus.listEvents  );
         }
-        logger.info(" StartFromName["+ name + "]");
+        logger.fine(" StartFromName["+ name + "]");
         answer.putAll( meteorAPI.startFromScenarioName(name, processAPI, commandAPI,tenantId));
 
     }
