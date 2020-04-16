@@ -291,8 +291,10 @@ public class ScenarioCmd extends MeteorScenario {
     }
 
     @Override
-    public List<MeteorDefProcess> collectProcess(MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
-        return new ArrayList<MeteorDefProcess>();
+    public CollectResult collectProcess(MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
+        CollectResult collectResult = new CollectResult();
+        collectResult.listDefProcess = new ArrayList<>();
+        return collectResult;
     }
 
 }

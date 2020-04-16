@@ -62,6 +62,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
     public final static String cstHtmlDocumentName = "documentname";
     public final static String cstHtmlDocumentValue = "documentvalue";
     public final static String CSTJSON_PROCESSNAME = "processname";
+    public final static String CSTJSON_ALLOWLASTVERSION = "allowlastversion";
     public final static String CSTJSON_PROCESSVERSION = "processversion";
     public final static String CSTJSON_ACTIVITYNAME = "activityname";
     public final static String cstHtmlProcessDefId = "processid";
@@ -91,7 +92,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
      * after the calculation, we get this information : the
      * listprocessDefinition, the listEventCalculation and the performance
      */
-    final List<BEvent> listEventsCalculation = new ArrayList<BEvent>();
+    final List<BEvent> listEventsCalculation = new ArrayList<>();
     public long performanceCalcul = 0;
     private final HashMap<Long, MeteorDefProcess> mListProcessDefinition = new HashMap<Long, MeteorDefProcess>();
 
@@ -128,8 +129,8 @@ public class MeteorScenarioProcess extends MeteorScenario {
                     }
 
                     try {
-                        final MeteorDefProcess meteorDefProcess = new MeteorDefProcess(null, null, processDeploymentInfos.getProcessId());
-                        meteorDefProcess.initialise( processAPI );
+                        final MeteorDefProcess meteorDefProcess = new MeteorDefProcess(processDeploymentInfos.getProcessId());
+                        meteorDefProcess.initialise(processAPI);
 
                         meteorDefProcess.calculContractDefinition(processAPI);
 
@@ -493,7 +494,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
      * @param listRequestMultipart
      */
     private List<BEvent> fromList(final List<Map<String, Object>> listOfFlatInformation, final List<FileItem> listRequestMultipart, ProcessAPI processAPI) {
-        final List<BEvent> listEvents = new ArrayList<BEvent>();
+        final List<BEvent> listEvents = new ArrayList<>();
         if (listOfFlatInformation == null) {
             logger.severe("no Update information (listOfProcess is null");
             // add a event here
@@ -538,7 +539,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
      */
 
     private List<BEvent> initialize(final long tenantId, ProcessAPI processAPI) {
-        final List<BEvent> listEvents = new ArrayList<BEvent>();
+        final List<BEvent> listEvents = new ArrayList<>();
 
         // listEvents.addAll(calculateListProcess(processAPI));
 
@@ -547,28 +548,28 @@ public class MeteorScenarioProcess extends MeteorScenario {
 
         for (final MeteorDefProcess meteorDefProcess : mListProcessDefinition.values()) {
             try {
-                analysis += "Process[" +  meteorDefProcess.mProcessName + "]-[" +  meteorDefProcess.mProcessVersion + "] ID[" +  meteorDefProcess.mProcessDefinitionId + "] :";
+                analysis += "Process[" + meteorDefProcess.mProcessName + "]-[" + meteorDefProcess.mProcessVersion + "] ID[" + meteorDefProcess.mProcessDefinitionId + "] :";
                 // the processDefition is just a container, do the job now
-                if ( meteorDefProcess.mNumberOfRobots == 0 &&  meteorDefProcess.mNumberOfCases > 0 ||  meteorDefProcess.mNumberOfRobots > 0 &&  meteorDefProcess.mNumberOfCases == 0) {
+                if (meteorDefProcess.mNumberOfRobots == 0 && meteorDefProcess.mNumberOfCases > 0 || meteorDefProcess.mNumberOfRobots > 0 && meteorDefProcess.mNumberOfCases == 0) {
                     listEvents.add(new BEvent(EventCheckRobotCaseIncoherent,
-                            "Process Name[" +  meteorDefProcess.mProcessName + "] Version[" +  meteorDefProcess.mProcessVersion + "] NumberOfRobots[" +  meteorDefProcess.mNumberOfRobots + "] Nb case[" +  meteorDefProcess.mNumberOfCases + "]"));
+                            "Process Name[" + meteorDefProcess.mProcessName + "] Version[" + meteorDefProcess.mProcessVersion + "] NumberOfRobots[" + meteorDefProcess.mNumberOfRobots + "] Nb case[" + meteorDefProcess.mNumberOfCases + "]"));
                 }
-                if ( meteorDefProcess.mNumberOfRobots > 0 &&  meteorDefProcess.mNumberOfCases > 0) {
-                    analysis += "Start_CASE[" +  meteorDefProcess.mNumberOfCases + "] by nbRob[" +  meteorDefProcess.mNumberOfRobots + "]";
+                if (meteorDefProcess.mNumberOfRobots > 0 && meteorDefProcess.mNumberOfCases > 0) {
+                    analysis += "Start_CASE[" + meteorDefProcess.mNumberOfCases + "] by nbRob[" + meteorDefProcess.mNumberOfRobots + "]";
                     somethingToStart = true;
                 }
 
                 // Activity Part
-                for (final MeteorDefActivity meteorDefinitionActivity :  meteorDefProcess.getListActivities()) {
-                    analysis = "On Process [" +  meteorDefProcess.mProcessName + "] [" +  meteorDefProcess.mProcessVersion + "], Activity[" + meteorDefinitionActivity.mActivityName + "]";
+                for (final MeteorDefActivity meteorDefinitionActivity : meteorDefProcess.getListActivities()) {
+                    analysis = "On Process [" + meteorDefProcess.mProcessName + "] [" + meteorDefProcess.mProcessVersion + "], Activity[" + meteorDefinitionActivity.mActivityName + "]";
 
                     if (meteorDefinitionActivity.mNumberOfRobots == 0 && meteorDefinitionActivity.mNumberOfCases > 0 || meteorDefinitionActivity.mNumberOfRobots > 0 && meteorDefinitionActivity.mNumberOfCases == 0) {
-                        listEvents.add(new BEvent(EventCheckRobotCaseIncoherent, "Process Name[" +  meteorDefProcess.mProcessName + "] Version[" +  meteorDefProcess.mProcessVersion + "] " + "] Activity[" + meteorDefinitionActivity.mActivityName + "] NumberOfRobots["
-                                +  meteorDefProcess.mNumberOfRobots + "] Nb case[" +  meteorDefProcess.mNumberOfCases + "]"));
+                        listEvents.add(new BEvent(EventCheckRobotCaseIncoherent, "Process Name[" + meteorDefProcess.mProcessName + "] Version[" + meteorDefProcess.mProcessVersion + "] " + "] Activity[" + meteorDefinitionActivity.mActivityName + "] NumberOfRobots["
+                                + meteorDefProcess.mNumberOfRobots + "] Nb case[" + meteorDefProcess.mNumberOfCases + "]"));
                     }
                     if (meteorDefinitionActivity.mNumberOfRobots > 0 && meteorDefinitionActivity.mNumberOfCases > 0) {
-                        analysis += "Execute_Act[" + meteorDefinitionActivity.mActivityName + "] in Process[" +  meteorDefProcess.mProcessName + "]-[" +  meteorDefProcess.mProcessVersion + "] ID[" +  meteorDefProcess.mProcessDefinitionId + "] start["
-                                + meteorDefinitionActivity.mNumberOfCases + "] by nbRob[" +  meteorDefProcess.mNumberOfRobots + "];";
+                        analysis += "Execute_Act[" + meteorDefinitionActivity.mActivityName + "] in Process[" + meteorDefProcess.mProcessName + "]-[" + meteorDefProcess.mProcessVersion + "] ID[" + meteorDefProcess.mProcessDefinitionId + "] start["
+                                + meteorDefinitionActivity.mNumberOfCases + "] by nbRob[" + meteorDefProcess.mNumberOfRobots + "];";
 
                         somethingToStart = true;
                     }
@@ -589,7 +590,6 @@ public class MeteorScenarioProcess extends MeteorScenario {
             logger.fine("checkParameter :" + event.toString());
         }
 
-        
         return listEvents;
     }
 
@@ -607,7 +607,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                 for (int i = 0; i < meteorDefProcess.mNumberOfRobots; i++) {
                     final MeteorRobotCreateCase robot = new MeteorRobotCreateCase(meteorSimulation, apiAccessor);
 
-                    robot.setParameters(meteorDefProcess, meteorDefProcess.getListDocuments(), meteorSimulation.getDurationOfSimulation() );
+                    robot.setParameters(meteorDefProcess, meteorDefProcess.getListDocuments(), meteorSimulation.getDurationOfSimulation());
                     listRobots.add(robot);
                 }
             }
@@ -630,8 +630,10 @@ public class MeteorScenarioProcess extends MeteorScenario {
     }
 
     @Override
-    public List<MeteorDefProcess> collectProcess(MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
-        return new ArrayList<MeteorDefProcess>(mListProcessDefinition.values());
+    public CollectResult collectProcess(MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
+        CollectResult collectResult = new CollectResult();
+        collectResult.listDefProcess = new ArrayList<>(mListProcessDefinition.values());
+        return collectResult;
     }
 
 }

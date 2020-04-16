@@ -2,7 +2,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bonitasoft.custompage</groupId>
 	<artifactId>CustomPageMeteor</artifactId>
-	<version>3.0.0</version>
+	<!-- Attention, when number change here, update MeteorAPI.getMeteorCommandDescription -->
+	
+	<version>3.0.2</version>
 	<name>CustomPageMeteor</name>
 	<properties>
         <bonita.version>7.8.4</bonita.version>
@@ -30,7 +32,7 @@
 			<dependency>
 			<groupId>org.bonitasoft.log.event</groupId>
 			<artifactId>bonita-event</artifactId>
-			<version>1.7.0</version>
+			<version>1.8.0</version>
 		</dependency>
 
 		<dependency>
@@ -48,14 +50,14 @@
 	
 		<dependency>
 			<groupId>org.bonitasoft.command</groupId>
-  			<artifactId>bonita-commanddeployment</artifactId>
-  			<version>1.5</version>
+			<artifactId>bonita-commanddeployment</artifactId>
+			<version>1.8.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.bonitasoft.properties</groupId>
 			<artifactId>bonita-properties</artifactId>
-			<version>2.1.1</version>
+			<version>2.2.0</version>
 		</dependency>
 
 		<dependency>
@@ -81,7 +83,7 @@
 		<dependency>
 			<groupId>org.bonitasoft.store</groupId>
 			<artifactId>bonita-store</artifactId>
-			<version>1.1.0</version>
+			<version>1.3.0</version>
 		</dependency>
 		
 
@@ -104,8 +106,74 @@
 		</repository>
 	</repositories>
 	<build>
-		<!-- ******************** Copy JAR files under lib **************** -->
 		<plugins>
+		
+		<!-- ******************** Copy JAR files under bonitamavenrepository **************** -->
+			<plugin>
+				<groupId>org.codehaus.groovy.maven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<source>
+								import java.nio.file.*;
+
+								String groupIdPath = "${project.groupId}".replace('.', '/');
+
+								String fileName = "${artifactId}-${version}.jar";
+								Path destPath = Paths.get( "../bonitamavenrepository/${groupIdPath}/${artifactId}/${version}" );
+
+								Path sourceJarFile = Paths.get("target/"+fileName);
+								Path destJarFile = Paths.get( destPath.toString()+"/"+fileName);
+								copyFile( sourceJarFile, destJarFile);
+
+								Path sourcePom = Paths.get("pom.xml" );
+								Path destPom = Paths.get( destPath.toString()+"/${artifactId}-${version}.pom" );
+								copyFile( sourcePom, destPom);
+								return;
+
+								public void copyFile( Path sourcePath, Path destinationPath ) {
+									try {
+										Path parentPath = destinationPath.getParent();
+										println(" Create Directory:"+parentPath.toString());
+										Files.createDirectories(parentPath);
+		
+		
+										try {
+											if (destinationPath.toFile().exists()) {
+												println(" Delete existing file:"+destinationPath.toString());
+												Files.delete(destinationPath);
+											}
+										} catch(Exception e) {
+											println(" Error during deletion "+e.getMessage());
+										}
+										println(" Copy:"+sourcePath+" =>"+destinationPath);
+		
+	
+										def file = sourcePath.toFile();
+										def newFile = destinationPath.toFile();
+										Files.copy(file.toPath(), newFile.toPath());
+	
+									} catch(Exception e )
+									{
+										println("Exception "+e.getMessage());
+									}
+								}
+
+
+
+
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- ******************** Copy JAR files under lib **************** -->			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>

@@ -129,7 +129,7 @@ public @Data abstract class MeteorTimeLine {
         timeLine.processVersion = MeteorToolbox.getParameterString(json, CSTJSON_PROCESSVERSION, "");
         timeLine.userNameCreatedBy = MeteorToolbox.getParameterString(json, CSTJSON_USERNAMECREATEDBY, null);
         
-        timeLine.allowRecentVersion = MeteorToolbox.getParameterBoolean(json, CSTJSON_PROCESSALLOWRECENTVERSION);
+        timeLine.allowRecentVersion = MeteorToolbox.getParameterBoolean(json, CSTJSON_PROCESSALLOWRECENTVERSION, false);
         
         String jsonContract = MeteorToolbox.getParameterString(json, CSTJSON_LISTCONTRACTVALUES, "");
         Object tempList = JSONValue.parse(jsonContract);

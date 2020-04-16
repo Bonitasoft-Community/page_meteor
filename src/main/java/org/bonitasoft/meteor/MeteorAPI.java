@@ -93,7 +93,7 @@ public class MeteorAPI {
      */
     public Map<String, Object> getListProcesses(final ListProcessParameter listProcessParameter, final ProcessAPI processAPI) {
         logger.fine(logHeader + "GetListProcess-2");
-        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, Object> result = new HashMap<>();
 
         MeteorScenarioProcess processDefinitionList = new MeteorScenarioProcess();
         processDefinitionList.calculateListProcess(processAPI);
@@ -146,11 +146,11 @@ public class MeteorAPI {
         BonitaCommandDescription commandDescription = new BonitaCommandDescription(CmdMeteor.CSTCOMMANDNAME, pageDirectory);
         commandDescription.forceDeploy = false;
         commandDescription.mainCommandClassName = CmdMeteor.class.getName();
-        commandDescription.mainJarFile = "CustomPageMeteor-3.0.0.jar";
+        commandDescription.mainJarFile = "CustomPageMeteor-3.0.2.jar";
         commandDescription.commandDescription = CmdMeteor.CSTCOMMANDDESCRIPTION;
 
-        commandDescription.addJarDependencyLastVersion("bonita-event", "1.7.0", "bonita-event-1.7.0.jar");
-        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.1.1", "bonita-properties-2.1.1.jar");
+        commandDescription.addJarDependencyLastVersion("bonita-event", "1.8.0", "bonita-event-1.8.0.jar");
+        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.2.0", "bonita-properties-2.2.0.jar");
         commandDescription.addJarDependency("bonita-casedetails", "1.0.0", "bonita-casedetails-1.0.0.jar");
 
         return commandDescription;

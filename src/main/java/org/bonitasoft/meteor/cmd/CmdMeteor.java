@@ -14,6 +14,7 @@ import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 import org.bonitasoft.meteor.MeteorDAO;
 import org.bonitasoft.meteor.MeteorOperation;
+import org.bonitasoft.meteor.MeteorOperation.MeteorResult;
 
 public class CmdMeteor extends BonitaCommandApiAccessor {
 
@@ -59,8 +60,8 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
      * this process intance. Format is yyyyMMdd HH:MM:ss
      */
     @Override
-    public ExecuteAnswer executeCommandApiAccessor(ExecuteParameters executeParameters, APIAccessor apiAccessor) {
-
+    public ExecuteAnswer executeCommandApiAccessor(ExecuteParameters executeParameters, APIAccessor apiAccessor, TenantServiceAccessor serviceAccessor) {
+     
 
         ExecuteAnswer executeAnswer = new ExecuteAnswer();
 
@@ -87,25 +88,32 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
             final StartParameters startParameters = StartParameters.getInstanceFromJsonList((ArrayList<String>) executeParameters.parametersCommand.get(cstParamCommandNameStartParams));
             logger.fine(logHeader+"COMMANDMETEOR.Start params[" + startParameters.toString() + "]");
             startParameters.tenantId = tenantId;
-            executeAnswer.result = MeteorOperation.start(startParameters, connectorAccessorAPI).getMap();
+            MeteorResult meteorResult  = MeteorOperation.start(startParameters, connectorAccessorAPI);
+            executeAnswer.result = meteorResult.getMap();
+            executeAnswer.listEvents = meteorResult.listEvents;
 
         } else if (VERBE.STATUS.toString().equals(commandName)) {
             logger.fine(logHeader+"COMMANDMETEOR.Status ");
             final StatusParameters statusParameters = StatusParameters.getInstanceFromJsonSt((String) executeParameters.parametersCommand.get(cstParamCommandNameStatusParams));
 
-            executeAnswer.result = MeteorOperation.getStatus(statusParameters, connectorAccessorAPI).getMap();
+            MeteorResult meteorResult  = MeteorOperation.getStatus(statusParameters, connectorAccessorAPI);
+            executeAnswer.result = meteorResult.getMap();
+            executeAnswer.listEvents = meteorResult.listEvents;
         
         }  else if (VERBE.STARTFROMSCENARIONAME.toString().equals(commandName)) {
             String name = (String) executeParameters.parametersCommand.get( cstParamCommandNameScenarioName );
             MeteorDAO meteorDAO = MeteorDAO.getInstance();
             MeteorDAO.StatusDAO statusDao= meteorDAO.load( name, tenantId);
             if (BEventFactory.isError( statusDao.listEvents) ) {
-                executeAnswer.result.put(CmdMeteor.cstParamResultListEventsSt, BEventFactory.getHtml(statusDao.listEvents));    
+                executeAnswer.result.put(CmdMeteor.cstParamResultListEventsSt, BEventFactory.getHtml(statusDao.listEvents));
+                executeAnswer.listEvents = statusDao.listEvents;
             }
             else {
                 String accumulateJson=statusDao.configuration.content;
                 final StartParameters startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
-                executeAnswer.result = MeteorOperation.start(startParameters, connectorAccessorAPI).getMap();
+                MeteorResult meteorResult  = MeteorOperation.start(startParameters, connectorAccessorAPI);
+                executeAnswer.result = meteorResult.getMap();
+                executeAnswer.listEvents = meteorResult.listEvents;
             }
             
         } else if (VERBE.ABORT.toString().equals(commandName)) {
@@ -139,6 +147,8 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
      */
     public final static String CSTCOMMANDNAME = "meteorcmd";
     public final static String CSTCOMMANDDESCRIPTION = "Run the meteor robots, to creates cases / execute task";
+
+  
 
     // public static String jarName = "CustomPageMeteor-1.0.0.jar";
 

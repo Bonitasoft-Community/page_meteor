@@ -1,5 +1,6 @@
 package org.bonitasoft.meteor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bonitasoft.engine.api.APIAccessor;
@@ -35,6 +36,10 @@ public abstract class MeteorScenario {
      * 
      * @return
      */
-    public abstract List<MeteorDefProcess> collectProcess(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor);
+    public static class CollectResult {
+        public List<MeteorDefProcess> listDefProcess;
+        public List<BEvent> listEvents = new ArrayList<>();
+    }
+    public abstract CollectResult collectProcess(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor);
 
 }

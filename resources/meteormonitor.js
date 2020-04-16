@@ -233,7 +233,8 @@ appCommand.controller('MeteorControler',
 	
 	};
 	this.postStart = function( jsonResult ) {
-		this.listeventsexecution    		= jsonResult.listevents;
+		this.execution.listeventsexecution   = jsonResult.listevents;
+		console.log("postStart listEventExecution="+jsonResult.listevents);
 		this.simulationid					= jsonResult.simulationid;
 		this.execution={};
 		this.execution.robots 				=  jsonResult.robots;
@@ -368,9 +369,10 @@ appCommand.controller('MeteorControler',
 					window.location.reload();
 				}
 			
-				self.listeventsexecution    = jsonResult.listevents;
-				self.execution 				= jsonResult;
-				self.refreshinprogress		= false;
+				
+				self.execution 							= jsonResult;
+				self.execution.listeventsexecution    	= jsonResult.listevents;
+				self.refreshinprogress					= false;
 				
 				// $scope.chartTimeline = JSON.parse(jsonResult.chartTimeline);
 				
@@ -415,7 +417,7 @@ appCommand.controller('MeteorControler',
 		// the array maybe very big, so let's create a list of http call
 		this.listUrlCall=[];
 		this.listUrlCall.push( "action=collect_reset");
-		this.listeventsexecution="";
+		this.execution.listeventsexecution="";
 		
 		// prepare the string
 		var param = {};

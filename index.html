@@ -62,7 +62,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V3.0</a></td>
+					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V3.0.2</a></td>
 				</tr>
 				<tr>
 					<td>
@@ -451,7 +451,9 @@
 						</tr>
 						<tr>
 							<td>Status</td>
-							<td>{{ctrl.execution.status}}</td>
+							<td>{{ctrl.execution.status}}<br>
+							<div ng-bind-html="ctrl.getListEvents( ctrl.execution.listeventsexecution )"></div>
+							
 						</tr>
 						<tr>
 							<td>Time started:</td>

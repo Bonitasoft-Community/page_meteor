@@ -164,17 +164,20 @@ public class MeteorScenarioExperience extends MeteorScenario {
     }
 
     @Override
-    public List<MeteorDefProcess> collectProcess(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+    public CollectResult collectProcess(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+        CollectResult collectResult = new CollectResult();
         Map<Long, MeteorDefProcess> mapProcesses = new HashMap<>();
         // multiple time lines can work on the same process
         for (MeteorTimeLine meteorTimeLine : listTimeLine) {
             if (! mapProcesses.containsKey(meteorTimeLine.getProcessDefinitionId())) {
-                MeteorDefProcess meteorDefProcess = new MeteorDefProcess(null, null, meteorTimeLine.getProcessDefinitionId());
-                meteorDefProcess.initialise( apiAccessor.getProcessAPI());
-                mapProcesses.put( meteorDefProcess.mProcessDefinitionId, meteorDefProcess );
+                MeteorDefProcess meteorDefProcess = new MeteorDefProcess(meteorTimeLine.getProcessName(), meteorTimeLine.getProcessVersion(),  meteorTimeLine.getAllowRecentVersion());
+                collectResult.listEvents.addAll( meteorDefProcess.initialise( apiAccessor.getProcessAPI()));
+                if (meteorDefProcess.mProcessDefinitionId != null)
+                    mapProcesses.put( meteorDefProcess.mProcessDefinitionId, meteorDefProcess );
             }
         }
-        return  new ArrayList<>(mapProcesses.values());
+        collectResult.listDefProcess = new ArrayList<>(mapProcesses.values());
+        return collectResult;
     }
 
 }

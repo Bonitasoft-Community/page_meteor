@@ -53,22 +53,29 @@ public class MeteorDefProcess extends MeteorDefBase {
     public Long mProcessDefinitionId;
     public String mProcessName;
     public String mProcessVersion;
+    public boolean mAllowLastVersion=false;
 
     /**
      * all MeteorActivity to run by a robot
      */
-    private List<MeteorDefActivity> mListActivities = new ArrayList<MeteorDefActivity>();
+    private List<MeteorDefActivity> mListActivities = new ArrayList<>();
     /**
      * all activities of the process, in order to calculate the cover
      */
-    private List<ActivityDefinition> mListAllActivities = new ArrayList<ActivityDefinition>();
+    private List<ActivityDefinition> mListAllActivities = new ArrayList<>();
 
-    public MeteorDefProcess(String processName, String processVersion, Long processDefinitionId) {
+    public MeteorDefProcess(String processName, String processVersion, boolean allowLastVersion) {
         mProcessName = processName;
         mProcessVersion = processVersion;
+        mAllowLastVersion = allowLastVersion;
+        mProcessDefinitionId =null;
+    }
+    public MeteorDefProcess( Long processDefinitionId ) {
+        mProcessName = null;
+        mProcessVersion =null;
+        mAllowLastVersion = false;
         mProcessDefinitionId = processDefinitionId;
     }
-
     /* ******************************************************************** */
     /*                                                                      */
     /*Initialisation */
@@ -76,7 +83,7 @@ public class MeteorDefProcess extends MeteorDefBase {
     /*                                                                      */
     /* ******************************************************************** */
     public List<BEvent> initialise(ProcessAPI processAPI) {
-        List<BEvent> listEvents = new ArrayList<BEvent>();
+        List<BEvent> listEvents = new ArrayList<>();
         ProcessDefinition processDefinition;
         if (mProcessName ==null) {
                 
@@ -90,31 +97,47 @@ public class MeteorDefProcess extends MeteorDefBase {
             }
         }
         else {
-            // find the processId from the processName / Version
-            SearchOptionsBuilder searchOptionsBuilder = new SearchOptionsBuilder(0,100);
-            searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.NAME, mProcessName);
-            searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.ACTIVATION_STATE, ActivationState.ENABLED.name());
-            if (mProcessVersion!=null)
-            {
-                searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.VERSION, mProcessVersion);
-            }
-            searchOptionsBuilder.sort(ProcessDeploymentInfoSearchDescriptor.DEPLOYMENT_DATE, Order.DESC);
-            try {
-                SearchResult<ProcessDeploymentInfo> search = processAPI.searchProcessDeploymentInfos(searchOptionsBuilder.done());
-                if (search.getCount()>0)
-                    mProcessDefinitionId = search.getResult().get(0).getProcessId();
-                else
-                    listEvents.add( new BEvent( eventGetProcess, "No process found with ProcessName["+mProcessName+"] Version["+mProcessVersion+"]"));
-                    
-                
-            } catch (SearchException e) {
-
-                listEvents.add( new BEvent( eventGetProcess, e, "ProcessName["+mProcessName+"] Version["+mProcessVersion+"]"));
-            }
+            mProcessDefinitionId = searchProcess( mProcessName, mProcessVersion, processAPI);
+            if (mProcessDefinitionId==null && mAllowLastVersion)
+                mProcessDefinitionId = searchProcess( mProcessName, null, processAPI);
+               
+            if (mProcessDefinitionId == null)
+                listEvents.add( new BEvent( eventGetProcess, "No process found with ProcessName["+mProcessName+"] Version["+mProcessVersion+"] AllowLastVersion["+mAllowLastVersion+"]"));
+            
         }
             
         return listEvents;
     }
+    
+    /**
+     * search a process, by it's name / version. If version is null, search the last deployed version
+     * @param processName
+     * @param processVersion
+     * @param processAPI
+     * @return
+     */
+    private Long searchProcess(String processName, String processVersion, ProcessAPI processAPI ) {
+    // find the processId from the processName / Version
+    SearchOptionsBuilder searchOptionsBuilder = new SearchOptionsBuilder(0,100);
+    searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.NAME, processName);
+    searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.ACTIVATION_STATE, ActivationState.ENABLED.name());
+    if (processVersion!=null)
+    {
+        searchOptionsBuilder.filter(ProcessDeploymentInfoSearchDescriptor.VERSION, processVersion);
+    }
+    searchOptionsBuilder.sort(ProcessDeploymentInfoSearchDescriptor.DEPLOYMENT_DATE, Order.DESC);
+    try {
+        SearchResult<ProcessDeploymentInfo> search = processAPI.searchProcessDeploymentInfos(searchOptionsBuilder.done());
+        if (search.getCount()>0)
+            return  search.getResult().get(0).getProcessId();
+        return null;            
+        
+    } catch (SearchException e) {
+
+        return null;
+    }
+    }
+
     /* ******************************************************************** */
     /*                                                                      */
     /* GetterSetter */
@@ -175,7 +198,12 @@ public class MeteorDefProcess extends MeteorDefBase {
         Long processDefinitionId = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlId, -1L);
         String processName = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.CSTJSON_PROCESSNAME, null);
         String processVersion = MeteorToolbox.getParameterString(oneProcess, MeteorScenarioProcess.CSTJSON_PROCESSVERSION, null);
-        MeteorDefProcess meteorDefProcess = new MeteorDefProcess(processName, processVersion, processDefinitionId);
+        boolean allowLastVersion = MeteorToolbox.getParameterBoolean(oneProcess, MeteorScenarioProcess.CSTJSON_ALLOWLASTVERSION, false);
+        MeteorDefProcess meteorDefProcess = null;
+        if (processDefinitionId >0)
+            meteorDefProcess = new MeteorDefProcess(processDefinitionId);
+        else
+            meteorDefProcess = new MeteorDefProcess(processName, processVersion, allowLastVersion);
         
         meteorDefProcess.initialise( processAPI );
 

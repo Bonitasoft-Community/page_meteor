@@ -11,6 +11,7 @@ import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.meteor.MeteorRobot.RobotStatus;
+import org.bonitasoft.meteor.MeteorScenario.CollectResult;
 import org.bonitasoft.meteor.scenario.process.MeteorCalculCover;
 import org.bonitasoft.meteor.scenario.process.MeteorCalculCover.CoverStatus;
 import org.bonitasoft.meteor.scenario.process.MeteorDefProcess;
@@ -166,8 +167,9 @@ public class MeteorSimulation {
         List<BEvent> listEvents = new ArrayList<>();
         mListRobots.addAll(meteorScenario.generateRobots(this, apiAccessor));
         
-        List<MeteorDefProcess> listProcessFromScenario = meteorScenario.collectProcess(this, apiAccessor);
-        for (MeteorDefProcess defProcess : listProcessFromScenario) {
+        CollectResult collectResult = meteorScenario.collectProcess(this, apiAccessor);
+        listEvents.addAll(collectResult.listEvents);
+        for (MeteorDefProcess defProcess : collectResult.listDefProcess) {
             boolean alreadyExist=false;
             for (int i=0;i<mListMeteorProcess.size();i++) {
             if (mListMeteorProcess.get( i ).mProcessDefinitionId.equals(defProcess.mProcessDefinitionId))

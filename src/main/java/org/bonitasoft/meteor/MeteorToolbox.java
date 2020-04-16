@@ -23,12 +23,12 @@ public class MeteorToolbox {
      * @param paramName
      * @return
      */
-    public static boolean getParameterBoolean(final Map<String, Object> mapRequestMultipart, final String paramName) {
+    public static boolean getParameterBoolean(final Map<String, Object> mapRequestMultipart, final String paramName, boolean defaultValue) {
         final Object value = mapRequestMultipart.get(paramName);
         if (value == null) {
-            return false;
+            return defaultValue;
         }
-        if ("on".equalsIgnoreCase(value.toString())) {
+        if ("on".equalsIgnoreCase(value.toString()) || "true".equalsIgnoreCase(value.toString())) {
             return true;
         }
         return false;
