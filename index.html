@@ -62,17 +62,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em"><a href="" ng-click="titlectrl.showhistory( ! titlectrl.isshowhistory )">V3.0.2</a></td>
-				</tr>
-				<tr>
-					<td>
-						<div id="showHistory" ng-show="titlectrl.isshowhistory"
-							style="border-width: 2px; border-style: ridge; border-color: blue">
-							1.0 First version<br>
-							2.0 Contract proposition and transformation, Cover result calculation
-							2.1 Update for 7.7x
-							3.0 Experience scenario
-					</td>
+					<td style="font-size: 0.8em">V3.1.0</a></td>
 				</tr>
 				</div>
 			</table>
@@ -151,27 +141,52 @@
 					<td style="background-color: #D9EDF7; text-align: center">
 						<input type="number" ng-model="scenario.timesleep" style="text-align: right; width: 80px;" title="Between each execution, robots will sleep this time (in ms)" ng-disabled="! ctrl.experience.enable"></td>
 					<td style="background-color: #D9EDF7; text-align: center">
-						<select ng-model="scenario.showtimeline">
-							<option value="show">Show detail</option>
-							<option value="hide">Hide detail</option>
-						</select>	</td>				
+						<a ng-click="scenario.showtimeline='show'" title="Access Details">
+							<span class="glyphicon glyphicon-list-alt"></span>
+						</a>
+					</td>				
 					<td style="background-color: #D9EDF7; text-align: center"><button ng-click="ctrl.experience.scenarii.splice(index, 1)" class="btn btn-danger btn-xs">Remove</button></td>
 				</tr>
 				<tr ng-if="scenario.showtimeline == 'show'">
-					<td colspan="4">
-					</td>
-					<td colspan="5">
-						<textarea  cols="70" rows="5" ng-model="scenario.contract"  ng-disabled="true"></textarea>
-					</td>
-				</tr>
-				<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline == 'show'">
 					<td colspan="1">
-					</td>	
-					<td >{{timeline.actname}}</td>
-					<td class="align-text:right"><i>Executed after</i><br>{{timeline.timeLineFromBeginningMS_st}}</td>
-					<td class="align-text:right">{{timeline.timewaitms}} ms</td>
-					<td  colspan="5">
-						<textarea cols="70" rows="5" ng-model="timeline.contract"  ng-disabled="true"></textarea>
+					</td>
+					<td colspan="8">
+						<div style="box-shadow: 1px 1px 12px #555;">
+							<div class="panel panel-info">
+								<div class="panel-heading">
+									<h5 class="panel-title">Details</h5>
+									<div  style="position: relative; top: -25px; right: 0px; font-size: 18px; float:right"">
+											<a  ng-click="scenario.showtimeline='hide'" >
+											<span class="glyphicon glyphicon-remove" ></span>
+											</a>
+									</div>
+								</div>
+								<div class="panel-body">
+								<table style="width:100%">
+								<tr>
+									<td>Instantiation</td>
+									<td></td>
+									<td></td>
+									<td>
+									<textarea  cols="70" rows="5" ng-model="scenario.contract"  ng-disabled="true"></textarea>
+									</td>
+								</tr>
+								<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline == 'show'">
+									<td >{{timeline.actname}}</td>
+									<td class="align-text:right"><i>Executed after</i><br>{{timeline.timeLineFromBeginningMS_st}}</td>
+									<td class="align-text:right">{{timeline.timewaitms}} ms</td>
+									<td >
+										<textarea cols="70" rows="5" ng-model="timeline.contract"  ng-disabled="true"></textarea>
+									</td>
+								</tr>
+									</table>
+									
+									
+									
+								</div>
+							</div>
+						</div>
+					
 					</td>
 				</tr>
 			</tbody>
@@ -395,7 +410,7 @@
 		</span>	
 		<br>
 		<center>
-			<div ng-bind-html="ctrl.getListEvents( ctrl.listeventsexecution )"></div>
+			<div ng-bind-html="ctrl.getListEvents( ctrl.execution.listeventsexecution )"></div>
 		</center>
 
 		<table class="table table-striped table-hover table-condensed">
@@ -426,16 +441,34 @@
 					<td style="{{ctrl.getRobotStyle( robotinfo )}}">{{robotinfo.time}}</td>
 					<td style="{{ctrl.getRobotStyle( robotinfo )}}">{{robotinfo.timeavg}}</td>
 					<td style="{{ctrl.getRobotStyle( robotinfo )}}">
-						<select ng-model="robotinfo.showlog">
-							<option value="show">Show detail</option>
-							<option value="hide">Hide detail</option>
-						</select>	</td>	
+						<a ng-click="robotinfo.showlog='show'" title="Details">
+							<span class="glyphicon glyphicon-list-alt"></span>
+						</a>
+					</td>	
 						
 				</tr>
 				<tr ng-if="robotinfo.showlog == 'show'">
 					<td></td>
-					<td colspan="5">						
-						{{robotinfo.log}}		
+					<td colspan="5">	
+					<div style="box-shadow: 1px 1px 12px #555;">
+						<div class="panel panel-info">
+							<div class="panel-heading">
+								<h5 class="panel-title">Details</h5>
+								<div  style="position: relative; top: -25px; right: 0px; font-size: 18px; float:right"">
+										<a  ng-click="robotinfo.showlog='hide'" >
+										<span class="glyphicon glyphicon-remove" ></span>
+										</a>
+								</div>
+							</div>
+							<div class="panel-body">
+								{{robotinfo.log}}		
+							</div>
+						</div> <!--  end panel info -->
+					</div> <!--  end box shadow -->
+					
+					
+										
+							
 					</td>
 				</tr>
 			</tbody>

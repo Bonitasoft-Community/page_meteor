@@ -4,7 +4,7 @@
 	<artifactId>CustomPageMeteor</artifactId>
 	<!-- Attention, when number change here, update MeteorAPI.getMeteorCommandDescription -->
 	
-	<version>3.0.2</version>
+	<version>3.2.0</version>
 	<name>CustomPageMeteor</name>
 	<properties>
         <bonita.version>7.8.4</bonita.version>
@@ -32,7 +32,7 @@
 			<dependency>
 			<groupId>org.bonitasoft.log.event</groupId>
 			<artifactId>bonita-event</artifactId>
-			<version>1.8.0</version>
+			<version>1.9.0</version>
 		</dependency>
 
 		<dependency>
@@ -51,13 +51,13 @@
 		<dependency>
 			<groupId>org.bonitasoft.command</groupId>
 			<artifactId>bonita-commanddeployment</artifactId>
-			<version>1.8.0</version>
+			<version>2.1.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.bonitasoft.properties</groupId>
 			<artifactId>bonita-properties</artifactId>
-			<version>2.2.0</version>
+			<version>2.4.0</version>
 		</dependency>
 
 		<dependency>

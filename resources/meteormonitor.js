@@ -381,7 +381,7 @@ appCommand.controller('MeteorControler',
 				// ream the timeout
 				if (self.execution.status !="DONE")
 				{
-					console.log(" Rearm the timer");
+					console.log(" Rearm the timer now");
 					$scope.timer = $timeout(function() { self.refresh() }, 30000);
 				}
 				

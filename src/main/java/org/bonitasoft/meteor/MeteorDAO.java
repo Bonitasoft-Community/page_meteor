@@ -77,7 +77,7 @@ public class MeteorDAO {
         public Map<String, Object> getMap() {
             Map<String, Object> answer = new HashMap<String, Object>();
             if (listNamesAllConfigurations != null) {
-                answer.put( MeteorAPI.cstJsonConfigList, listNamesAllConfigurations);
+                answer.put( MeteorAPI.CST_JSON_CONFIGLIST, listNamesAllConfigurations);
             }
             answer.put("listeventsconfig", BEventFactory.getHtml(listEvents));
             return answer;
@@ -469,7 +469,7 @@ public class MeteorDAO {
                 Map<String, Object> oneConf = mapConfig.get(keySt);
                 if (oneConf == null)
                     oneConf = new HashMap<String, Object>();
-                oneConf.put( MeteorAPI.cstJsonConfigListName, keySt);
+                oneConf.put( MeteorAPI.CST_JSON_CONFIG_LISTNAME, keySt);
                 mapConfig.put(keySt, oneConf);
             }
             if (keySt.startsWith(cstPropertiesDescription)) {
@@ -479,7 +479,7 @@ public class MeteorDAO {
                 Map<String, Object> oneConf = mapConfig.get(keySt);
                 if (oneConf == null)
                     oneConf = new HashMap<String, Object>();
-                oneConf.put( MeteorAPI.cstJsonConfigListDescription, bonitaProperties.get(keySt));
+                oneConf.put( MeteorAPI.CST_JSON_CONFIGLIST_DESCRIPTION, bonitaProperties.get(keySt));
                 mapConfig.put(keySt, oneConf);
             }
         } // end of the collect

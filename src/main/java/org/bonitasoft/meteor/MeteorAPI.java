@@ -53,16 +53,17 @@ public class MeteorAPI {
     // private static BEvent EventDeployCommandGroovyScenario = new BEvent(MeteorAPI.class.getName(), 3, Level.ERROR, "Groovy Command can't be created", "The Groovy Scenario needs special command to be deployed. The deployment of the command failed", "The groovy scenario can't be executed", "Check the error");
 
     /** all dialog between Angular and Java are saved here */
-    public final static String cstJsonListEvents = "listevents";
+    public final static String CST_JSON_LISTEVENTS = "listevents";
 
-    public final static String cstJsonConfigList = "configList";
-    public final static String cstJsonConfigListName = "name";
-    public final static String cstJsonConfigListDescription = "description";
+    public final static String CST_JSON_CONFIGLIST = "configList";
+    public final static String CST_JSON_CONFIG_LISTNAME = "name";
+    public final static String CST_JSON_CONFIGLIST_DESCRIPTION = "description";
     public final static String CSTJSON_PROCESSES="processes";
     // result of information
     // public static String cstParamResultStatus = "simulationstatus";
 
     public MeteorAPI() {
+        // Nothing special
     }
 
     /**
@@ -98,7 +99,7 @@ public class MeteorAPI {
         MeteorScenarioProcess processDefinitionList = new MeteorScenarioProcess();
         processDefinitionList.calculateListProcess(processAPI);
 
-        result.put(cstJsonListEvents, BEventFactory.getHtml(processDefinitionList.getListEventCalculation()));
+        result.put(CST_JSON_LISTEVENTS, BEventFactory.getHtml(processDefinitionList.getListEventCalculation()));
         result.put(CSTJSON_PROCESSES, processDefinitionList.toJson(listProcessParameter));
         return result;
     }
@@ -137,8 +138,8 @@ public class MeteorAPI {
         BonitaCommandDescription commandDescription = getMeteorCommandDescription(pageDirectory);
         BonitaCommandDeployment bonitaCommand = BonitaCommandDeployment.getInstance(commandDescription);
 
-        DeployStatus deployStatus = bonitaCommand.checkAndDeployCommand(commandDescription, true, tenantId, commandAPI, platFormAPI);
-        return deployStatus;
+        return bonitaCommand.checkAndDeployCommand(commandDescription, true, tenantId, commandAPI, platFormAPI);
+        
     }
 
     private BonitaCommandDescription getMeteorCommandDescription(File pageDirectory) {
@@ -146,11 +147,11 @@ public class MeteorAPI {
         BonitaCommandDescription commandDescription = new BonitaCommandDescription(CmdMeteor.CSTCOMMANDNAME, pageDirectory);
         commandDescription.forceDeploy = false;
         commandDescription.mainCommandClassName = CmdMeteor.class.getName();
-        commandDescription.mainJarFile = "CustomPageMeteor-3.0.2.jar";
+        commandDescription.mainJarFile = "CustomPageMeteor-3.2.0.jar";
         commandDescription.commandDescription = CmdMeteor.CSTCOMMANDDESCRIPTION;
 
-        commandDescription.addJarDependencyLastVersion("bonita-event", "1.8.0", "bonita-event-1.8.0.jar");
-        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.2.0", "bonita-properties-2.2.0.jar");
+        commandDescription.addJarDependencyLastVersion("bonita-event", "1.9.0", "bonita-event-1.9.0.jar");
+        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.4.0", "bonita-properties-2.4.0.jar");
         commandDescription.addJarDependency("bonita-casedetails", "1.0.0", "bonita-casedetails-1.0.0.jar");
 
         return commandDescription;
@@ -161,6 +162,8 @@ public class MeteorAPI {
     	 *
     	 */
     public static class StartParameters {
+
+        private static final String CST_BLANCKLINE = "                                                                                                      ";
 
         public long tenantId;
 
@@ -186,16 +189,17 @@ public class MeteorAPI {
          * keep the parameters as a JSON to sent it to the command - ArrayList
          * to keep the serialization
          */
-        public ArrayList<String> jsonListSt;
+        public List<String> jsonListSt;
 
         public static StartParameters getInstanceFromJsonSt(final String jsonSt) {
             final StartParameters startParameters = new StartParameters();
-            startParameters.jsonListSt = new ArrayList<String>();
+            startParameters.jsonListSt = new ArrayList<>();
             startParameters.jsonListSt.add(jsonSt);
             return startParameters;
         }
 
-        public static StartParameters getInstanceFromJsonList(final ArrayList<String> jsonList) {
+        @SuppressWarnings("unchecked")
+        public static StartParameters getInstanceFromJsonList(@SuppressWarnings("rawtypes") final ArrayList jsonList) {
             final StartParameters startParameters = new StartParameters();
             startParameters.jsonListSt = jsonList;
             return startParameters;
@@ -207,9 +211,9 @@ public class MeteorAPI {
         @SuppressWarnings("unchecked")
         public void decodeFromJsonSt() {
             logger.fine(logHeader + "decodeFromJsonSt : JsonSt[" + jsonListSt + "]");
-            listOfProcesses = new ArrayList<Map<String, Object>>();
-            listOfScenarii = new ArrayList<Map<String, Object>>();
-            mapOfExperience = new HashMap<String, Object>();
+            listOfProcesses = new ArrayList<>();
+            listOfScenarii = new ArrayList<>();
+            mapOfExperience = new HashMap<>();
 
             if (jsonListSt == null) {
                 return;
@@ -229,19 +233,19 @@ public class MeteorAPI {
                     logger.fine(logHeader + "MeteorAPI.decodeFromJsonSt : object [" + jsonObject.getClass().getName() + "] is a HASHMAP");
 
                     final HashMap<String, Object> jsonHash = (HashMap<String, Object>) jsonObject;
-                    if (jsonHash.get(CSTJSON_PROCESSES) != null && jsonHash.get( CSTJSON_PROCESSES ) instanceof Map) {
+                    if (jsonHash.get( CSTJSON_PROCESSES ) instanceof Map) {
                         final Map<String, Object> jsonHashProcess = (Map<String, Object>) jsonHash.get(  CSTJSON_PROCESSES ) ;
                         if (jsonHashProcess.get("scenarii") !=null)
                             listOfProcesses.addAll((List<Map<String, Object>>) jsonHashProcess.get("scenarii"));
                     }
 
-                    if (jsonHash.get("scenarii") != null && jsonHash.get("scenarii") instanceof Map) {
+                    if ( jsonHash.get("scenarii") instanceof Map) {
                         final Map<String, Object> jsonHashScenarii = (Map<String, Object>) jsonHash.get("scenarii") ;
                         if (jsonHashScenarii.get("actions") !=null)
                             listOfScenarii.addAll((List<Map<String, Object>>) jsonHashScenarii.get("actions"));
                     }
                    
-                    if (jsonHash.get("experience") != null && jsonHash.get("experience") instanceof Map) {
+                    if (jsonHash.get("experience") instanceof Map) {
                         mapOfExperience = (Map<String, Object>) jsonHash.get("experience");
                     }
                 } else if (jsonObject instanceof List) {
@@ -264,13 +268,13 @@ public class MeteorAPI {
 
         @Override
         public String toString() {
-            String value = "";
+            StringBuilder value = new StringBuilder();
             if (jsonListSt != null) {
                 for (final String jsonSt : jsonListSt) {
-                    value += " [" + jsonSt + " ], ";
+                    value.append( " [" + jsonSt + " ], ");
                 }
             }
-            return "startParameters " + (value + "                                                                                                      ").substring(0, 60) + "...";
+            return "startParameters " + (value.toString() + CST_BLANCKLINE).substring(0, 60) + "...";
         }
     }
 
@@ -325,18 +329,18 @@ public class MeteorAPI {
      * @param commandAPI
      * @return
      */
+    @SuppressWarnings("rawtypes")
     public Map<String, Object> start(final StartParameters startParameters, final ProcessAPI processAPI, final CommandAPI commandAPI, long tenantId) {
 
         logger.fine(logHeader + "~~~~~~~~~~ MeteorAPI.start() parameter=" + startParameters.toString());
         BonitaCommandDeployment bonitaCommand = BonitaCommandDeployment.getInstance(CmdMeteor.CSTCOMMANDNAME);
-        Map<String, Object> resultCommand = new HashMap<>();
-
+        
         final HashMap<String, Serializable> parameters = new HashMap<>();
-        parameters.put(CmdMeteor.cstParamCommandNameStartParams, startParameters.jsonListSt);
+        parameters.put(CmdMeteor.cstParamCommandNameStartParams, (ArrayList) startParameters.jsonListSt);
         // parameters.put(CmdMeteor.cstParamCommandName, CmdMeteor.cstParamCommandNameStart);
 
         logger.fine(logHeader + "~~~~~~~~~~ MeteorAPI.start() Call Command");
-        resultCommand = bonitaCommand.callCommand(CmdMeteor.VERBE.START.toString(), parameters, tenantId, commandAPI);
+        Map<String, Object> resultCommand = bonitaCommand.callCommand(CmdMeteor.VERBE.START.toString(), parameters, tenantId, commandAPI);
         logger.fine(logHeader + "~~~~~~~~~~ MeteorAPI.start() : END " + resultCommand);
         return resultCommand;
     }

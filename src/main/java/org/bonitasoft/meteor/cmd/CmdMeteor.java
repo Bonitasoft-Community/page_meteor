@@ -148,6 +148,12 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
     public final static String CSTCOMMANDNAME = "meteorcmd";
     public final static String CSTCOMMANDDESCRIPTION = "Run the meteor robots, to creates cases / execute task";
 
+    @Override
+    public String getName() {
+
+        return "Meteor";
+    }
+
   
 
     // public static String jarName = "CustomPageMeteor-1.0.0.jar";

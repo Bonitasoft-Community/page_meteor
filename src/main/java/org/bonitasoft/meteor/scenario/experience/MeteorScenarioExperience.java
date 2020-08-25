@@ -47,7 +47,7 @@ public class MeteorScenarioExperience extends MeteorScenario {
         public String listCasesId;
         public String action;
         public String policyTimeLine = MeteorTimeLineBasic.POLICY;
-        List<Map<String, Object>> scenarii;
+        List<Map<String, Object>> scenarii = new ArrayList<>();
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         public static MeteorExperienceParameter getInstanceFromJsonSt(final String jsonSt) {
@@ -62,6 +62,8 @@ public class MeteorScenarioExperience extends MeteorScenario {
             meteorExperienceParameter.listCasesId = (String) experience.get( CSTJSON_LISTCASESID );
             meteorExperienceParameter.action = (String) experience.get( CSTJSON_ACTION );
             meteorExperienceParameter.scenarii = (List) experience.get( CSTJSON_SCENARII );
+            if (meteorExperienceParameter.scenarii==null)
+                meteorExperienceParameter.scenarii= new ArrayList<>();
 
             return meteorExperienceParameter;
         }
@@ -81,6 +83,9 @@ public class MeteorScenarioExperience extends MeteorScenario {
             meteorExperienceParameter.listCasesId = (String) experience.get( CSTJSON_LISTCASESID );
             meteorExperienceParameter.action = (String) experience.get( CSTJSON_ACTION );
             meteorExperienceParameter.scenarii = (List) experience.get( CSTJSON_SCENARII );
+            if (meteorExperienceParameter.scenarii==null)
+                meteorExperienceParameter.scenarii= new ArrayList<>();
+
             return meteorExperienceParameter;
         }
 
@@ -122,7 +127,7 @@ public class MeteorScenarioExperience extends MeteorScenario {
             }
         }
 
-        result.put(MeteorAPI.cstJsonListEvents, BEventFactory.getSyntheticHtml(listEvents));
+        result.put(MeteorAPI.CST_JSON_LISTEVENTS, BEventFactory.getSyntheticHtml(listEvents));
         return result;
     }
 
