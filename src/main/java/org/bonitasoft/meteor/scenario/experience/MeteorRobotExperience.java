@@ -146,7 +146,7 @@ public class MeteorRobotExperience extends MeteorRobot {
                             try {
                                 // if the getExecutedBy return null, then we use the first user we found
                                 logger.info( loggerLabel+" try to execute task "+foundHumanTask.getId()+" ["+foundHumanTask.getName()+"]");
-                                Long userIdTask = findUserId(timeLine.getExecutedByUserName() );
+                                Long userIdTask = findUserId(timeLine.executedByUserName );
                                 processAPI.assignUserTask(foundHumanTask.getId(), userIdTask);
                                 logger.info( loggerLabel+" assigned task "+foundHumanTask.getId()+" ["+foundHumanTask.getName()+"] ok");
                                 processAPI.executeUserTask(userIdTask, foundHumanTask.getId(), mapContractTask);
@@ -207,7 +207,7 @@ public class MeteorRobotExperience extends MeteorRobot {
     private Long findUserId( String userName ) {
         IdentityAPI identityAPI = apiAccessor.getIdentityAPI();
         SearchOptionsBuilder sob = new SearchOptionsBuilder(0,5);
-        sob.filter(UserSearchDescriptor.ENABLED, "true");
+        sob.filter(UserSearchDescriptor.ENABLED, true);
         if (userName != null)
             sob.filter(UserSearchDescriptor.USER_NAME, userName );
         SearchResult<User> searchUser;

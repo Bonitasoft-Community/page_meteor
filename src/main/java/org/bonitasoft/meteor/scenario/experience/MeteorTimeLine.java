@@ -44,6 +44,7 @@ public @Data abstract class MeteorTimeLine {
     private long delaySleepMS = 0;
     private long timeBetweenSleepMS = 0;
     private String userNameCreatedBy;
+    private String executedByUserName;
 
     private Map<String, Serializable> listContractValues;
 
@@ -242,6 +243,7 @@ public @Data abstract class MeteorTimeLine {
         this.processVersion = processVersion;
     }
 
+    public String getUserNameCreatedBy() {return this.userNameCreatedBy; }
     public void setUserNameCreatedBy( String userName ) {
         this.userNameCreatedBy = userName;
     }
@@ -288,6 +290,9 @@ public @Data abstract class MeteorTimeLine {
     public Long getProcessDefinitionId() {
         return processDefinitionId;
     }
+    public String getExecutedByUserName() {return executedByUserName;}
+
+    public void setExecutedByUserName(String executedByUserName) {this.executedByUserName = executedByUserName;}
     /* ************************************************************************ */
     /*                                                                          */
     /* Steps */
@@ -337,9 +342,15 @@ public @Data abstract class MeteorTimeLine {
         /**
          * contract to execute this activity
          */
+        String executedByUserName;
+
         Map<String, Serializable> listContractValues;
-        
-        private String executedByUserName;
+
+
+
+
+
+
     }
 
     
