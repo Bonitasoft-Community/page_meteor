@@ -18,24 +18,32 @@ import org.bonitasoft.meteor.scenario.process.MeteorDefProcess;
 
 public class MeteorSimulation {
 
-    Logger logger = Logger.getLogger(MeteorSimulation.class.getName());
+    
+     Logger logger = Logger.getLogger(MeteorSimulation.class.getName());
     private static String loggerLabel = "MeteorSimulation ##";
 
-    public final static BEvent EventStarted = new BEvent(MeteorSimulation.class.getName(), 1, Level.INFO, "Simulation Started", "The simulation started");
-    public final static BEvent EventLogExecution = new BEvent(MeteorSimulation.class.getName(), 2, Level.INFO, "Error at execution", "An event is reported");
-    public final static BEvent EventLogBonitaException = new BEvent(MeteorSimulation.class.getName(), 3, Level.APPLICATIONERROR, "Bonita Exception during execution", "An exception is reported by the Bonita Engine", "The robot may failed during the execution", "Check the exeption");
-    public final static BEvent EventContractViolationException = new BEvent(MeteorSimulation.class.getName(), 4, Level.APPLICATIONERROR, "Contract exception", "The contract is not respected", "operation failed", "check the contract");
-    public final static BEvent EventNoTaskToExecute = new BEvent(MeteorSimulation.class.getName(), 5, Level.APPLICATIONERROR, "No task to execute", "The robot don't find any task to executed in the activity name", "operation failed", "check the scenario");
-    public final static BEvent EventAccessContract = new BEvent(MeteorSimulation.class.getName(), 6, Level.APPLICATIONERROR, "Access contract", "The contract can't be accessed", "Contract transformation cannot be done", "check the contract");    
-    public final static BEvent EventFlowNodeExecution = new BEvent(MeteorSimulation.class.getName(), 7, Level.ERROR, "Task execution error", "Task faced an error during execution", "Execution is not correct", "check exception and scenario");
+    public static final BEvent EventStarted = new BEvent(MeteorSimulation.class.getName(), 1, Level.INFO, "Simulation Started", "The simulation started");
+    public static final BEvent EventLogExecution = new BEvent(MeteorSimulation.class.getName(), 2, Level.INFO, "Error at execution", "An event is reported");
+    public static final BEvent EventLogBonitaException = new BEvent(MeteorSimulation.class.getName(), 3, Level.APPLICATIONERROR, "Bonita Exception during execution", "An exception is reported by the Bonita Engine", "The robot may failed during the execution", "Check the exeption");
+    public static final BEvent EventContractViolationException = new BEvent(MeteorSimulation.class.getName(), 4, Level.APPLICATIONERROR, "Contract exception", "The contract is not respected", "operation failed", "check the contract");
+    public static final BEvent EventNoTaskToExecute = new BEvent(MeteorSimulation.class.getName(), 5, Level.APPLICATIONERROR, "No task to execute", "The robot don't find any task to executed in the activity name", "operation failed", "check the scenario");
+    public static final BEvent EventAccessContract = new BEvent(MeteorSimulation.class.getName(), 6, Level.APPLICATIONERROR, "Access contract", "The contract can't be accessed", "Contract transformation cannot be done", "check the contract");    
+    public static final BEvent EventFlowNodeExecution = new BEvent(MeteorSimulation.class.getName(), 7, Level.ERROR, "Task execution error", "Task faced an error during execution", "Execution is not correct", "check exception and scenario");
     
-    public final static String CSTJSON_ID = "id";
-    public final static String CSTJSON_PERCENTADVANCE = "percentAdvance";
-    public final static String CSTJSON_TIMEESTIMATEDDELAY = "timeEstimatedDelay";
-    public final static String CSTJSON_TIMEESTIMATEDEND = "timeEstimatedEnd";
-    public final static String CSTJSON_STATUS = "status";
-    public final static String CSTJSON_NBERRORS = "nbErrors";
-    public final static String CSTJSONE_ROBOTS = "robots";
+    public static final String CSTJSON_ID = "id";
+    public static final String CSTJSON_PERCENTADVANCE = "percentAdvance";
+    public static final String CSTJSON_TIMEESTIMATEDDELAY = "timeEstimatedDelay";
+    public static final String CSTJSON_TIMEESTIMATEDEND = "timeEstimatedEnd";
+    public static final String CSTJSON_STATUS = "status";
+    public static final String CSTJSON_NBERRORS = "nbErrors";
+    public static final String CSTJSONE_ROBOTS = "robots";
+    public static final String CST_JSON_TOTAL = "total";
+    public static final String CSTJSON_TIME_ENDED = "timeEnded";
+    public static final String CSTJSON_COVER = "cover";
+    public static final String CSTJSON_TIME_STARTED = "timeStarted";
+    public static final String CSTJSON_MEM_PERCENT = "memPercent";
+    public static final String CSTJSON_MEM_TOTAL_MB = "memTotalMb";
+    public static final String CSTJSON_MEM_USED_MB = "memUsedMb";
 
     public enum STATUS {
         DEFINITION, NOROBOT, STARTED, FINALISATION, DONE, NOSIMULATION
@@ -375,12 +383,12 @@ public class MeteorSimulation {
         if (totalSteps > 0) {
             total += " average " + totalStepsTime / totalSteps + " ms";
         }
-        result.put("total", total);
+        result.put( CST_JSON_TOTAL, total);
 
-        result.put("memUsedMb", totalMemoryInMb - freeMemoryInMb);
-        result.put("memTotalMb", totalMemoryInMb);
-        result.put("memPercent", (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb));
-        result.put("timeStarted", MeteorToolbox.getHumanDate(mDateBeginSimulation));
+        result.put( CSTJSON_MEM_USED_MB, totalMemoryInMb - freeMemoryInMb);
+        result.put( CSTJSON_MEM_TOTAL_MB, totalMemoryInMb);
+        result.put( CSTJSON_MEM_PERCENT, (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb));
+        result.put( CSTJSON_TIME_STARTED, MeteorToolbox.getHumanDate(mDateBeginSimulation));
         logger.fine(loggerLabel+" [" + mId + "] currenStatusexecution : Robot Still Alive " + estimation.robotsStillAlive);
 
         if (!estimation.robotsStillAlive) {
@@ -397,7 +405,7 @@ public class MeteorSimulation {
                 mCalculCover.start();
                 mStatus = STATUS.FINALISATION;
             }
-            result.put("cover", mCalculCover.toJson());
+            result.put( CSTJSON_COVER, mCalculCover.toJson());
 
             // check the calcul cover
             if (mCalculCover != null && mCalculCover.getStatus() == CoverStatus.DONE)
@@ -407,7 +415,7 @@ public class MeteorSimulation {
                 mDateEndSimulation = dateEndRobots;
             }
             if (mDateEndSimulation != null)
-                result.put("timeEnded", MeteorToolbox.getHumanDate(mDateEndSimulation));
+                result.put( CSTJSON_TIME_ENDED, MeteorToolbox.getHumanDate(mDateEndSimulation));
             // display the cover
 
         } else {

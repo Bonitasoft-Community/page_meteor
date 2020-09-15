@@ -53,7 +53,7 @@ public class MeteorCalculCover implements Runnable {
     }
 
     public List<Map<String, Object>> toJson() {
-        List<Map<String, Object>> listResultCover = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> listResultCover = new ArrayList<>();
         if (mStatus == CoverStatus.DONE) {
             for (MeteorDefProcess meteorProcess : mListMeteorProcess) {
                 listResultCover.add(meteorProcess.getCoverResult().getMap());
