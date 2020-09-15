@@ -9,77 +9,78 @@ import com.bonitasoft.scenario.accessor.configuration.ScenarioConfiguration;
 import com.bonitasoft.scenario.accessor.resource.Resource;
 
 public abstract class RunContext {
-	private Long tenantId = null;
 
-	private ScenarioType scenarioType = null;
-	private Map<String, Serializable> parameters = new HashMap<String, Serializable>();
-	private ScenarioConfiguration scenarioConfiguration = null;
-	private Resource resource = null;
-	private Map<String, byte[]> mainResources = null;
-	private Map<String, byte[]> jarDependencies = new HashMap<String, byte[]>();
-	private Map<String, byte[]> gsDependencies = new HashMap<String, byte[]>();
-	private String name = null;
-	private Integer advancement = 0;
+    private Long tenantId = null;
 
-	public RunContext(Long tenantId, ScenarioConfiguration scenarioConfiguration, ScenarioType scenarioType, Map<String, Serializable> parameters, Map<String, byte[]> mainResources, Map<String, byte[]> jarDependencies, Map<String, byte[]> gsDependencies, Resource resource, String name) {
-		this.tenantId = tenantId;
+    private ScenarioType scenarioType = null;
+    private Map<String, Serializable> parameters = new HashMap<String, Serializable>();
+    private ScenarioConfiguration scenarioConfiguration = null;
+    private Resource resource = null;
+    private Map<String, byte[]> mainResources = null;
+    private Map<String, byte[]> jarDependencies = new HashMap<String, byte[]>();
+    private Map<String, byte[]> gsDependencies = new HashMap<String, byte[]>();
+    private String name = null;
+    private Integer advancement = 0;
 
-		if (parameters != null) {
-			this.parameters = parameters;
-		}
+    public RunContext(Long tenantId, ScenarioConfiguration scenarioConfiguration, ScenarioType scenarioType, Map<String, Serializable> parameters, Map<String, byte[]> mainResources, Map<String, byte[]> jarDependencies, Map<String, byte[]> gsDependencies, Resource resource, String name) {
+        this.tenantId = tenantId;
 
-		this.scenarioConfiguration = scenarioConfiguration;
-		this.resource = resource;
-		this.jarDependencies = jarDependencies;
-		this.gsDependencies = gsDependencies;
-		this.mainResources = mainResources;
-		this.scenarioType = scenarioType;
-		this.name = name;
-	}
+        if (parameters != null) {
+            this.parameters = parameters;
+        }
 
-	public Map<String, Serializable> getParameters() {
-		return parameters;
-	}
+        this.scenarioConfiguration = scenarioConfiguration;
+        this.resource = resource;
+        this.jarDependencies = jarDependencies;
+        this.gsDependencies = gsDependencies;
+        this.mainResources = mainResources;
+        this.scenarioType = scenarioType;
+        this.name = name;
+    }
 
-	public Long getTenantId() {
-		return tenantId;
-	}
+    public Map<String, Serializable> getParameters() {
+        return parameters;
+    }
 
-	public Resource getResource() {
-		return resource;
-	}
+    public Long getTenantId() {
+        return tenantId;
+    }
 
-	public ScenarioType getScenarioType() {
-		return scenarioType;
-	}
+    public Resource getResource() {
+        return resource;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public ScenarioType getScenarioType() {
+        return scenarioType;
+    }
 
-	public ScenarioConfiguration getScenarioConfiguration() {
-		return scenarioConfiguration;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public Map<String, byte[]> getMainResources() {
-		return mainResources;
-	}
+    public ScenarioConfiguration getScenarioConfiguration() {
+        return scenarioConfiguration;
+    }
 
-	abstract public String getGSContent();
+    public Map<String, byte[]> getMainResources() {
+        return mainResources;
+    }
 
-	public String getScenarioRoot() {
-		return scenarioConfiguration.getScenarioRoot() + File.separator + scenarioType + File.separator + name + File.separator;
-	}
+    abstract public String getGSContent();
 
-	public Integer getAdvancement() {
-		return advancement;
-	}
+    public String getScenarioRoot() {
+        return scenarioConfiguration.getScenarioRoot() + File.separator + scenarioType + File.separator + name + File.separator;
+    }
 
-	public Map<String, byte[]> getJarDependencies() {
-		return jarDependencies;
-	}
+    public Integer getAdvancement() {
+        return advancement;
+    }
 
-	public Map<String, byte[]> getGsDependencies() {
-		return gsDependencies;
-	}
+    public Map<String, byte[]> getJarDependencies() {
+        return jarDependencies;
+    }
+
+    public Map<String, byte[]> getGsDependencies() {
+        return gsDependencies;
+    }
 }

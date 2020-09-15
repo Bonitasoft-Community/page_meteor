@@ -1,16 +1,16 @@
 package com.bonitasoft.scenario.runner.context;
 
 public enum ScenarioType {
-	SINGLE("single"), TEST_SUITE("testSuite");
+    SINGLE("single"), TEST_SUITE("testSuite");
 
-	private String name = null;
+    private String name = null;
 
-	ScenarioType(String name) {
-		this.name = name;
-	}
+    ScenarioType(String name) {
+        this.name = name;
+    }
 
-	@Override
-	public String toString() {
-		return name;
-	}
+    @Override
+    public String toString() {
+        return name;
+    }
 }

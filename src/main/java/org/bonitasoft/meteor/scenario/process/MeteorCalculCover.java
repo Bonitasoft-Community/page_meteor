@@ -7,10 +7,10 @@ import java.util.logging.Logger;
 
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.meteor.MeteorRobot;
+import org.bonitasoft.meteor.scenario.experience.MeteorRobotExperience;
 
 /**
  * This class calcul the cover of the execution
- *
  */
 /**
  * thanks to Bonita, this calcul must be done in a Separate thread ! It's not
@@ -19,81 +19,90 @@ import org.bonitasoft.meteor.MeteorRobot;
  * only way is to create a Thread to do it*.
  * 
  * @author Pierre-Yves
- *
  */
 public class MeteorCalculCover implements Runnable {
-	public static Logger logger = Logger.getLogger(MeteorRobot.class.getName());
 
-	public enum CoverStatus {
-		NONE, INPROGRESS, DONE
-	};
+    public static Logger logger = Logger.getLogger(MeteorRobot.class.getName());
 
-	public CoverStatus mStatus;
+    public enum CoverStatus {
+        NONE, INPROGRESS, DONE
+    };
 
-	private List<MeteorRobot> mListRobots;
-	private List<MeteorDefProcess> mListMeteorProcess;
-	private final APIAccessor apiAccessor;
+    public CoverStatus mStatus;
 
-	/* ******************************************************************** */
-	/*                                                                      */
-	/* getter/Setter */
-	/*                                                                      */
-	/*                                                                      */
-	/* ******************************************************************** */
+    private List<MeteorRobot> mListRobots;
+    private List<MeteorDefProcess> mListMeteorProcess;
+    private final APIAccessor apiAccessor;
 
-	public MeteorCalculCover(List<MeteorDefProcess> listMeteorProcess, List<MeteorRobot> listRobots, final APIAccessor apiAccessor) {
-		this.apiAccessor = apiAccessor;
-		this.mListMeteorProcess = listMeteorProcess;
-		this.mListRobots = listRobots;
-		mStatus = CoverStatus.NONE;
-	}
+    /* ******************************************************************** */
+    /*                                                                      */
+    /* getter/Setter */
+    /*                                                                      */
+    /*                                                                      */
+    /* ******************************************************************** */
 
-	public CoverStatus getStatus()
-	{ return mStatus;}
-	
-	public List<Map<String, Object>> toJson() {
-		List<Map<String, Object>> listResultCover = new ArrayList<Map<String, Object>>();
-		if (mStatus == CoverStatus.DONE) {
-			for (MeteorDefProcess meteorProcess : mListMeteorProcess) {
-				listResultCover.add(meteorProcess.getCover().getMap());
-			}
-		}
-		return listResultCover;
-	}
+    public MeteorCalculCover(List<MeteorDefProcess> listMeteorProcess, List<MeteorRobot> listRobots, final APIAccessor apiAccessor) {
+        this.apiAccessor = apiAccessor;
+        this.mListMeteorProcess = listMeteorProcess;
+        this.mListRobots = listRobots;
+        mStatus = CoverStatus.NONE;
+    }
 
-	/* ******************************************************************** */
-	/*                                                                      */
-	/* Run the calcul in a Thread */
-	/*                                                                      */
-	/*                                                                      */
-	/* ******************************************************************** */
+    public CoverStatus getStatus() {
+        return mStatus;
+    }
 
-	public void start() {
-		final Thread T = new Thread(this);
-		T.start();
-	}
+    public List<Map<String, Object>> toJson() {
+        List<Map<String, Object>> listResultCover = new ArrayList<Map<String, Object>>();
+        if (mStatus == CoverStatus.DONE) {
+            for (MeteorDefProcess meteorProcess : mListMeteorProcess) {
+                listResultCover.add(meteorProcess.getCoverResult().getMap());
+            }
+        }
+        return listResultCover;
+    }
 
-	public void run() {
+    /* ******************************************************************** */
+    /*                                                                      */
+    /* Run the calcul in a Thread */
+    /*                                                                      */
+    /*                                                                      */
+    /* ******************************************************************** */
 
-		logger.info("----------- Start CalculCover");
-		mStatus = CoverStatus.INPROGRESS;
+    public void start() {
+        final Thread T = new Thread(this);
+        T.start();
+    }
 
-		for (MeteorDefProcess meteorProcess : mListMeteorProcess) {
-			List<Long> listProcessInstances = new ArrayList<Long>();
-			// Ask all rebots to get the list of cases
-			for (MeteorRobot robot : mListRobots) {
-				if (robot instanceof MeteorRobotCreateCase) {
-					MeteorRobotCreateCase robotCreateCase = (MeteorRobotCreateCase) robot;
-					if (robotCreateCase.getMeteorProcess().mProcessDefinitionId == meteorProcess.mProcessDefinitionId) {
-						listProcessInstances.addAll(robotCreateCase.getListProcessInstanceCreated());
-					}
+    public void run() {
 
-				}
-			}
-			meteorProcess.calculCover(listProcessInstances, apiAccessor.getProcessAPI());
-		}
+        logger.info("----------- Start CalculCover");
+        mStatus = CoverStatus.INPROGRESS;
 
-		mStatus = CoverStatus.DONE;
+        for (MeteorDefProcess meteorProcess : mListMeteorProcess) {
+            List<Long> listProcessInstances = new ArrayList<Long>();
+            // Ask all rabots to get the list of cases for this process (and only for this process)
+            for (MeteorRobot robot : mListRobots) {
+                if (robot instanceof MeteorRobotCreateCase) {
+                    MeteorRobotCreateCase robotCreateCase = (MeteorRobotCreateCase) robot;
+                    if (robotCreateCase.getMeteorProcess().mProcessDefinitionId == meteorProcess.mProcessDefinitionId) {
+                        listProcessInstances.addAll(robotCreateCase.getListProcessInstanceCreated());
+                    }
 
-	}
+                }
+                if (robot instanceof MeteorRobotExperience)
+                {
+                    MeteorRobotExperience robotExperience = (MeteorRobotExperience)robot;
+                    if (robotExperience.getMeteorTimeLine().getProcessDefinitionId().equals(meteorProcess.mProcessDefinitionId)) {
+                        listProcessInstances.addAll(robotExperience.getListProcessInstanceCreated());
+                    }
+                    
+                }
+            }
+            meteorProcess.calculCover(listProcessInstances, apiAccessor.getProcessAPI());
+        }
+
+        mStatus = CoverStatus.DONE;
+
+    }
 }

@@ -6,19 +6,20 @@ import java.util.logging.Level;
 import com.bonitasoft.scenario.accessor.Accessor;
 
 abstract public class RunListener {
-	protected Accessor accessor = null;
 
-	public void setAccessor(Accessor accessor) {
-		this.accessor = accessor;
-	}
+    protected Accessor accessor = null;
 
-	abstract public void advancementCallback(Integer advancement);
+    public void setAccessor(Accessor accessor) {
+        this.accessor = accessor;
+    }
 
-	abstract public void logCallback(Level level, Serializable message);
+    abstract public void advancementCallback(Integer advancement);
 
-	abstract public void catchEvent(Serializable event);
+    abstract public void logCallback(Level level, Serializable message);
 
-	protected Accessor getAccessor() {
-		return accessor;
-	}
+    abstract public void catchEvent(Serializable event);
+
+    protected Accessor getAccessor() {
+        return accessor;
+    }
 }
