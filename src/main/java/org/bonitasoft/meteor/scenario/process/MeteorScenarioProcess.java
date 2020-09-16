@@ -66,12 +66,12 @@ public class MeteorScenarioProcess extends MeteorScenario {
     public final static String CSTJSON_PROCESSVERSION = "processversion";
     public final static String CSTJSON_ACTIVITYNAME = "activityname";
     public final static String cstHtmlProcessDefId = "processid";
-    public final static String cstHtmlCoverAll = "coverall";
-    public final static String cstHtmlCoverPercent = "coverpercent";
-    public final static String cstHtmlCoverHappyPathPercent = "coverhappypathpercent";
-    public final static String cstJsonActivitiesNotCovered = "activitiesnotcovered";
+    public final static String CSTJSON_COVERALL = "coverall";
+    public final static String CSTJSON_COVERPERCENT = "coverpercent";
+    public final static String CSTJSON_HAPPYPATHPERCENT = "coverhappypathpercent";
+    public final static String CSTJSON_ACTIVITIES_NOTCOVERED = "activitiesnotcovered";
 
-    public final static String cstJsonListEvents = "listevents";
+    public final static String CSTJSON_LISTEVENTS = "listevents";
 
     public final static String cstHtmlPrefixActivity = "ACT_";
     public final static String cstHtmlPrefixDocument = "DOC_";

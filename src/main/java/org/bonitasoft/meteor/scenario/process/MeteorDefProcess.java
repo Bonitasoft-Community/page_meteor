@@ -254,7 +254,7 @@ public class MeteorDefProcess extends MeteorDefBase {
         public int mCoverHappyPathPercent = 0;
 
         /* we conserve the number of execution per activityDefinitionId */
-        Map<String, Long> mActivitiesExecutedNb = new HashMap<String, Long>();
+        Map<String, Long> mActivitiesExecutedNb = new HashMap<>();
         /**
          * activity Not Executed
          */
@@ -264,17 +264,17 @@ public class MeteorDefProcess extends MeteorDefBase {
          */
         List<String> mDefinitionActivitiesHappyPath = new ArrayList<>();
 
-        public List<BEvent> mListEvents = new ArrayList<BEvent>();
+        public List<BEvent> mListEvents = new ArrayList<>();
 
         public Map<String, Object> getMap() {
-            Map<String, Object> result = new HashMap<String, Object>();
+            Map<String, Object> result = new HashMap<>();
             result.put(MeteorScenarioProcess.CSTJSON_PROCESSNAME, mProcessName);
             result.put(MeteorScenarioProcess.CSTJSON_PROCESSVERSION, mProcessVersion);
-            result.put(MeteorScenarioProcess.cstHtmlCoverAll, mCoverAll);
-            result.put(MeteorScenarioProcess.cstHtmlCoverPercent, mCoverPercent);
-            result.put(MeteorScenarioProcess.cstHtmlCoverHappyPathPercent, mCoverHappyPathPercent);
-            result.put(MeteorScenarioProcess.cstJsonActivitiesNotCovered, mActivitiesNotExecuted);
-            result.put(MeteorScenarioProcess.cstJsonListEvents, BEventFactory.getHtml(mListEvents));
+            result.put(MeteorScenarioProcess.CSTJSON_COVERALL, mCoverAll);
+            result.put(MeteorScenarioProcess.CSTJSON_COVERPERCENT, mCoverPercent);
+            result.put(MeteorScenarioProcess.CSTJSON_HAPPYPATHPERCENT, mCoverHappyPathPercent);
+            result.put(MeteorScenarioProcess.CSTJSON_ACTIVITIES_NOTCOVERED, mActivitiesNotExecuted);
+            result.put(MeteorScenarioProcess.CSTJSON_LISTEVENTS, BEventFactory.getHtml(mListEvents));
             /*
              * {
              * "type": "ColumnChart",
@@ -283,20 +283,20 @@ public class MeteorDefProcess extends MeteorDefBase {
              * { "name":"Work", y:11},
              * {"name":"Eat", y:2},
              */
-            List<Map<String, Object>> listData = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> listData = new ArrayList<>();
             listData.add(getRecord("Cover", 12));
             listData.add(getRecord("Happy", 34));
-            Map<String, Object> piechart = new HashMap<String, Object>();
+            Map<String, Object> piechart = new HashMap<>();
             piechart.put("type", "PieChart");
             piechart.put("displayed", Boolean.TRUE);
             piechart.put("data", listData);
 
             result.put("piechart", piechart);
 
-            Map<String, Object> columnChart = new HashMap<String, Object>();
+            Map<String, Object> columnChart = new HashMap<>();
             columnChart.put("type", "ColumnChart");
             columnChart.put("displayed", Boolean.TRUE);
-            Map<String, Object> colData = new HashMap<String, Object>();
+            Map<String, Object> colData = new HashMap<>();
             colData.put("cols", Arrays.asList("Cover", "Happy"));
             colData.put("rows", Arrays.asList(12, 34));
 

@@ -151,7 +151,7 @@ public class MeteorAPI {
         commandDescription.commandDescription = CmdMeteor.CSTCOMMANDDESCRIPTION;
 
         commandDescription.addJarDependencyLastVersion("bonita-event", "1.9.0", "bonita-event-1.9.0.jar");
-        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.4.0", "bonita-properties-2.4.0.jar");
+        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.6.0", "bonita-properties-2.6.0.jar");
         commandDescription.addJarDependency("bonita-casedetails", "1.0.0", "bonita-casedetails-1.0.0.jar");
 
         return commandDescription;

@@ -176,9 +176,9 @@ public class MeteorOperation {
         Long currentTime = System.currentTimeMillis();
 
         // return all simulation in progress
-        List<Map<String, Object>> listSimulations = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> listSimulations = new ArrayList<>();
         for (final MeteorSimulation simulation : simulationInProgress.values()) {
-            Map<String, Object> oneSimulation = new HashMap<String, Object>();
+            Map<String, Object> oneSimulation = new HashMap<>();
             oneSimulation.put(MeteorSimulation.CSTJSON_ID, simulation.getId());
             oneSimulation.put(MeteorSimulation.CSTJSON_STATUS, simulation.getStatus().toString());
             Estimation estimation = simulation.getEstimatedAdvance();
