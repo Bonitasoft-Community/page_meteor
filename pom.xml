@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.bonitasoft.custompage</groupId>
-	<artifactId>CustomPageMeteor</artifactId>
+	<groupId>org.bonitasoft.custompage</groupId>
+	<artifactId>bonita-meteor</artifactId>
 	<!-- Attention, when number change here, update MeteorAPI.getMeteorCommandDescription -->
 	
-	<version>3.2.0</version>
+	<version>3.3.0</version>
 	<name>CustomPageMeteor</name>
 	<properties>
         <bonita.version>7.8.4</bonita.version>
