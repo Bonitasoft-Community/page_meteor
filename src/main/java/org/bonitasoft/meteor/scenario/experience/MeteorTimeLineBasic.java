@@ -33,7 +33,7 @@ public class MeteorTimeLineBasic extends MeteorTimeLine {
 
         caseHistoryParameter.loadSubProcess = true;
         caseHistoryParameter.loadContract = true;
-        caseHistoryParameter.loadArchivedData = true;
+        caseHistoryParameter.loadArchivedProcessVariable = true;
         caseHistoryParameter.loadBdmVariables = false;
         caseHistoryParameter.loadActivities = true;
         caseHistoryParameter.loadEvents = false;

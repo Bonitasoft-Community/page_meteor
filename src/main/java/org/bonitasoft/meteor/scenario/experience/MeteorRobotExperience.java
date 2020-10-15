@@ -171,13 +171,14 @@ public class MeteorRobotExperience extends MeteorRobot {
             } // end execute nbCases
         } catch (ContractViolationException vc) {
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventContractViolationException, getEventInformation(-1)+" Message="+vc.getMessage()));
+
         } catch (Exception e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
 
             logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             // not yet logged ? Add in the logExecution
-            mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "Robot #:[" + getSignature() + "]"));
+            mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "Robot #:[" + getSignature() + "]:"+e.getMessage()));
 
         }
     }

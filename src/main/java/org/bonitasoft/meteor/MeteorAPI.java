@@ -147,12 +147,12 @@ public class MeteorAPI {
         BonitaCommandDescription commandDescription = new BonitaCommandDescription(CmdMeteor.CSTCOMMANDNAME, pageDirectory);
         commandDescription.forceDeploy = false;
         commandDescription.mainCommandClassName = CmdMeteor.class.getName();
-        commandDescription.mainJarFile = "CustomPageMeteor-3.2.0.jar";
+        commandDescription.mainJarFile = "bonita-meteor-3.2.1.jar";
         commandDescription.commandDescription = CmdMeteor.CSTCOMMANDDESCRIPTION;
 
         commandDescription.addJarDependencyLastVersion("bonita-event", "1.9.0", "bonita-event-1.9.0.jar");
-        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.6.0", "bonita-properties-2.6.0.jar");
-        commandDescription.addJarDependency("bonita-casedetails", "1.0.0", "bonita-casedetails-1.0.0.jar");
+        commandDescription.addJarDependencyLastVersion("bonita-properties", "2.8.0", "bonita-properties-2.8.0.jar");
+        commandDescription.addJarDependency("bonita-casedetails", "1.1.1", "bonita-casedetails-1.1.1.jar");
 
         return commandDescription;
     }
