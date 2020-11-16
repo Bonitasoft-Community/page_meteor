@@ -28,6 +28,7 @@ import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorSimulation;
+import org.bonitasoft.meteor.MeteorSimulation.STATUS;
 import org.bonitasoft.meteor.scenario.experience.MeteorTimeLine.TimeLineStep;
 
 public class MeteorRobotExperience extends MeteorRobot {
@@ -39,13 +40,12 @@ public class MeteorRobotExperience extends MeteorRobot {
     
     private APIAccessor apiAccessor = null;
     
-    
     private MeteorTimeLine meteorTimeLine;
 
     private List<Long> mListProcessInstanceCreated = new ArrayList<>();
 
-    public MeteorRobotExperience(MeteorTimeLine meteorTimeLine, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
-        super(meteorSimulation, apiAccessor);
+    public MeteorRobotExperience(String robotName, MeteorTimeLine meteorTimeLine, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+        super(robotName, meteorSimulation, apiAccessor);
         this.meteorTimeLine = meteorTimeLine;
         this.apiAccessor = apiAccessor;
         this.meteorSimulation = meteorSimulation;
@@ -54,12 +54,13 @@ public class MeteorRobotExperience extends MeteorRobot {
 
     @Override
     public void executeRobot() {
+        mStatus = ROBOTSTATUS.STARTED;
         mCollectPerformance.mTitle = "EXECUTE EXPERIENCE1: " + meteorTimeLine.getName() + " #" + getRobotId();
         setSignatureInfo("Experience "+ meteorTimeLine.getName());
 
         // find a userId to assign task
        
-        Set<Long> setTasksExecuted = new HashSet<Long> ();
+        Set<Long> setTasksExecuted = new HashSet<> ();
         
         mCollectPerformance.mOperationTotal = (meteorTimeLine.getListTimeLineSteps().size() + 1) * meteorTimeLine.getNbCases();
         ProcessAPI processAPI = apiAccessor.getProcessAPI();
@@ -118,7 +119,7 @@ public class MeteorRobotExperience extends MeteorRobot {
                         countExecutionError++;
                         
                         int count = 0;
-                        while (count < 100 && foundHumanTask == null) {
+                        while (count < meteorSimulation.getMaxTentatives() && foundHumanTask == null) {
                             count++;
                             SearchResult<HumanTaskInstance> searchHumanTask = processAPI.searchHumanTaskInstances(sob.done());
                             // protection: if a task already executed show up, just waits. This is possible when the task take time to be executed AND a task name show up multiple time
@@ -126,10 +127,10 @@ public class MeteorRobotExperience extends MeteorRobot {
                             if (searchHumanTask.getCount() == 0 
                                     || (searchHumanTask.getCount()>0 && setTasksExecuted.contains(searchHumanTask.getResult().get(0).getId()))) {
                                 if (meteorSimulation.getDurationOfSimulation() != null && System.currentTimeMillis() > meteorSimulation.getDurationOfSimulation()) {
-                                    return;
+                                    mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;                                    return;
                                 }
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep( meteorSimulation.getSleepBetweenTwoTentatives() );
                                 } catch (InterruptedException e) {
                                     Thread.currentThread().interrupt();
                                 }
@@ -137,6 +138,8 @@ public class MeteorRobotExperience extends MeteorRobot {
                                 foundHumanTask = searchHumanTask.getResult().get(0);
                         } // end search humanTasks 
                         if (foundHumanTask == null) {
+                            mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;
+                            addError("Task ["+timeLine.activityName+"] is expected and never show up");
                             return; 
                         } else {
                             // execute it
@@ -162,6 +165,7 @@ public class MeteorRobotExperience extends MeteorRobot {
                                 Thread.sleep(500);
                             } catch (Exception e) {
                                 mLogExecution.addEvent(new BEvent(MeteorSimulation.EventContractViolationException, getEventInformation( i )+"] ActivityId[" + (foundHumanTask==null ? null : foundHumanTask.getId()) + "] e:"+e.getMessage()));
+                                addError("Task ["+timeLine.activityName+"], can't be executed, contract violation "+e.toString());
                                 return;
                             }
                         }
@@ -169,8 +173,13 @@ public class MeteorRobotExperience extends MeteorRobot {
                     mCollectPerformance.collectOneStep( System.currentTimeMillis() - timeStart);
                 } // end execute a timeLine 
             } // end execute nbCases
+            mStatus = ROBOTSTATUS.DONE;
+
         } catch (ContractViolationException vc) {
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventContractViolationException, getEventInformation(-1)+" Message="+vc.getMessage()));
+            mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;
+            addError("Contract violation, can't be executed "+vc.toString());
+
 
         } catch (Exception e) {
             final StringWriter sw = new StringWriter();
@@ -179,7 +188,8 @@ public class MeteorRobotExperience extends MeteorRobot {
             logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             // not yet logged ? Add in the logExecution
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "Robot #:[" + getSignature() + "]:"+e.getMessage()));
-
+            mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;
+            addError("Exception, can't be executed "+e.toString());
         }
     }
     

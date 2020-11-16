@@ -30,35 +30,28 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
 
     // public final static String cstParamCommandName = "CommandName";
     // public final static String cstParamCommandNameStart = "START";
-    public final static String cstParamCommandNameStartParams = "startparameters";
-    public final static String cstParamCommandNameStatusParams = "statusparameters";
-    public final static String cstParamCommandNameScenarioName = "scenarioname";
+    public final static String CSTPARAM_COMMANDNAMESTARTPARAMS = "startparameters";
+    public final static String CSTPARAM_COMMANDNAMESTATUSPARAMS = "statusparameters";
+    public final static String CSTPARAM_COMMANDNAMESCENARIONAME = "scenarioname";
     
     
     // public final static String cstParamCommandNamePing = "PING";
     // public final static String cstParamCommandNameStatus = "STATUS";
     // public final static String cstParamCommandNameAbort = "ABORT";
 
-    public final static String cstParamTenantId = "tenantid";
-    public final static String cstParamStartParameter = "startparameters";
+    public final static String CSTPARAM_TENANTID = "tenantid";
+    public final static String CSTPARAM_STARTPARAMETER = "startparameters";
 
     /**
-     * chaque start execution receive a uniq Id. Then, STATUS and ABORT use this
+     * each start execution receive a unique Id. Then, STATUS and ABORT use this
      * id.
      */
-    public final static String cstParamCommandExecId = "ExecId";
+    public final static String CSTPARAM_COMMANDEXECID = "ExecId";
 
-    public final static String cstParamResultListEventsSt = "listevents";
-    public final static String cstParamResultSimulationId = "simulationid";
+    public final static String CSTPARAM_RESULTLISTEVENTSST = "listevents";
+    public final static String CSTPARAM_RESULTSIMULATIONID = "simulationid";
 
-    /**
-     * Change the time of an timer. parameters are tenantid : optional, 1 per
-     * default activityid : name of the activity ELSE the activityName +
-     * processinstanceid shoud be provided activityname (if not activityid is
-     * given) processinstanceid processinstanceid of the case to change
-     * timername the name of the boundary timer newtimerdate the new date of
-     * this process intance. Format is yyyyMMdd HH:MM:ss
-     */
+    
     @Override
     public ExecuteAnswer executeCommandApiAccessor(ExecuteParameters executeParameters, APIAccessor apiAccessor, TenantServiceAccessor serviceAccessor) {
      
@@ -67,7 +60,7 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
 
         // keep HashMap to return a Serializable
 
-        logger.info(logHeader+"Start command CmdMeteor");
+        logger.info(logHeader+"Start Command CmdMeteor");
 
         long tenantId = executeParameters.tenantId;
 
@@ -85,7 +78,7 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
         } else if (VERBE.START.toString().equals(commandName)) {
 
             @SuppressWarnings("unchecked")
-            final StartParameters startParameters = StartParameters.getInstanceFromJsonList((ArrayList<String>) executeParameters.parametersCommand.get(cstParamCommandNameStartParams));
+            final StartParameters startParameters = StartParameters.getInstanceFromJsonList((ArrayList<String>) executeParameters.parametersCommand.get(CSTPARAM_COMMANDNAMESTARTPARAMS));
             logger.fine(logHeader+"COMMANDMETEOR.Start params[" + startParameters.toString() + "]");
             startParameters.tenantId = tenantId;
             MeteorResult meteorResult  = MeteorOperation.start(startParameters, connectorAccessorAPI);
@@ -94,18 +87,18 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
 
         } else if (VERBE.STATUS.toString().equals(commandName)) {
             logger.fine(logHeader+"COMMANDMETEOR.Status ");
-            final StatusParameters statusParameters = StatusParameters.getInstanceFromJsonSt((String) executeParameters.parametersCommand.get(cstParamCommandNameStatusParams));
+            final StatusParameters statusParameters = StatusParameters.getInstanceFromJsonSt((String) executeParameters.parametersCommand.get(CSTPARAM_COMMANDNAMESTATUSPARAMS));
 
             MeteorResult meteorResult  = MeteorOperation.getStatus(statusParameters, connectorAccessorAPI);
             executeAnswer.result = meteorResult.getMap();
             executeAnswer.listEvents = meteorResult.listEvents;
         
         }  else if (VERBE.STARTFROMSCENARIONAME.toString().equals(commandName)) {
-            String name = (String) executeParameters.parametersCommand.get( cstParamCommandNameScenarioName );
+            String name = (String) executeParameters.parametersCommand.get( CSTPARAM_COMMANDNAMESCENARIONAME );
             MeteorDAO meteorDAO = MeteorDAO.getInstance();
             MeteorDAO.StatusDAO statusDao= meteorDAO.load( name, tenantId);
             if (BEventFactory.isError( statusDao.listEvents) ) {
-                executeAnswer.result.put(CmdMeteor.cstParamResultListEventsSt, BEventFactory.getHtml(statusDao.listEvents));
+                executeAnswer.result.put(CmdMeteor.CSTPARAM_RESULTLISTEVENTSST, BEventFactory.getHtml(statusDao.listEvents));
                 executeAnswer.listEvents = statusDao.listEvents;
             }
             else {

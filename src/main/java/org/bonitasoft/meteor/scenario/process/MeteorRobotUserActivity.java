@@ -37,8 +37,8 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 
     Long mTimeEndOfTheSimulationInMs = null;
 
-    protected MeteorRobotUserActivity(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
-        super(meteorSimulation, apiAccessor);
+    protected MeteorRobotUserActivity(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+        super(robotName, meteorSimulation, apiAccessor);
     }
 
     /*

@@ -55,7 +55,7 @@ public class MeteorDefBase {
 
     public void decodeFromMap(final Map<String, Object> oneProcess, ProcessAPI processAPI) {
         mNumberOfRobots = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlNumberOfRobots, 0L);
-        mNumberOfCases = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstJsonNumberOfCases, 0L);
+        mNumberOfCases = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.CSTJSON_NUMBEROFCASES, 0L);
         mDelaySleep = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlDelaySleep, 0L);
         mTimeSleep = MeteorToolbox.getParameterLong(oneProcess, MeteorScenarioProcess.cstHtmlTimeSleep, 0L);
         mListEvents.addAll(mInputs.loadFromList(MeteorToolbox.getParameterList(oneProcess, MeteorScenarioProcess.cstHtmlInputs, null)));
@@ -63,7 +63,7 @@ public class MeteorDefBase {
 
     public void fullfillMap(final Map<String, Object> oneProcess) {
         oneProcess.put(MeteorScenarioProcess.cstHtmlNumberOfRobots, mNumberOfRobots);
-        oneProcess.put(MeteorScenarioProcess.cstJsonNumberOfCases, mNumberOfCases);
+        oneProcess.put(MeteorScenarioProcess.CSTJSON_NUMBEROFCASES, mNumberOfCases);
         oneProcess.put(MeteorScenarioProcess.cstHtmlDelaySleep, mDelaySleep);
         oneProcess.put(MeteorScenarioProcess.cstHtmlTimeSleep, mTimeSleep);
         // build a proposition to the input

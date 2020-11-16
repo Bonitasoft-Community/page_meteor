@@ -63,7 +63,8 @@ public class ScenarioCmd extends MeteorScenario {
     APIAccessor apiAccessor;
     long tenantId;
 
-    public ScenarioCmd() {
+    public ScenarioCmd(String scenarioName) {
+        super(scenarioName);
     }
 
     public void fromMap(final Map<String, Object> mapScenario) {
@@ -261,11 +262,11 @@ public class ScenarioCmd extends MeteorScenario {
 
     @Override
     public List<BEvent> registerInSimulation(StartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
-        List<BEvent> listEvents = new ArrayList<BEvent>();
+        List<BEvent> listEvents = new ArrayList<>();
         for (final Map<String, Object> mapScenario : startParameters.listOfScenarii) {
             // let's create one new object for each scenario .
 
-            final ScenarioCmd meteorScenario = new ScenarioCmd();
+            final ScenarioCmd meteorScenario = new ScenarioCmd(startParameters.scenarioName);
             meteorScenario.fromMap(mapScenario);
             meteorSimulation.registerScenario(this);
         }
@@ -274,16 +275,16 @@ public class ScenarioCmd extends MeteorScenario {
 
     @Override
     public List<MeteorRobot> generateRobots(MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
-        List<MeteorRobot> listRobots = new ArrayList<MeteorRobot>();
+        List<MeteorRobot> listRobots = new ArrayList<>();
         if (mNumberOfExecutions == 0) {
             mNumberOfExecutions = 1;
         }
         for (int i = 0; i < mNumberOfRobots; i++) {
             if (mType == TYPESCENARIO.CMD) {
-                listRobots.add(new MeteorRobotCmdScenario(meteorSimulation, this, apiAccessor));
+                listRobots.add(new MeteorRobotCmdScenario(mScenarioName+"-CMD", meteorSimulation, this, apiAccessor));
             }
             if (mType == TYPESCENARIO.GRV) {
-                listRobots.add(new MeteorRobotGroovyScenario(meteorSimulation, this, apiAccessor));
+                listRobots.add(new MeteorRobotGroovyScenario(mScenarioName+"-GRV", meteorSimulation, this, apiAccessor));
             }
 
         }

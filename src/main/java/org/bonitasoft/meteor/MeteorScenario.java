@@ -21,6 +21,10 @@ import org.bonitasoft.meteor.scenario.process.MeteorDefProcess;
 
 public abstract class MeteorScenario {
 
+    public String mScenarioName;
+    public MeteorScenario(String name ) {
+        this.mScenarioName = name;
+    }
     public abstract List<BEvent> registerInSimulation(StartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor);
 
     /**

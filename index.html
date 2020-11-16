@@ -62,7 +62,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em">V3.2.1</a></td>
+					<td style="font-size: 0.8em">V4.0.0</a></td>
 				</tr>
 				</div>
 			</table>
@@ -86,6 +86,9 @@
 		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="analysis" active="true" title="Execution" select="ctrl.navbaractiv == 'execution'" class="{{ctrl.getNavClass('execution')}}" style="{{ctrl.getNavStyle('execution')}}">
 			  <a  ng-click="ctrl.navbaractiv='execution'" class="ng-binding">Execution</a>
 		</li>
+		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="unittest" active="true" title="Unit Test" select="ctrl.navbaractiv == 'unittest'" class="{{ctrl.getNavClass('unittest')}}" style="{{ctrl.getNavStyle('unittest')}}">
+			  <a  ng-click="ctrl.navbaractiv='unittest'" class="ng-binding">Unit test</a>
+		</li>
 		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="differentiel" active="true" title="Save" select="ctrl.navbaractiv == 'save'" class="{{ctrl.getNavClass('save')}}" style="{{ctrl.getNavStyle('save')}}">
 			  <a  ng-click="ctrl.navbaractiv='save'" class="ng-binding">Load/Save</a>
 		</li>
@@ -96,7 +99,12 @@
 	<!--  ************************************************************  -->		
 	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'experiencescenarii'">
 		<p>
+		<h2>Scenario {{ctrl.config.name}}</h2>
 		<p>
+		<div ng-if="ctrl.deploimentsuc.length >0 " class="alert alert-success">
+			{{ctrl.deploimentsuc}}
+		</div>
+		
 		<input type="checkbox" ng-model="ctrl.experience.enable" title="Enable Experience">Enable Experience scenarii<p>
 		
 		<table><tr>
@@ -106,7 +114,7 @@
 			</td>
 			</tr>
 		</table>		
-		<div ng-bind-html="ctrl.getListEvents( ctrl.listeventsexperience )"></div>
+		<div ng-bind-html="ctrl.getHtmls( ctrl.listeventsexperience )"></div>
 										
 					
 		<!-- style="background-color: #f9f9f9;" -->
@@ -193,7 +201,7 @@
 		</table>
 		<p>
 		<center>
-			<button ng-click="ctrl.navbaractiv='execution';ctrl.start()" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
+			<button ng-click="ctrl.navbaractiv='execution';ctrl.start('classic')" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
 		</center>
 		
 		
@@ -206,6 +214,12 @@
 	<!--  ************************************************************  -->		
 	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'processscenarii'">
 		<p>
+		<h2>Scenario {{ctrl.config.name}}</h2>
+		<p>
+		<div ng-if="ctrl.deploimentsuc.length >0 " class="alert alert-success">
+			{{ctrl.deploimentsuc}}
+		</div>
+		
 		<input type="checkbox" ng-model="ctrl.processes.enable" title="Enable Experience">Enable Process scenarii<p>
 		<table width="100%">
 			<tr>
@@ -215,7 +229,7 @@
 					
 					<button id="collectbtn" ng-click="ctrl.collectProcesses()" class="btn btn-info" ng-disabled="ctrl.wait || ! ctrl.processes.enable">Collect Processes</button> {{ctrl.status}}
 
-					<div ng-bind-html="ctrl.getListEvents(ctrl.listeventslistprocesses )"></div></td>
+					<div ng-bind-html="ctrl.getHtml(ctrl.listeventslistprocesses )"></div></td>
 				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 				<td width="900">
 					
@@ -328,7 +342,7 @@
 		
 		<p>
 		<center>
-			<button ng-click="ctrl.navbaractiv='execution';ctrl.start()" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
+			<button ng-click="ctrl.navbaractiv='execution';ctrl.start('classic')" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
 		</center>
 
 		
@@ -396,8 +410,14 @@
 	<!--  ************************************************************  -->		
 	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'execution'">
 		<p>
+		<h2>Scenario {{ctrl.config.name}}</h2>
+		<p>
+		<div ng-if="ctrl.deploimentsuc.length >0 " class="alert alert-success">
+			{{ctrl.deploimentsuc}}
+		</div>
+		
 		<center>
-			<button ng-click="ctrl.start()" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
+			<button ng-click="ctrl.start('classic')" class="btn btn-success" ng-disabled="ctrl.wait">Start</button>
 		</center>
 		
 		<span ng-show="ctrl.wait"> 
@@ -410,7 +430,7 @@
 		</span>	
 		<br>
 		<center>
-			<div ng-bind-html="ctrl.getListEvents( ctrl.execution.listeventsexecution )"></div>
+			<div ng-bind-html="ctrl.getHtml( ctrl.execution.listeventsexecution )"></div>
 		</center>
 
 		<table class="table table-striped table-hover table-condensed">
@@ -485,7 +505,7 @@
 						<tr>
 							<td>Status</td>
 							<td>{{ctrl.execution.status}}<br>
-							<div ng-bind-html="ctrl.getListEvents( ctrl.execution.listeventsexecution )"></div>
+							<div ng-bind-html="ctrl.getHtml( ctrl.execution.listeventsexecution )"></div>
 							
 						</tr>
 						<tr>
@@ -545,7 +565,7 @@
 				<td>{{processinfo.processname}} ({{processinfo.processversion}})</td>
 				<td>{{processinfo.coverpercent}} %</td>
 				<td>{{processinfo.coverhappypathpercent}} %</td>
-				<td><div ng-bind-html="ctrl.getListEvents( processinfo.listevents )"></div></td>
+				<td><div ng-bind-html="ctrl.getHtml( processinfo.listevents )"></div></td>
 				<td>{{processinfo.activitiesnotcovered}}</td>
 				
 			</tr>
@@ -559,6 +579,47 @@
 				 -->
 	</div> <!--  end execution -->
 		
+	<!--  ************************************************************  -->	
+	<!--  Unit Test        	 										-->
+	<!--  ************************************************************  -->		
+	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'unittest'">
+		<p>
+		<h2>Scenario {{ctrl.config.name}}</h2>
+		<p>
+		<div ng-if="ctrl.deploimentsuc.length >0 " class="alert alert-success">
+			{{ctrl.deploimentsuc}}
+		</div>
+		
+		<center>
+			<button ng-click="ctrl.navbaractiv='unittest';ctrl.start('unittest')" class="btn btn-success" ng-disabled="ctrl.wait">Unit Test</button>
+		</center>
+		
+		<div ng-bind-html="ctrl.getHtml( ctrl.execution.listevents) "></div>
+		
+		<div style="text-align: right">
+			Test passed with {{ctrl.execution.percentunittest}} %
+		</div>
+		<table  class="table table-striped table-hover table-condensed" width="100%">
+			<tr>
+				<th>Test</th>
+				<th>Status</th>
+			</tr>
+			<tbody ng-repeat="robotinfo in ctrl.execution.robots track by $index">
+				<tr> 
+					<td>{{robotinfo.name}}</td>
+					<td >
+						<div ng-if="robotinfo.status === 'DONE'" class="label label-success">Success</div>
+						<div ng-if="robotinfo.status !== 'DONE'">
+							<div class="label label-danger">Error</div><br>
+							<div ng-bind-html="ctrl.getHtml( robotinfo.explanationerror )"></div>
+						</div>
+					</td>
+				</tr>
+			</tbody>	
+		</table>
+		Unit test executed in {{ctrl.execution.timeinms}} ms
+		
+	</div> <!-- end unit test -->		
 	<!--  ************************************************************  -->	
 	<!--  Save        	 										-->
 	<!--  ************************************************************  -->
@@ -585,14 +646,20 @@
 		</modal-dialog>
 	
 		<p>
+		<h2>Scenario {{ctrl.config.name}}</h2>
+		<p>
+		<div ng-if="ctrl.deploimentsuc.length >0 " class="alert alert-success">
+			{{ctrl.deploimentsuc}}
+		</div>
+		
 		<div class="col-xs-6">
-			Configuration name : <input ng-model="ctrl.config.newname" maxlength="30"/>
+			Scenario name : <input ng-model="ctrl.config.newname" maxlength="30"/>
 			<button ng-click="ctrl.saveConfig()" class="btn btn-success" ng-disabled="ctrl.wait">Save</button><br>
 			<textarea ng-model="ctrl.config.newdescription" cols="50" rows="5"></textarea><br>
 		</div>
 
 		<div class="col-xs-6">
-			List of configurations:
+			List of Scenario:
 			<select ng-model="ctrl.config.currentname" style="width: 150px;">
 				<option ng-repeat="oneconf in ctrl.config.list" value="{{oneconf.name}}">{{oneconf.name}}</option>
 			</select>
@@ -603,7 +670,7 @@
 			<button ng-click="ctrl.deleteConfig()" class="btn btn-danger" ng-disabled="(! ctrl.config.currentname) || ctrl.wait">Delete&nbsp;{{ctrl.config.currentname}}</button></td>
 			<p>
 
-			<div ng-bind-html="ctrl.getListEvents( ctrl.listeventsconfig )"></div>
+			<div ng-bind-html="ctrl.getHtml( ctrl.listeventsconfig )"></div>
 			<p>
 			
 			<button ng-click="ctrl.isshowExportDialog=true" class="btn btn-primary" ng-disabled="meteor.config.list.length==0 || ctrl.wait">Export</button>													

@@ -29,7 +29,7 @@ public class MeteorDefActivity extends MeteorDefBase {
     }
 
     public String getHtmlId() {
-        return MeteorScenarioProcess.cstHtmlPrefixActivity + (mActivityDefinitionId == null ? "#" : mActivityDefinitionId.toString());
+        return MeteorScenarioProcess.CSTHTML_PREFIXACTIVITY + (mActivityDefinitionId == null ? "#" : mActivityDefinitionId.toString());
     }
 
     public String getInformation() {

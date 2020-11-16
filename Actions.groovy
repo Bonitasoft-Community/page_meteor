@@ -78,7 +78,7 @@ public class Actions {
 
     public static Index.ActionAnswer doAction(HttpServletRequest request, String paramJsonSt, HttpServletResponse response, PageResourceProvider pageResourceProvider, PageContext pageContext) {
 
-        logger.fine("#### MeteorCustompage:Actions start");
+        logger.fine("#### MeteorCustompage:Actions ");
         Index.ActionAnswer actionAnswer = new Index.ActionAnswer();
         long timeBegin= System.currentTimeMillis();
 
@@ -124,6 +124,12 @@ public class Actions {
 
             else if ("collectProcesses".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer; 
+                }
+    
                 ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJsonSt );
 
                 actionAnswer.setResponse( meteorAPI.getListProcesses( listProcessParameter, processAPI));
@@ -131,6 +137,12 @@ public class Actions {
 
             else if ("addCasesId".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer; 
+                }
+    
                 String accumulateJson = (String) httpSession.getAttribute("accumulate" );
 
                 MeteorExperienceParameter meteorExperienceParameter = MeteorExperienceParameter.getInstanceFromJsonSt( accumulateJson );
@@ -159,6 +171,12 @@ public class Actions {
 
             else if ("start".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer; 
+                }
+
                 String accumulateJson = (String) httpSession.getAttribute("accumulate" );
 
                 start( accumulateJson,  listEvents, actionAnswer.responseMap, meteorAPI, processAPI, commandAPI, pageResourceProvider, apiSession.getTenantId()  );
@@ -166,6 +184,12 @@ public class Actions {
             }
             else if ("loadandstart".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 String name="";
                 logger.fine("loadandstart paramJson=["+paramJsonSt+"]");
 
@@ -193,12 +217,24 @@ public class Actions {
             }
             else if ("startfromscenarioname".equals(action))
             {    
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 String name= request.getParameter("scenario");     
                 startFromScenarioName( name, listEvents, actionAnswer.responseMap, meteorAPI, processAPI, commandAPI, pageResourceProvider, apiSession.getTenantId() )
                 
             }
             else if ("status".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 StatusParameters statusParameters;
                 if (paramJsonSt!=null && paramJsonSt.trim().length()>0)
                 {
@@ -216,32 +252,24 @@ public class Actions {
             // ------- init
             else if ("initpage".equals(action))
             {
-                // deploy the command now, initialise all which is needed
-                DeployStatus deployStatus= meteorAPI.deployCommand( pageResourceProvider.getPageDirectory(),  commandAPI, null, apiSession.getTenantId());
-
-                // first process
-                // ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJsonSt );
-                // actionAnswer.setResponse( meteorAPI.getListProcesses( listProcessParameter, processAPI));
-
-                // second configuration
-                MeteorDAO meteorDAO = MeteorDAO.getInstance();
-                MeteorDAO.StatusDAO statusDao = meteorDAO.getListNames( apiSession.getTenantId()  ) ;
-                actionAnswer.responseMap = statusDao.getMap();
-                /* .put("listeventsconfig",  BEventFactory.getHtml( statusDao.listEvents));
-                 actionAnswer.responseMap.put("configList", statusDao.listNamesAllConfigurations);
-                 */
-
-                /*
-                 BonitaProperties bonitaProperties = new BonitaProperties( pageResourceProvider, apiSession.getTenantId() );
-                 listEvents.addAll( bonitaProperties.load() );
-                 logger.info("BonitaProperties.saveConfig: loadproperties done, events = "+listEvents.size() );
-                 answer = new HashMap<String,Object>()
-                 answer.put("configList", getListConfig( bonitaProperties ));
-                 */
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+                actionAnswer.setResponse( meteorAPI.startup( pageResourceProvider.getPageDirectory(), commandAPI, null, apiSession.getTenantId() ));
+                    
+              
             }
             // ---------- config
             else if ("saveconfig".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 HttpSession session = request.getSession();
                 String accumumlateJson = (String) session.getAttribute("accumulate" );
                 // then create a big JSON value
@@ -249,7 +277,7 @@ public class Actions {
 
                 // get the name
                 final Object jsonObject = JSONValue.parse(paramJsonSt);
-                String name 		= jsonObject.get("confname");
+                String name 		= jsonObject.get("scenarioname");
                 String description  = jsonObject.get("confdescription");
                 logger.fine("BonitaProperties.saveConfig name=["+name+"] description ["+description+"]" );
 
@@ -265,8 +293,14 @@ public class Actions {
             }
             else if ("loadconfig".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 final Object jsonObject = JSONValue.parse(paramJsonSt);
-                String name= jsonObject.get("confname");
+                String name= jsonObject.get("scenarioname");
 
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
                 MeteorDAO.StatusDAO statusDao= meteorDAO.load( name, apiSession.getTenantId());
@@ -280,8 +314,14 @@ public class Actions {
             }
             else if ("deleteconfig".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 final Object jsonObject = JSONValue.parse(paramJsonSt);
-                String name= jsonObject.get("confname");
+                String name= jsonObject.get("scenarioname");
                 logger.fine("BonitaProperties.loadConfig name=["+name+"]" );
                 // Load is
 
@@ -308,7 +348,7 @@ public class Actions {
             } else if ("exportconf".equals(action))
             {
                 final Object jsonObject = JSONValue.parse(paramJsonSt);
-                List<String> listconfname= jsonObject.get("listconfname");
+                List<String> listconfname= jsonObject.get("listscenarioname");
 
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
                 MeteorDAO.StatusDAO statusDao= meteorDAO.exportConfs( listconfname, apiSession.getUserName(),  apiSession.getTenantId());
@@ -336,6 +376,12 @@ public class Actions {
                 return actionAnswer;
             } else if ("importconfs".equals(action))
             {
+                //Make sure no action is executed if the CSRF protection is active and the request header is invalid
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
+
                 String filename= request.getParameter("filename");
                 MeteorDAO meteorDAO = MeteorDAO.getInstance();
                 MeteorDAO.StatusDAO statusDao= meteorDAO.importConfs( filename, true, pageResourceProvider.getPageDirectory(),  apiSession.getTenantId());
@@ -367,7 +413,7 @@ public class Actions {
     /*
      * 
      */
-    public static void start(String accumulateJson, List<BEvent> listEvents, Map<String,Object> answer, MeteorAPI meteorAPI, ProcessAPI processAPI, CommandAPI commandAPI, PageResourceProvider pageResourceProvider,long tenantId )
+    public static void start( String accumulateJson, List<BEvent> listEvents, Map<String,Object> answer, MeteorAPI meteorAPI, ProcessAPI processAPI, CommandAPI commandAPI, PageResourceProvider pageResourceProvider,long tenantId )
     {
         // so no need to have a force deploy here.
         DeployStatus deployStatus= meteorAPI.deployCommand( pageResourceProvider.getPageDirectory(),  commandAPI, null, tenantId);
@@ -381,7 +427,7 @@ public class Actions {
         StartParameters startParameters;
         logger.fine(" We get a LIST JSON size=("+accumulateJson.length()+" - first value =["+ (accumulateJson==null ? null :(accumulateJson.length()>100 ? accumulateJson.substring(0,100) :accumulateJson))+ "]");
         startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
-
+        
         answer.putAll( meteorAPI.start(startParameters, processAPI, commandAPI,tenantId));
 
     }

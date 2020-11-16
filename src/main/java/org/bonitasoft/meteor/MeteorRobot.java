@@ -23,18 +23,12 @@ public abstract class MeteorRobot implements Runnable {
      */
     // public RobotType mRobotType;
 
-    protected enum RobotStatus {
-        INACTIF, STARTED, DONE
+    protected enum ROBOTSTATUS {
+        INACTIF, STARTED, DONE, INCOMPLETEEXECUTION, FAIL
     };
 
-    /**
-     * for the test unit, the robot should give a final status
-     */
-    public enum FINALSTATUS {
-        SUCCESS, FAIL
-    };
-
-    public RobotStatus mStatus;
+   
+    public ROBOTSTATUS mStatus;
 
     /**
      * when the robot start
@@ -52,17 +46,22 @@ public abstract class MeteorRobot implements Runnable {
     private final APIAccessor apiAccessor;
     protected MeteorSimulation meteorSimulation;
 
+    private String mRobotName;
+    private String mExplanationError = "";
     public CollectPerformance mCollectPerformance = new CollectPerformance();
 
+    
     /**
+     * 
      * robot can log here the execution detail, error it face; etc...
      */
     public LogExecution mLogExecution = new LogExecution();
 
-    protected MeteorRobot(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+    protected MeteorRobot(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+        this.mRobotName = robotName;
         this.apiAccessor = apiAccessor;
         this.meteorSimulation = meteorSimulation;
-        mStatus = RobotStatus.INACTIF;
+        mStatus = ROBOTSTATUS.INACTIF;
     }
 
     
@@ -99,25 +98,14 @@ public abstract class MeteorRobot implements Runnable {
     }
 
    
-    /*
-     * *************************************************************************
-     * *******
-     */
-    /*                                                                                  */
-    /* Status */
-    /*                                                                                  */
-    /*                                                                                  */
-    /*
-     * *************************************************************************
-     * *******
-     */
+    /* ************************************************************************ */
+    /*                                                                          */
+    /* Attibutes                                                                */
+    /*                                                                          */
+    /*                                                                          */
+    /* ************************************************************************ */
 
-    public FINALSTATUS mFinalStatus;
-
-    public void setFinalStatus(final FINALSTATUS finalStatus) {
-        mFinalStatus = finalStatus;
-    }
-
+  
     /**
      * get the accessor
      *
@@ -133,6 +121,12 @@ public abstract class MeteorRobot implements Runnable {
 
     public Date getEndDate() {
         return mDateEnd;
+    }
+    
+    public void addError( String explanationError) {
+        if (explanationError.length()>0)
+            explanationError+="<br>";
+        mExplanationError+=explanationError;
     }
     /*
      * *************************************************************************
@@ -155,7 +149,7 @@ public abstract class MeteorRobot implements Runnable {
     public void run() {
 
         logger.info("----------- Start robot #" + mRobotId + " type[" + this.getClass().getName() + "]");
-        mStatus = RobotStatus.STARTED;
+        mStatus = ROBOTSTATUS.STARTED;
 
         mCollectPerformance.clear();
         try {
@@ -165,21 +159,20 @@ public abstract class MeteorRobot implements Runnable {
         } catch (Exception e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            setFinalStatus(FINALSTATUS.FAIL);
+            mStatus=ROBOTSTATUS.FAIL;
             logger.severe("Robot " + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             mLogExecution.addLog("Exception " + e.toString());
 
         } catch (Error er) {
             final StringWriter sw = new StringWriter();
             er.printStackTrace(new PrintWriter(sw));
-            setFinalStatus(FINALSTATUS.FAIL);
+            mStatus=ROBOTSTATUS.FAIL;
 
             logger.severe("Robot " + getSignature() + " exception " + er.toString() + " at " + sw.toString());
             mLogExecution.addLog("Exception " + er.toString());
 
         }
-
-        mStatus = RobotStatus.DONE;
+        
         mCollectPerformance.mOperationIndex = mCollectPerformance.mOperationTotal; // set
                                                                                    // to
                                                                                    // 100%
@@ -190,6 +183,11 @@ public abstract class MeteorRobot implements Runnable {
 
     }
 
+    public boolean isFinished() {
+        if (mStatus == ROBOTSTATUS.INACTIF || mStatus == ROBOTSTATUS.STARTED)
+            return false;
+        return true;
+    }
     /**
      * each robot should implement this
      */
@@ -222,7 +220,7 @@ public abstract class MeteorRobot implements Runnable {
         return mRobotId;
     }
     public String getSignature() {
-        return "#" + mRobotId + " " + mSignatureInfo;
+        return "#" + mRobotId + " " + mRobotName+" "+mSignatureInfo;
     }
 
     public void setSignatureInfo(String info) {
@@ -234,7 +232,7 @@ public abstract class MeteorRobot implements Runnable {
      *
      * @return
      */
-    public RobotStatus getStatus() {
+    public ROBOTSTATUS getStatus() {
         return mStatus;
     }
 
@@ -242,7 +240,7 @@ public abstract class MeteorRobot implements Runnable {
      * @return
      */
     public Map<String, Object> getDetailStatus() {
-        final Map<String, Object> resultRobot = new HashMap<String, Object>();
+        final Map<String, Object> resultRobot = new HashMap<>();
 
         resultRobot.put("title", mCollectPerformance.mTitle); // mProcessDefinition.getInformation()+"
                                                               // #"+mRobotId+"
@@ -251,12 +249,14 @@ public abstract class MeteorRobot implements Runnable {
                                          // #"+mRobotId+" ";
         int percent = 0;
         resultRobot.put(MeteorSimulation.CSTJSON_STATUS, mStatus.toString());
-        resultRobot.put("finalstatus", mFinalStatus == null ? "" : mFinalStatus.toString());
+        resultRobot.put("name", mRobotName);
+        resultRobot.put("explanationerror", mExplanationError );
+        resultRobot.put("finalstatus", mStatus == null ? "" : mStatus.toString());
         resultRobot.put("log", mLogExecution.getLogExecution());
         resultRobot.put(MeteorSimulation.CSTJSON_NBERRORS, mLogExecution.getNbErrors());
 
         if (mCollectPerformance.mOperationTotal == -1) {
-            if (mStatus == RobotStatus.DONE) {
+            if (mStatus == ROBOTSTATUS.DONE) {
                 resultRobot.put("adv", "0/0");
                 percent = 0;
             } else {

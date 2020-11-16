@@ -13,8 +13,8 @@ public class MeteorRobotCmdScenario extends MeteorRobot {
 
     public ScenarioCmd meteorScenario;
 
-    public MeteorRobotCmdScenario(MeteorSimulation meteorSimulation, ScenarioCmd meteorScenario, final APIAccessor apiAccessor) {
-        super(meteorSimulation, apiAccessor);
+    public MeteorRobotCmdScenario(String robotName, MeteorSimulation meteorSimulation, ScenarioCmd meteorScenario, final APIAccessor apiAccessor) {
+        super(robotName, meteorSimulation, apiAccessor);
         this.meteorScenario = meteorScenario;
 
     }

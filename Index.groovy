@@ -75,8 +75,8 @@ public class Index implements PageController {
         try {
             String requestParamJson= request.getParameter("paramjson");
             String requestParamJsonSt = (requestParamJson==null ? null : java.net.URLDecoder.decode(requestParamJson, "UTF-8"));
-
-
+            // Token securisation : must be done action per action, else it's not possible to download a document.
+            
             Index.ActionAnswer actionAnswer = Actions.doAction( request, requestParamJsonSt,  response, pageResourceProvider, pageContext );
             if (! actionAnswer.isManaged) {
                 loggerCustomPage.fine("#### CustomPage:Groovy NoAction, return index.html" );

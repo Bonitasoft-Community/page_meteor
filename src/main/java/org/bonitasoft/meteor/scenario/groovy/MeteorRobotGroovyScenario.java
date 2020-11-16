@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bonitasoft.engine.api.APIAccessor;
-import org.bonitasoft.engine.api.CommandAPI;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.meteor.MeteorRobot;
@@ -28,17 +27,17 @@ import com.bonitasoft.scenario.runner.context.SingleRunContext;
 // https://bitbucket.org/ps_ip/scenarioframework/wiki/Home#markdown-header-run-a-scenario
 public class MeteorRobotGroovyScenario extends MeteorRobot {
 
-    static Logger logger = Logger.getLogger(MeteorSimulation.class.getName());
+    static Logger logger = Logger.getLogger(MeteorRobotGroovyScenario.class.getName());
 
-    public static BEvent EventLoadGroovyScenarioCommand = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotGroovyScenario", 1, Level.ERROR, "Groovy Command can't be created", "The Groovy Scenario needs special command to be deployed. The deployment of the command failed",
+    public final static BEvent EventLoadGroovyScenarioCommand = new BEvent("org.bonitasoft.custompage.meteor.MeteorRobotGroovyScenario", 1, Level.ERROR, "Groovy Command can't be created", "The Groovy Scenario needs special command to be deployed. The deployment of the command failed",
             "The groovy scenario can't be executed", "Check the error");
 
     private ScenarioCmd scenario = null;
 
     static private String scenarioName = "meteorGSScenario";
 
-    public MeteorRobotGroovyScenario(MeteorSimulation meteorSimulation, ScenarioCmd scenario, final APIAccessor apiAccessor) {
-        super(meteorSimulation, apiAccessor);
+    public MeteorRobotGroovyScenario(String robotName, MeteorSimulation meteorSimulation, ScenarioCmd scenario, final APIAccessor apiAccessor) {
+        super(robotName, meteorSimulation, apiAccessor);
         this.scenario = scenario;
     }
 
@@ -54,9 +53,9 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
             Map<String, byte[]> mainResources = ScenarioMainResourcesHelper.generateSingleScenarioMainResourcesFromScriptContent(scenario.mScenario);
 
             // All the JAR dependencies
-            Map<String, byte[]> jarDependencies = new HashMap<String, byte[]>();
+            Map<String, byte[]> jarDependencies = new HashMap<>();
             // All the Groovy Script dependencies
-            Map<String, byte[]> gsDependencies = new HashMap<String, byte[]>();
+            Map<String, byte[]> gsDependencies = new HashMap<>();
 
             ScenarioConfiguration scenarioConfiguration = new ScenarioConfiguration();
             Resource resource = new InMemoryResource(mainResources);
@@ -73,15 +72,17 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
             SingleRunner runner = new SingleRunner(singleRunContext, runListeners);
             runner.run();
             ScenarioResult scenarioResult = runner.getScenarioResult();
-            if (scenarioResult.getErrors().size() > 0 || scenarioResult.getWarns().size() > 0) {
+            if ( ! scenarioResult.getErrors().isEmpty()|| ! scenarioResult.getWarns().isEmpty()) {
                 String msg = scenarioResult.generateVisualResult().toString();
                 mLogExecution.addLog(msg);
-                setFinalStatus(FINALSTATUS.FAIL);
+                mStatus = ROBOTSTATUS.FAIL;
+                addError("Errors");
             } else
-                setFinalStatus(FINALSTATUS.SUCCESS);
+                mStatus = ROBOTSTATUS.DONE;
         } catch (Throwable e) {
             logger.info(" ROBOT " + getSignature() + " Scenario execution error[" + e.getCause() + " - " + e.getMessage() + "]");
-            setFinalStatus(FINALSTATUS.FAIL);
+            mStatus = ROBOTSTATUS.FAIL;
+
         } finally {
             setOperationIndex(100);
         }
@@ -111,7 +112,7 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
      * return listEvents;
      * }
      */
-
+    /*
     private static void removeDependency(String depencencyName, CommandAPI commandAPI) {
         try {
             commandAPI.removeDependency(depencencyName);
@@ -121,5 +122,6 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
         } ;
 
     }
+    */
 
 }

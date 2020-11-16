@@ -38,13 +38,14 @@ public class MeteorOperation {
         public HashMap<String, Object> result = new HashMap<>();
         public List<BEvent> listEvents = new ArrayList<>();
         public MeteorSimulation.STATUS status;
+        
 
         /**
          * We must keep MashMap because the JSON parser don't know how to JSONify a Map object
          * @return
          */
         public HashMap<String, Object> getMap() {
-            result.put(CmdMeteor.cstParamResultListEventsSt, BEventFactory.getHtml(listEvents));
+            result.put(CmdMeteor.CSTPARAM_RESULTLISTEVENTSST, BEventFactory.getHtml(listEvents));
             // result.put(MeteorAccess.cstParamResultStatus, status == null ? ""
             // : status.toString());
             return result;
@@ -63,7 +64,7 @@ public class MeteorOperation {
      */
     public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor) {
         final MeteorResult meteorResult = new MeteorResult();
-        final MeteorSimulation meteorSimulation = new MeteorSimulation(startParameters.tenantId, apiAccessor);
+        final MeteorSimulation meteorSimulation = new MeteorSimulation(startParameters, apiAccessor);
 
         try {
             logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] by [" + MeteorOperation.class.getName() + "] : " + startParameters.toString());
@@ -81,9 +82,9 @@ public class MeteorOperation {
             }
 
             simulationInProgress.put(meteorSimulation.getId(), meteorSimulation);
-            meteorResult.result.put(CmdMeteor.cstParamResultSimulationId, String.valueOf(meteorSimulation.getId()));
+            meteorResult.result.put(CmdMeteor.CSTPARAM_RESULTSIMULATIONID, String.valueOf(meteorSimulation.getId()));
 
-            MeteorScenario[] listMeteorScenario = new MeteorScenario[] { new MeteorScenarioProcess(), new MeteorScenarioExperience(), new ScenarioCmd() };
+            MeteorScenario[] listMeteorScenario = new MeteorScenario[] { new MeteorScenarioProcess(startParameters.scenarioName ), new MeteorScenarioExperience(startParameters.scenarioName ), new ScenarioCmd(startParameters.scenarioName ) };
 
             for (MeteorScenario meteorScenario : listMeteorScenario) {
                 meteorResult.listEvents.addAll(meteorScenario.registerInSimulation(startParameters, meteorSimulation, apiAccessor));
@@ -140,7 +141,7 @@ public class MeteorOperation {
 
                 meteorResult.result.putAll(meteorSimulation.refreshDetailStatus(apiAccessor));
                 meteorResult.listEvents.add(MeteorSimulation.EventStarted);
-                meteorResult.status = MeteorSimulation.STATUS.STARTED;
+                meteorResult.status = meteorSimulation.getStatus();
             }
         } catch (Error er) {
             StringWriter sw = new StringWriter();

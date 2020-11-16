@@ -42,7 +42,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
     private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
 
     // todo : rename html => json
-    public final static String cstJsonNumberOfCases = "nbcases";
+    public final static String CSTJSON_NUMBEROFCASES = "nbcases";
     public final static String cstHtmlType = "type";
     public final static String cstHtmlTypeProcess = "pro";
     public final static String cstHtmlTypeActivity = "act";
@@ -59,7 +59,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
     public final static String cstHtmlInputs = "inputs";
     public final static String cstHtmlUserName = "username";
     public final static String cstHtmlUserPassword = "userpassword";
-    public final static String cstHtmlDocumentName = "documentname";
+    public final static String CSTHTML_DOCUMENTNAME = "documentname";
     public final static String cstHtmlDocumentValue = "documentvalue";
     public final static String CSTJSON_PROCESSNAME = "processname";
     public final static String CSTJSON_ALLOWLASTVERSION = "allowlastversion";
@@ -73,20 +73,20 @@ public class MeteorScenarioProcess extends MeteorScenario {
 
     public final static String CSTJSON_LISTEVENTS = "listevents";
 
-    public final static String cstHtmlPrefixActivity = "ACT_";
-    public final static String cstHtmlPrefixDocument = "DOC_";
+    public final static String CSTHTML_PREFIXACTIVITY = "ACT_";
+    public final static String CSTHTML_PREFIXDOCUMENT = "DOC_";
     public static int cstCurrentSimulation = 2;
 
-    private static BEvent EventGetListProcesses = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
+    private final static BEvent EventGetListProcesses = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
 
-    private static BEvent EventCalculateListProcess = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
+    private final static BEvent EventCalculateListProcess = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
 
-    private static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorScenarioProcess.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
+    private final static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorScenarioProcess.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
             "If you set a number of robot, then set a number of case(or inverse)");
 
-    private static BEvent EventInitializeJson = new BEvent(MeteorScenarioProcess.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
+    private final static BEvent EventInitializeJson = new BEvent(MeteorScenarioProcess.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
 
-    private final boolean mShowActivity = true;
+    private boolean mShowActivity = true;
 
     /**
      * after the calculation, we get this information : the
@@ -94,7 +94,12 @@ public class MeteorScenarioProcess extends MeteorScenario {
      */
     final List<BEvent> listEventsCalculation = new ArrayList<>();
     public long performanceCalcul = 0;
-    private final HashMap<Long, MeteorDefProcess> mListProcessDefinition = new HashMap<Long, MeteorDefProcess>();
+    private final HashMap<Long, MeteorDefProcess> mListProcessDefinition = new HashMap<>();
+
+    
+    public MeteorScenarioProcess(String scenarioName) {
+        super(scenarioName);
+    }
 
     /* ******************************************************************** */
     /*                                                                      */
@@ -308,7 +313,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
      */
     public List<Map<String, Object>> toJson(final ListProcessParameter listProcessParameters) {
         logger.fine("MeteorProcessDefinitionList: " + listProcessParameters.toString());
-        final List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        final List<Map<String, Object>> result = new ArrayList<>();
 
         if (mListProcessDefinition.size() == 0) {
             return result;
@@ -322,20 +327,20 @@ public class MeteorScenarioProcess extends MeteorScenario {
             if (listProcessParameters.mShowCreateCases) {
 
                 if (listProcessParameters.mShowDocuments) {
-                    final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<HashMap<String, Object>>();
+                    final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<>();
                     oneProcess.put("listdocuments", listDocuments);
 
-                    for (final MeteorDocument toolHatProcessDefinitionDocument : meteorProcess.mListDocuments) {
-                        final HashMap<String, Object> oneDocument = new HashMap<String, Object>();
+                    for (final MeteorDocument meteorDocument : meteorProcess.mListDocuments) {
+                        final HashMap<String, Object> oneDocument = new HashMap<>();
                         listDocuments.add(oneDocument);
-                        oneDocument.put("documentname", toolHatProcessDefinitionDocument.mDocumentName);
+                        oneDocument.put( CSTHTML_DOCUMENTNAME, meteorDocument.mDocumentName);
                     }
                 }
             }
 
             // for each activity
             if (listProcessParameters.mShowActivity) {
-                final List<Map<String, Object>> listActivities = new ArrayList<Map<String, Object>>();
+                final List<Map<String, Object>> listActivities = new ArrayList<>();
                 oneProcess.put("activities", listActivities);
                 for (final MeteorDefActivity meteorActivity : meteorProcess.getListActivities()) {
                     final Map<String, Object> oneActivity = meteorActivity.getMap();
@@ -343,12 +348,12 @@ public class MeteorScenarioProcess extends MeteorScenario {
                     listActivities.add(oneActivity);
 
                     if (listProcessParameters.mShowDocuments) {
-                        final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<HashMap<String, Object>>();
+                        final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<>();
                         oneProcess.put("listdocuments", listDocuments);
                         for (final MeteorDocument meteorDocument : meteorActivity.mListDocuments) {
-                            final HashMap<String, Object> oneDocument = new HashMap<String, Object>();
+                            final HashMap<String, Object> oneDocument = new HashMap<>();
                             listDocuments.add(oneDocument);
-                            oneDocument.put("documentname", meteorDocument.mDocumentName);
+                            oneDocument.put( CSTHTML_DOCUMENTNAME, meteorDocument.mDocumentName);
                         }
                     }
                 }
@@ -397,7 +402,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
         for (final MeteorDocument toolHatProcessDefinitionDocument : listDocuments) {
 
             final String widgetDocumentValue = cstHtmlDocumentValue + toolHatProcessDefinitionDocument.getHtmlId();
-            final String widgetDocumentName = cstHtmlDocumentName + toolHatProcessDefinitionDocument.getHtmlId();
+            final String widgetDocumentName = CSTHTML_DOCUMENTNAME + toolHatProcessDefinitionDocument.getHtmlId();
 
             for (final FileItem item : items) {
                 if (item.isFormField() && item.getFieldName().equals(widgetDocumentName)) {
@@ -424,7 +429,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                             toolHatProcessDefinitionDocument.mContent.write(bytes, 0, read);
                         }
                     } catch (final IOException e) {
-                        e.printStackTrace();
+                        // e.printStackTrace();
                     }
 
                 } // end check item
@@ -605,7 +610,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                     meteorDefProcess.mNumberOfCases = 1;
                 }
                 for (int i = 0; i < meteorDefProcess.mNumberOfRobots; i++) {
-                    final MeteorRobotCreateCase robot = new MeteorRobotCreateCase(meteorSimulation, apiAccessor);
+                    final MeteorRobotCreateCase robot = new MeteorRobotCreateCase(mScenarioName, meteorSimulation, apiAccessor);
 
                     robot.setParameters(meteorDefProcess, meteorDefProcess.getListDocuments(), meteorSimulation.getDurationOfSimulation());
                     listRobots.add(robot);
@@ -618,7 +623,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                         meteorActivity.mNumberOfCases = 1;
                     }
                     for (int i = 0; i < meteorActivity.mNumberOfRobots; i++) {
-                        final MeteorRobotActivity robot = new MeteorRobotActivity(meteorSimulation, apiAccessor);
+                        final MeteorRobotActivity robot = new MeteorRobotActivity(mScenarioName, meteorSimulation, apiAccessor);
                         robot.setParameters(meteorActivity);
                         listRobots.add(robot);
                     }

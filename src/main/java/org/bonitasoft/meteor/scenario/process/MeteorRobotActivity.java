@@ -38,8 +38,8 @@ public class MeteorRobotActivity extends MeteorRobot {
 
     public List<MeteorDocument> mListDocuments = new ArrayList<MeteorDocument>();
 
-    public MeteorRobotActivity(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
-        super(meteorSimulation, apiAccessor);
+    public MeteorRobotActivity(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+        super(robotName, meteorSimulation, apiAccessor);
 
     }
 

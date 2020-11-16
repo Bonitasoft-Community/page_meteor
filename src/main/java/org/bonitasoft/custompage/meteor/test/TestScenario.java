@@ -44,7 +44,7 @@ public class TestScenario {
         final APISession apiSession = login();
         final APIAccessor apiAccessor = new TestAccessorImpl(apiSession);
 
-        final ScenarioCmd scenario = new ScenarioCmd();
+        final ScenarioCmd scenario = new ScenarioCmd("");
         scenario.addInScenario("CreateCase('MeteorMe', '1.0')");
         final List<BEvent> listEvents = scenario.decodeScenario();
         if (BEventFactory.isError(listEvents)) {

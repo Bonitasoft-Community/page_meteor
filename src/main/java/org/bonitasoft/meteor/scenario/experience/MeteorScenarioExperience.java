@@ -91,6 +91,10 @@ public class MeteorScenarioExperience extends MeteorScenario {
 
     }
 
+    public MeteorScenarioExperience(String scenarioName) {
+        super(scenarioName);
+    }
+    
     /**
      * execute an action
      * 
@@ -161,7 +165,7 @@ public class MeteorScenarioExperience extends MeteorScenario {
          */
         for (MeteorTimeLine meteorTimeLine : listTimeLine) {
             for (int i=0;i< meteorTimeLine.getNbRobots();i++)
-                listRobots.add(new MeteorRobotExperience(meteorTimeLine, meteorSimulation, apiAccessor));
+                listRobots.add(new MeteorRobotExperience(meteorTimeLine.getName(), meteorTimeLine, meteorSimulation, apiAccessor));
 
         }
         return listRobots;

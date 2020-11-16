@@ -43,8 +43,8 @@ public class MeteorRobotCreateCase extends MeteorRobot {
      */
     private List<Long> mListProcessInstanceCreated = new ArrayList<Long>();
 
-    public MeteorRobotCreateCase(MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
-        super(meteorSimulation, apiAccessor);
+    public MeteorRobotCreateCase(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
+        super( robotName, meteorSimulation, apiAccessor);
     }
 
     /* ******************************************************************** */
@@ -126,7 +126,8 @@ public class MeteorRobotCreateCase extends MeteorRobot {
             logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             mLogExecution.addLog("Error during create case " + e.toString());
 
-            setFinalStatus(FINALSTATUS.FAIL);
+            mStatus = ROBOTSTATUS.FAIL;
+            addError("Exception "+e.getMessage() );
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "ProcessDefinitionId=" + mMeteorProcess.mProcessDefinitionId));
         }
         logger.info("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " ENDED");
