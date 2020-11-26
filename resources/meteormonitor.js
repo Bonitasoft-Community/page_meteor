@@ -241,6 +241,7 @@ appCommand.controller('MeteorControler',
 		this.wait=true;
 		this.operation="Start";
 		this.mode=mode;
+		this.execution.listevents='';
 		this.sendAllOnServer( this, "start", "start");
 		// this.starttimer();
 	

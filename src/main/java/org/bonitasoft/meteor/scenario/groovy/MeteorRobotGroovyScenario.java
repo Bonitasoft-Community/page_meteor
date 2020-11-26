@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.meteor.MeteorConst;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorSimulation;
 import org.bonitasoft.meteor.scenario.ScenarioCmd;
@@ -75,13 +76,13 @@ public class MeteorRobotGroovyScenario extends MeteorRobot {
             if ( ! scenarioResult.getErrors().isEmpty()|| ! scenarioResult.getWarns().isEmpty()) {
                 String msg = scenarioResult.generateVisualResult().toString();
                 mLogExecution.addLog(msg);
-                mStatus = ROBOTSTATUS.FAIL;
+                mStatus = MeteorConst.ROBOTSTATUS.FAIL;
                 addError("Errors");
             } else
-                mStatus = ROBOTSTATUS.DONE;
+                mStatus = MeteorConst.ROBOTSTATUS.DONE;
         } catch (Throwable e) {
             logger.info(" ROBOT " + getSignature() + " Scenario execution error[" + e.getCause() + " - " + e.getMessage() + "]");
-            mStatus = ROBOTSTATUS.FAIL;
+            mStatus = MeteorConst.ROBOTSTATUS.FAIL;
 
         } finally {
             setOperationIndex(100);

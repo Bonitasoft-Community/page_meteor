@@ -49,8 +49,30 @@ public class MeteorToolbox {
             return (Long) value;
         }
         try {
-            final long valueLong = Long.valueOf(value.toString());
+            final long valueLong = Long.parseLong(value.toString());
             return valueLong;
+        } catch (final Exception e) {
+            return defaultValue;
+        }
+    }
+    
+    /**
+     * @param mapRequestMultipart
+     * @param paramName
+     * @param defaultValue
+     * @return
+     */
+    public static Integer getParameterInteger(final Map<String, Object> mapRequestMultipart, final String paramName, final Integer defaultValue) {
+        final Object value = mapRequestMultipart.get(paramName);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value instanceof Integer) {
+            return (Integer) value;
+        }
+        try {
+            final int valueInt = Integer.parseInt(value.toString());
+            return valueInt;
         } catch (final Exception e) {
             return defaultValue;
         }
@@ -61,7 +83,7 @@ public class MeteorToolbox {
         if (value == null || (!(value instanceof String))) {
             return defaultValue;
         }
-        final Map<String, Object> valueHashMap = new HashMap<String, Object>();
+        final Map<String, Object> valueHashMap = new HashMap<>();
         try {
             final StringTokenizer st = new StringTokenizer((String) value, ";");
             while (st.hasMoreTokens()) {

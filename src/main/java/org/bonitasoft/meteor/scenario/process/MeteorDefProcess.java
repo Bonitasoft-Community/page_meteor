@@ -45,9 +45,9 @@ public class MeteorDefProcess extends MeteorDefBase {
      * Keep information on a process A MeteorProcessDefinition will create one
      * or multiple robot.
      */
-    private final static BEvent eventGetProcessDesign = new BEvent(MeteorDefProcess.class.getName(), 2, Level.ERROR, "Accessing Process Design", "Check error ", "The happyPath can't be calculated, and then the cover percentage", "Check Exception");
-    private final static BEvent eventSearchActivities = new BEvent(MeteorDefProcess.class.getName(), 2, Level.ERROR, "Searching activities", "Check error", "To calculate the cover, all activities ran from the list of process is searched. The operation failed", "Check Exception");
-    private final static BEvent eventGetProcess = new BEvent(MeteorDefProcess.class.getName(), 3, Level.ERROR, "Accessing process information", "Can't get information about the process", "The call to collect information about the process failed ", "Check Exception");
+    private final static BEvent eventGetProcessDesign = new BEvent(MeteorDefProcess.class.getName(), 2, Level.APPLICATIONERROR, "Accessing Process Design", "Check error ", "The happyPath can't be calculated, and then the cover percentage", "Check Exception");
+    private final static BEvent eventSearchActivities = new BEvent(MeteorDefProcess.class.getName(), 2, Level.APPLICATIONERROR, "Searching activities", "Check error", "To calculate the cover, all activities ran from the list of process is searched. The operation failed", "Check Exception");
+    private final static BEvent eventGetProcess = new BEvent(MeteorDefProcess.class.getName(), 3, Level.APPLICATIONERROR, "Accessing process information", "Can't get information about the process", "The call to collect information about the process failed ", "Check Exception");
        // Attention, the processDefinitionID must be recalculated each time:
     // process may be redeployed
     public Long mProcessDefinitionId;

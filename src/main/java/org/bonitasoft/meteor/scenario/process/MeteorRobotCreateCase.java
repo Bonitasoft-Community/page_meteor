@@ -23,6 +23,7 @@ import org.bonitasoft.engine.expression.InvalidExpressionException;
 import org.bonitasoft.engine.operation.Operation;
 import org.bonitasoft.engine.operation.OperationBuilder;
 import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.meteor.MeteorConst;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorSimulation;
 import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
@@ -126,7 +127,7 @@ public class MeteorRobotCreateCase extends MeteorRobot {
             logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             mLogExecution.addLog("Error during create case " + e.toString());
 
-            mStatus = ROBOTSTATUS.FAIL;
+            mStatus = MeteorConst.ROBOTSTATUS.FAIL;
             addError("Exception "+e.getMessage() );
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "ProcessDefinitionId=" + mMeteorProcess.mProcessDefinitionId));
         }

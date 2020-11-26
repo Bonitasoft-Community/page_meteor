@@ -26,9 +26,9 @@ import org.bonitasoft.engine.identity.UserSearchDescriptor;
 import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.meteor.MeteorConst;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorSimulation;
-import org.bonitasoft.meteor.MeteorSimulation.STATUS;
 import org.bonitasoft.meteor.scenario.experience.MeteorTimeLine.TimeLineStep;
 
 public class MeteorRobotExperience extends MeteorRobot {
@@ -54,7 +54,7 @@ public class MeteorRobotExperience extends MeteorRobot {
 
     @Override
     public void executeRobot() {
-        mStatus = ROBOTSTATUS.STARTED;
+        mStatus = MeteorConst.ROBOTSTATUS.STARTED;
         mCollectPerformance.mTitle = "EXECUTE EXPERIENCE1: " + meteorTimeLine.getName() + " #" + getRobotId();
         setSignatureInfo("Experience "+ meteorTimeLine.getName());
 
@@ -127,7 +127,7 @@ public class MeteorRobotExperience extends MeteorRobot {
                             if (searchHumanTask.getCount() == 0 
                                     || (searchHumanTask.getCount()>0 && setTasksExecuted.contains(searchHumanTask.getResult().get(0).getId()))) {
                                 if (meteorSimulation.getDurationOfSimulation() != null && System.currentTimeMillis() > meteorSimulation.getDurationOfSimulation()) {
-                                    mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;                                    return;
+                                    mStatus = MeteorConst.ROBOTSTATUS.INCOMPLETEEXECUTION;                                    return;
                                 }
                                 try {
                                     Thread.sleep( meteorSimulation.getSleepBetweenTwoTentatives() );
@@ -138,7 +138,7 @@ public class MeteorRobotExperience extends MeteorRobot {
                                 foundHumanTask = searchHumanTask.getResult().get(0);
                         } // end search humanTasks 
                         if (foundHumanTask == null) {
-                            mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;
+                            mStatus = MeteorConst.ROBOTSTATUS.INCOMPLETEEXECUTION;
                             addError("Task ["+timeLine.activityName+"] is expected and never show up");
                             return; 
                         } else {
@@ -173,11 +173,11 @@ public class MeteorRobotExperience extends MeteorRobot {
                     mCollectPerformance.collectOneStep( System.currentTimeMillis() - timeStart);
                 } // end execute a timeLine 
             } // end execute nbCases
-            mStatus = ROBOTSTATUS.DONE;
+            mStatus = MeteorConst.ROBOTSTATUS.DONE;
 
         } catch (ContractViolationException vc) {
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventContractViolationException, getEventInformation(-1)+" Message="+vc.getMessage()));
-            mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;
+            mStatus = MeteorConst.ROBOTSTATUS.INCOMPLETEEXECUTION;
             addError("Contract violation, can't be executed "+vc.toString());
 
 
@@ -188,7 +188,7 @@ public class MeteorRobotExperience extends MeteorRobot {
             logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             // not yet logged ? Add in the logExecution
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "Robot #:[" + getSignature() + "]:"+e.getMessage()));
-            mStatus = ROBOTSTATUS.INCOMPLETEEXECUTION;
+            mStatus = MeteorConst.ROBOTSTATUS.INCOMPLETEEXECUTION;
             addError("Exception, can't be executed "+e.toString());
         }
     }

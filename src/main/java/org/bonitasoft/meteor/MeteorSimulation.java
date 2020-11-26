@@ -11,8 +11,6 @@ import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.meteor.MeteorAPI.StartParameters;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters.EXECUTIONMODE;
-import org.bonitasoft.meteor.MeteorRobot.ROBOTSTATUS;
 import org.bonitasoft.meteor.MeteorScenario.CollectResult;
 import org.bonitasoft.meteor.scenario.process.MeteorCalculCover;
 import org.bonitasoft.meteor.scenario.process.MeteorCalculCover.CoverStatus;
@@ -31,30 +29,9 @@ public class MeteorSimulation {
     public static final BEvent EventNoTaskToExecute = new BEvent(MeteorSimulation.class.getName(), 5, Level.APPLICATIONERROR, "No task to execute", "The robot don't find any task to executed in the activity name", "operation failed", "check the scenario");
     public static final BEvent EventAccessContract = new BEvent(MeteorSimulation.class.getName(), 6, Level.APPLICATIONERROR, "Access contract", "The contract can't be accessed", "Contract transformation cannot be done", "check the contract");    
     public static final BEvent EventFlowNodeExecution = new BEvent(MeteorSimulation.class.getName(), 7, Level.ERROR, "Task execution error", "Task faced an error during execution", "Execution is not correct", "check exception and scenario");
-    
-    public static final String CSTJSON_ID = "id";
-    public static final String CSTJSON_PERCENTADVANCE = "percentAdvance";
-    public static final String CSTJSON_TIMEESTIMATEDDELAY = "timeEstimatedDelay";
-    public static final String CSTJSON_TIMEESTIMATEDEND = "timeEstimatedEnd";
-    public static final String CSTJSON_STATUS = "status";
-    public static final String CSTJSON_NBERRORS = "nbErrors";
-    public static final String CSTJSON_PERCENTUNITTEST =  "percentunittest";
-    public static final String CSTJSONE_ROBOTS = "robots";
-    public static final String CST_JSON_TOTAL = "total";
-    public static final String CSTJSON_TIME_ENDED = "timeEnded";
-    public static final String CSTJSON_COVER = "cover";
-    public static final String CSTJSON_TIME_STARTED = "timeStarted";
-    public static final String CSTJSON_MEM_PERCENT = "memPercent";
-    public static final String CSTJSON_MEM_TOTAL_MB = "memTotalMb";
-    public static final String CSTJSON_MEM_USED_MB = "memUsedMb";
-    
-    public static final String CSTJSON_ARMTIMER = "armtimer";
+    public static final BEvent EventSuccessUnitTest = new BEvent(MeteorSimulation.class.getName(), 8, Level.SUCCESS, "Unit test finished", "Unit test was executed");
 
-    public enum STATUS {
-        DEFINITION, NOROBOT, STARTED, FINALISATION, DONE, NOSIMULATION, FAILEDUNITTEST,SUCCESSUNITTEST, COMPLETEEXECUTION, INCOMPLETEEXECUTION
-    }
-
-    private STATUS mStatus = STATUS.DEFINITION;
+    private MeteorConst.STATUS mStatus = MeteorConst.STATUS.DEFINITION;
 
     /**
      * when the Simulation start
@@ -151,7 +128,7 @@ public class MeteorSimulation {
     private long tenantId;
     private APIAccessor apiAccessor;
 
-    private EXECUTIONMODE executionMode;
+    private MeteorConst.EXECUTIONMODE executionMode;
     private int maxTentatives = 100;
     private int sleepBetweenTwoTentativesInMs = 1000;
     
@@ -164,12 +141,12 @@ public class MeteorSimulation {
         this.executionMode = startParameters.executionMode;
         
         // according the exectionMode, fix the number of tentatives to wait a task show up
-        if (EXECUTIONMODE.CLASSIC.equals( this.executionMode)) {
+        if (MeteorConst.EXECUTIONMODE.CLASSIC.equals( this.executionMode)) {
             maxTentatives=100;
             sleepBetweenTwoTentativesInMs=1000;
             // so wait 100=1000=1 mn 40 s
         }
-        else if (EXECUTIONMODE.UNITTEST.equals( this.executionMode)) {
+        else if (MeteorConst.EXECUTIONMODE.UNITTEST.equals( this.executionMode)) {
             maxTentatives=10;
             sleepBetweenTwoTentativesInMs=1000;
             // so wait 10=500= 5 s
@@ -314,7 +291,7 @@ public class MeteorSimulation {
         // Two kind of execution: UNITTEST or CLASSIC. 
         // Unit Test is a synchronous execution
         logger.fine(loggerLabel+"[" + mId + "] ****************   RUN ********* the robots [" + mListRobots.size() + "] ! ");
-        mStatus = STATUS.STARTED;
+        mStatus = MeteorConst.STATUS.STARTED;
         mDateBeginSimulation = new Date();
         // tag each robot
         for (int i=0;i<mListRobots.size();i++)
@@ -325,7 +302,7 @@ public class MeteorSimulation {
             singleRobot.start();
         }
         // -------------------- unit test execution
-        if (executionMode == EXECUTIONMODE.UNITTEST) {
+        if (executionMode == MeteorConst.EXECUTIONMODE.UNITTEST) {
             // synchrone : start, then wait the result
             boolean stillExecuting = true;
             long timeStarted = System.currentTimeMillis();
@@ -333,26 +310,17 @@ public class MeteorSimulation {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) { }
-                stillExecuting=false;
-                ROBOTSTATUS robotStatusMerged = ROBOTSTATUS.DONE;
-                for (final MeteorRobot singleRobot : mListRobots) {
-                    if (! singleRobot.isFinished()) {
-                        stillExecuting=true;
-                        robotStatusMerged = ROBOTSTATUS.STARTED;
-                    }
-                    if (singleRobot.getStatus().equals( ROBOTSTATUS.INCOMPLETEEXECUTION)) {
-                        robotStatusMerged = ROBOTSTATUS.INCOMPLETEEXECUTION;
-                    } 
-                }
-                if (! stillExecuting) {
-                    mStatus = robotStatusMerged.equals(ROBOTSTATUS.DONE) ? STATUS.SUCCESSUNITTEST : STATUS.FAILEDUNITTEST;
-                }
+                stillExecuting= isRunning();
+                
                 // over than 2 mn? Consider it's too long.
                 if (stillExecuting && System.currentTimeMillis() - timeStarted > 1000* 60 * 2) {
                     stillExecuting=false;
-                    mStatus = STATUS.FAILEDUNITTEST;
                 }
             }
+            MeteorConst.ROBOTSTATUS robotStatusMerged = getRobotsStatus();
+            // to be successfull, status here must be DONE.
+            mStatus = robotStatusMerged.equals(MeteorConst.ROBOTSTATUS.DONE) ? MeteorConst.STATUS.SUCCESSUNITTEST : MeteorConst.STATUS.FAILEDUNITTEST;
+
             // no need to return the detailStatus : it's available after in refreshDetailStatus()
         }
     }
@@ -380,11 +348,11 @@ public class MeteorSimulation {
         }
     }
 
-    public STATUS getStatus() {
+    public MeteorConst.STATUS getStatus() {
         return mStatus;
     }
 
-    public void setStatus(STATUS status) {
+    public void setStatus(MeteorConst.STATUS status) {
         mStatus = status;
     }
 
@@ -411,14 +379,14 @@ public class MeteorSimulation {
         int nbErrors = 0;
         int numberTestsCorrect=0;
         for (final MeteorRobot robot : mListRobots) {
-            if (robot.getStatus() != ROBOTSTATUS.DONE) {
+            if (robot.getStatus() != MeteorConst.ROBOTSTATUS.DONE) {
                 logger.fine(loggerLabel+" [" + mId + "] getCurrentStatusExection robot [" + robot.getRobotId() + "] status[" + robot.getStatus() + "] StillAlive=" + estimation.robotsStillAlive);
             } else {
                 if (dateEndRobots == null || dateEndRobots.before(robot.getEndDate()))
                     dateEndRobots = robot.getEndDate();
             }
             nbErrors += robot.getNbErrors();
-            if (robot.getStatus() == ROBOTSTATUS.DONE)
+            if (robot.getStatus() == MeteorConst.ROBOTSTATUS.DONE)
                 numberTestsCorrect++;
             // calcul the minimum advancement
             nbOperationRealized += robot.mCollectPerformance.mOperationIndex;
@@ -442,11 +410,11 @@ public class MeteorSimulation {
 
         }
 
-        result.put( CSTJSONE_ROBOTS, listResultRobots);
-        result.put( CSTJSON_NBERRORS, nbErrors);
+        result.put( MeteorConst.CSTJSON_ROBOTS, listResultRobots);
+        result.put( MeteorConst.CSTJSON_NBERRORS, nbErrors);
         
         if (! mListRobots.isEmpty())
-            result.put( CSTJSON_PERCENTUNITTEST, (int) ((100.0 * numberTestsCorrect) / mListRobots.size()));
+            result.put( MeteorConst.CSTJSON_PERCENTUNITTEST, (int) ((100.0 * numberTestsCorrect) / mListRobots.size()));
 
         final long divisor = 1024L * 1024L;
         final long totalMemoryInMb = Runtime.getRuntime().totalMemory() / divisor;
@@ -455,66 +423,68 @@ public class MeteorSimulation {
         if (totalSteps > 0) {
             total += " average " + totalStepsTime / totalSteps + " ms";
         }
-        result.put( CST_JSON_TOTAL, total);
+        result.put( MeteorConst.CST_JSON_TOTAL, total);
 
-        result.put( CSTJSON_MEM_USED_MB, totalMemoryInMb - freeMemoryInMb);
-        result.put( CSTJSON_MEM_TOTAL_MB, totalMemoryInMb);
-        result.put( CSTJSON_MEM_PERCENT, (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb));
-        result.put( CSTJSON_TIME_STARTED, MeteorToolbox.getHumanDate(mDateBeginSimulation));
+        result.put( MeteorConst.CSTJSON_MEM_USED_MB, totalMemoryInMb - freeMemoryInMb);
+        result.put( MeteorConst.CSTJSON_MEM_TOTAL_MB, totalMemoryInMb);
+        result.put( MeteorConst.CSTJSON_MEM_PERCENT, (int) (100.0 * (totalMemoryInMb - freeMemoryInMb) / totalMemoryInMb));
+        result.put( MeteorConst.CSTJSON_TIME_STARTED, MeteorToolbox.getHumanDate(mDateBeginSimulation));
         logger.fine(loggerLabel+" [" + mId + "] currenStatusexecution : Robot Still Alive " + estimation.robotsStillAlive);
 
-        result.put( CSTJSON_ARMTIMER, true);
+        result.put( MeteorConst.CSTJSON_ARMTIMER, true);
 
         if (!estimation.robotsStillAlive) {
-            result.put(CSTJSON_PERCENTADVANCE, Integer.valueOf(100));
+            result.put(MeteorConst.CSTJSON_PERCENTADVANCE, Integer.valueOf(100));
 
-            if (executionMode == EXECUTIONMODE.CLASSIC) {
+            if (executionMode == MeteorConst.EXECUTIONMODE.CLASSIC) {
     
                 // 3 possibility : 
                 // DONE : all is finish
                 // FINALYSE : finish, calcul cover in progress
                 // else : we just arrive, robot just finish, so start the cover now
-                if ((mStatus != STATUS.DONE && mStatus != STATUS.FINALISATION) || (mCalculCover == null)) {
+                if ((mStatus != MeteorConst.STATUS.DONE && mStatus != MeteorConst.STATUS.FINALISATION) || (mCalculCover == null)) {
                     // start the calcul cover now
                     mCalculCover = new MeteorCalculCover(mListMeteorProcess, mListRobots, apiAccessor);
     
                     mCalculCover.start();
-                    mStatus = STATUS.FINALISATION;
+                    mStatus = MeteorConst.STATUS.FINALISATION;
                 }
-                result.put( CSTJSON_COVER, mCalculCover.toJson());
+                result.put( MeteorConst.CSTJSON_COVER, mCalculCover.toJson());
     
                 // check the calcul cover
                 if (mCalculCover != null && mCalculCover.getStatus() == CoverStatus.DONE) {
-                    mStatus = STATUS.DONE;
-                    result.put( CSTJSON_ARMTIMER, false);
+                    mStatus = MeteorConst.STATUS.DONE;
+                    result.put( MeteorConst.CSTJSON_ARMTIMER, false);
 
                 }
             }
-            if (executionMode == EXECUTIONMODE.UNITTEST) {
-                mStatus = STATUS.DONE;
-                result.put( CSTJSON_ARMTIMER, false);
+            if (executionMode == MeteorConst.EXECUTIONMODE.UNITTEST) {
+                MeteorConst.ROBOTSTATUS robotStatusMerged = getRobotsStatus();
+                // to be successfull, status here must be DONE.
+                mStatus = robotStatusMerged.equals(MeteorConst.ROBOTSTATUS.DONE) ? MeteorConst.STATUS.SUCCESSUNITTEST : MeteorConst.STATUS.FAILEDUNITTEST;
+                result.put( MeteorConst.CSTJSON_ARMTIMER, false);
             }
             if (mDateEndSimulation == null) {
                 mDateEndSimulation = dateEndRobots;
             }
             if (mDateEndSimulation != null)
-                result.put( CSTJSON_TIME_ENDED, MeteorToolbox.getHumanDate(mDateEndSimulation));
+                result.put( MeteorConst.CSTJSON_TIME_ENDED, MeteorToolbox.getHumanDate(mDateEndSimulation));
             // display the cover
 
         } else {
 
             // calculate an estimation based on the slowest robot
-            result.put(CSTJSON_PERCENTADVANCE, estimation.percentAdvance);
+            result.put(MeteorConst.CSTJSON_PERCENTADVANCE, estimation.percentAdvance);
             if (estimation.percentAdvance == 0) {
                 // we can't do any calculation
             }
             if (estimation.percentAdvance > 0) {
-                result.put(CSTJSON_TIMEESTIMATEDDELAY, MeteorToolbox.getHumanDelay(estimation.timeNeedInMs));
-                result.put(CSTJSON_TIMEESTIMATEDEND, MeteorToolbox.getHumanDate(new Date(currentTime + estimation.timeNeedInMs)));
+                result.put(MeteorConst.CSTJSON_TIMEESTIMATEDDELAY, MeteorToolbox.getHumanDelay(estimation.timeNeedInMs));
+                result.put(MeteorConst.CSTJSON_TIMEESTIMATEDEND, MeteorToolbox.getHumanDate(new Date(currentTime + estimation.timeNeedInMs)));
             }
         }
 
-        result.put(CSTJSON_STATUS, mStatus.toString());
+        result.put(MeteorConst.CSTJSON_GLOBALSTATUS, mStatus.toString());
         
         // chart
         /*
@@ -592,7 +562,7 @@ public class MeteorSimulation {
         estimation.robotsStillAlive = false;
 
         for (final MeteorRobot robot : mListRobots) {
-            if (robot.getStatus() != ROBOTSTATUS.DONE) {
+            if (robot.getStatus() != MeteorConst.ROBOTSTATUS.DONE) {
                 estimation.robotsStillAlive = true;
             }
             // calcul the minimum advancement
@@ -622,7 +592,42 @@ public class MeteorSimulation {
         return estimation;
     }
 
+    
+    /**
+     * Check all robots to determine if execution is still in progress
+     * @return
+     */
     public boolean isRunning() {
-        return mStatus == STATUS.STARTED;
+        if (mListRobots.isEmpty())
+            return false;
+        for (final MeteorRobot singleRobot : mListRobots) {
+            if ( singleRobot.isRunning()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Check all robots to get the merged status.
+     * @return
+     */
+    private MeteorConst.ROBOTSTATUS getRobotsStatus() {
+        boolean stillExecuting=false;
+        boolean incompleteExecution=false;
+
+        for (final MeteorRobot singleRobot : mListRobots) {
+            if ( singleRobot.isRunning()) {
+                stillExecuting=true;
+            }
+            if (singleRobot.getStatus().equals( MeteorConst.ROBOTSTATUS.INCOMPLETEEXECUTION)) {
+                incompleteExecution=true;
+            } 
+        }
+        if (stillExecuting)
+            return MeteorConst.ROBOTSTATUS.STARTED;
+        if (incompleteExecution)
+            return MeteorConst.ROBOTSTATUS.INCOMPLETEEXECUTION;
+        return MeteorConst.ROBOTSTATUS.DONE;
     }
 }

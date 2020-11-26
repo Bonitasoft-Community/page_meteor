@@ -19,8 +19,9 @@ import org.bonitasoft.engine.api.CommandAPI;
 import org.bonitasoft.engine.api.IdentityAPI;
 import org.bonitasoft.engine.api.PlatformAPI;
 import org.bonitasoft.engine.api.ProcessAPI;
-
+import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEventFactory;
+
 import org.bonitasoft.meteor.cmd.CmdMeteor;
 import org.bonitasoft.meteor.scenario.experience.MeteorScenarioExperience;
 import org.bonitasoft.meteor.scenario.experience.MeteorScenarioExperience.MeteorExperienceParameter;
@@ -92,10 +93,18 @@ public class MeteorAPI {
         // ListProcessParameter listProcessParameter = ListProcessParameter.getInstanceFromJsonSt( paramJsonSt );
         // actionAnswer.setResponse( meteorAPI.getListProcesses( listProcessParameter, processAPI));
 
+        Map<String,Object> responseMap =null;
         // second configuration
         MeteorDAO meteorDAO = MeteorDAO.getInstance();
-        MeteorDAO.StatusDAO statusDao = meteorDAO.getListNames( tenantId ) ;
-        Map<String,Object> responseMap = statusDao.getMap();
+        MeteorDAO.StatusDAO statusDao = meteorDAO.initialize(tenantId);
+        if (BEventFactory.isError(statusDao.listEvents))
+            responseMap = statusDao.getMap();
+        else {
+            statusDao = meteorDAO.getListNames( tenantId ) ;
+            responseMap = statusDao.getMap();
+        }
+        
+        
         
         responseMap.put("StatusDeployment ", "New deploy"+deployStatus.newDeployment+" alread"+deployStatus.alreadyDeployed);
         // complete with deployment status
@@ -196,8 +205,7 @@ public class MeteorAPI {
 
         private static final String CST_BLANCKLINE = "                                                                                                      ";
 
-        public enum EXECUTIONMODE { CLASSIC, UNITTEST }
-        public EXECUTIONMODE executionMode;
+        public MeteorConst.EXECUTIONMODE executionMode;
         public String scenarioName;
         
         public long tenantId;
@@ -271,7 +279,7 @@ public class MeteorAPI {
                     final HashMap<String, Object> jsonHash = (HashMap<String, Object>) jsonObject;
                     String modeSt = (String)jsonHash.get( CSTJSON_MODE );
                     if (modeSt !=null) 
-                        executionMode = EXECUTIONMODE.valueOf( modeSt.toUpperCase());
+                        executionMode = MeteorConst.EXECUTIONMODE.valueOf( modeSt.toUpperCase());
                     scenarioName = (String) jsonHash.get( CSTJSON_SCENARIONAME );
                     
                     if (jsonHash.get( CSTJSON_PROCESSES ) instanceof Map) {
@@ -386,6 +394,7 @@ public class MeteorAPI {
         return resultCommand;
     }
     
+
     /**
      * 
      * @param name
@@ -416,4 +425,97 @@ public class MeteorAPI {
         return meteorClientAPI.getStatus(statusSimulation, processAPI, commandAPI, tenantId);
     }
 
+    /* ******************************************************************** */
+    /*                                                                      */
+    /* API To get information for an application                            */
+    /*                                                                      */
+    /*                                                                      */
+    /* ******************************************************************** */
+
+    
+    public class UnitTestResult {
+        public int percentunittest = 0;
+        public MeteorConst.STATUS status;
+        public String detailExplanation;
+        List<BEvent> listEvents = new ArrayList();
+        
+        
+    }
+    
+    /**
+     * return the list of scenario available
+     * @param tenantId
+     * @return
+     */
+    public List<String> getListScenarii(long tenantId) {
+        List<String> listNamesScenario = new ArrayList<>();
+        MeteorDAO meteorDAO = MeteorDAO.getInstance();
+        MeteorDAO.StatusDAO statusDao = meteorDAO.getListNames( tenantId ) ;
+        for (Map<String,Object> scenario : statusDao.listNamesAllConfigurations)
+        {
+            listNamesScenario.add(  MeteorToolbox.getParameterString( scenario, "name", ""));
+        }
+        return listNamesScenario;
+    }
+    
+    /**
+     * Start a unit test. The thread waits unit the scenario is executed.
+     * @param scenarioName
+     * @param processAPI
+     * @param commandAPI
+     * @param tenantId
+     * @return
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public UnitTestResult startUnitTest( final String scenarioName, final ProcessAPI processAPI, final CommandAPI commandAPI, long tenantId) {
+         
+        UnitTestResult unitTestResult = new UnitTestResult();
+
+        // first, load the scenario
+        MeteorDAO meteorDAO = MeteorDAO.getInstance();
+        MeteorDAO.StatusDAO statusDao= meteorDAO.load( scenarioName,  tenantId);
+        if (BEventFactory.isError(statusDao.listEvents)) {
+            unitTestResult.status = MeteorConst.STATUS.NOSCENARIO;
+            unitTestResult.detailExplanation="Scenario ["+scenarioName+"] does not exist";
+            unitTestResult.listEvents.addAll( statusDao.listEvents);
+            return unitTestResult;
+        }
+        // scenario is loaded in configuration.content
+        StartParameters startParameters = StartParameters.getInstanceFromJsonSt(statusDao.configuration.content);
+        // complete information
+        startParameters.executionMode = MeteorConst.EXECUTIONMODE.UNITTEST;
+        startParameters.scenarioName = scenarioName;
+        startParameters.tenantId = tenantId;
+        
+        // now we can execute this scenario
+        logger.fine(logHeader + "~~~~~~~~~~ MeteorAPI.startUnitTest() parameter=" + startParameters.toString());
+        BonitaCommandDeployment bonitaCommand = BonitaCommandDeployment.getInstance(CmdMeteor.CSTCOMMANDNAME);
+        
+        final HashMap<String, Serializable> parameters = new HashMap<>();
+        parameters.put(CmdMeteor.CSTPARAM_COMMANDNAMESTARTPARAMS, (ArrayList) startParameters.jsonListSt);
+        // parameters.put(CmdMeteor.cstParamCommandName, CmdMeteor.cstParamCommandNameStart);
+
+        logger.fine(logHeader + "~~~~~~~~~~ MeteorAPI.startUnitTest() Call Command");
+        Map<String, Object> resultCommand = bonitaCommand.callCommand(CmdMeteor.VERBE.START.toString(), parameters, tenantId, commandAPI);
+        logger.fine(logHeader + "~~~~~~~~~~ MeteorAPI.startUnitTest() : END " + resultCommand);
+        
+        unitTestResult.percentunittest      = MeteorToolbox.getParameterInteger(resultCommand, MeteorConst.CSTJSON_PERCENTUNITTEST, 0);
+        try {
+        unitTestResult.status               = MeteorConst.STATUS.valueOf( MeteorToolbox.getParameterString(resultCommand, MeteorConst.CSTJSON_GLOBALSTATUS, null));
+        } catch(Exception e) {
+            unitTestResult.status = MeteorConst.STATUS.NOSIMULATION;
+        }
+        StringBuffer detailedStatus = new StringBuffer();
+        for( Map<String,Object> robotInfo : ( List<Map<String,Object>>) MeteorToolbox.getParameterList( resultCommand, MeteorConst.CSTJSON_ROBOTS,new ArrayList() )) {
+            detailedStatus.append(robotInfo.get("name")+" ");
+            detailedStatus.append(robotInfo.get("status")+" ");
+            detailedStatus.append(robotInfo.get("explanationerror")+" - ");
+        }
+        unitTestResult.detailExplanation = detailedStatus.toString();
+
+        
+        return unitTestResult;
+    }
+    
+    
 }

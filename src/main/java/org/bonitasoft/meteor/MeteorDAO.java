@@ -68,14 +68,14 @@ public class MeteorDAO {
 
     public class StatusDAO {
 
-        public List<BEvent> listEvents = new ArrayList<BEvent>();
+        public List<BEvent> listEvents = new ArrayList<>();
         public ByteArrayOutputStream containerZip;
         public String containerName;
         public Configuration configuration;
         public List<Map<String, Object>> listNamesAllConfigurations = null;
 
         public Map<String, Object> getMap() {
-            Map<String, Object> answer = new HashMap<String, Object>();
+            Map<String, Object> answer = new HashMap<>();
             if (listNamesAllConfigurations != null) {
                 answer.put( MeteorAPI.CST_JSON_CONFIGLIST, listNamesAllConfigurations);
             }
@@ -96,6 +96,14 @@ public class MeteorDAO {
         return statusDAO;
     }
 
+    public StatusDAO initialize(long tenantId) {
+        StatusDAO statusDAO = new StatusDAO();
+        // save it
+        BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
+        bonitaProperties.setCheckDatabase(true);
+        statusDAO.listEvents.addAll(bonitaProperties.load());
+        return statusDAO;
+    }
     /**
      * 
      * @param configuration
@@ -145,7 +153,7 @@ public class MeteorDAO {
         StatusDAO statusDAO = new StatusDAO();
         // save it
         BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
-
+        bonitaProperties.setCheckDatabase(false);
         statusDAO.listEvents.addAll(bonitaProperties.load());
 
         logger.info("MeteorDAO.saveConfig: loadproperties done, events = " + statusDAO.listEvents.size());
@@ -219,7 +227,7 @@ public class MeteorDAO {
      * @return
      */
     public List<BEvent> checkAndUpdateEnvironment(long tenantId) {
-        List<BEvent> listEvents = new ArrayList<BEvent>();
+        List<BEvent> listEvents = new ArrayList<>();
         BonitaProperties bonitaProperties = new BonitaProperties(pageNameMeteor, tenantId);
 
         bonitaProperties.setCheckDatabase(true);

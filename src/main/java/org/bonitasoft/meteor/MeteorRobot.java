@@ -23,12 +23,7 @@ public abstract class MeteorRobot implements Runnable {
      */
     // public RobotType mRobotType;
 
-    protected enum ROBOTSTATUS {
-        INACTIF, STARTED, DONE, INCOMPLETEEXECUTION, FAIL
-    };
-
-   
-    public ROBOTSTATUS mStatus;
+    public MeteorConst.ROBOTSTATUS mStatus;
 
     /**
      * when the robot start
@@ -61,7 +56,7 @@ public abstract class MeteorRobot implements Runnable {
         this.mRobotName = robotName;
         this.apiAccessor = apiAccessor;
         this.meteorSimulation = meteorSimulation;
-        mStatus = ROBOTSTATUS.INACTIF;
+        mStatus = MeteorConst.ROBOTSTATUS.READYTOSTART;
     }
 
     
@@ -149,7 +144,7 @@ public abstract class MeteorRobot implements Runnable {
     public void run() {
 
         logger.info("----------- Start robot #" + mRobotId + " type[" + this.getClass().getName() + "]");
-        mStatus = ROBOTSTATUS.STARTED;
+        mStatus = MeteorConst.ROBOTSTATUS.STARTED;
 
         mCollectPerformance.clear();
         try {
@@ -159,14 +154,14 @@ public abstract class MeteorRobot implements Runnable {
         } catch (Exception e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            mStatus=ROBOTSTATUS.FAIL;
+            mStatus=MeteorConst.ROBOTSTATUS.FAIL;
             logger.severe("Robot " + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             mLogExecution.addLog("Exception " + e.toString());
 
         } catch (Error er) {
             final StringWriter sw = new StringWriter();
             er.printStackTrace(new PrintWriter(sw));
-            mStatus=ROBOTSTATUS.FAIL;
+            mStatus=MeteorConst.ROBOTSTATUS.FAIL;
 
             logger.severe("Robot " + getSignature() + " exception " + er.toString() + " at " + sw.toString());
             mLogExecution.addLog("Exception " + er.toString());
@@ -183,10 +178,10 @@ public abstract class MeteorRobot implements Runnable {
 
     }
 
-    public boolean isFinished() {
-        if (mStatus == ROBOTSTATUS.INACTIF || mStatus == ROBOTSTATUS.STARTED)
-            return false;
-        return true;
+    public boolean isRunning() {
+        if (mStatus == MeteorConst.ROBOTSTATUS.READYTOSTART || mStatus == MeteorConst.ROBOTSTATUS.STARTED)
+            return true;
+        return false;
     }
     /**
      * each robot should implement this
@@ -232,7 +227,7 @@ public abstract class MeteorRobot implements Runnable {
      *
      * @return
      */
-    public ROBOTSTATUS getStatus() {
+    public MeteorConst.ROBOTSTATUS getStatus() {
         return mStatus;
     }
 
@@ -248,15 +243,15 @@ public abstract class MeteorRobot implements Runnable {
         resultRobot.put("id", mRobotId); // mProcessDefinition.getInformation()+"
                                          // #"+mRobotId+" ";
         int percent = 0;
-        resultRobot.put(MeteorSimulation.CSTJSON_STATUS, mStatus.toString());
+        resultRobot.put(MeteorConst.CSTJSON_STATUS, mStatus.toString());
         resultRobot.put("name", mRobotName);
         resultRobot.put("explanationerror", mExplanationError );
         resultRobot.put("finalstatus", mStatus == null ? "" : mStatus.toString());
         resultRobot.put("log", mLogExecution.getLogExecution());
-        resultRobot.put(MeteorSimulation.CSTJSON_NBERRORS, mLogExecution.getNbErrors());
+        resultRobot.put(MeteorConst.CSTJSON_NBERRORS, mLogExecution.getNbErrors());
 
         if (mCollectPerformance.mOperationTotal == -1) {
-            if (mStatus == ROBOTSTATUS.DONE) {
+            if (mStatus == MeteorConst.ROBOTSTATUS.DONE) {
                 resultRobot.put("adv", "0/0");
                 percent = 0;
             } else {
@@ -271,7 +266,7 @@ public abstract class MeteorRobot implements Runnable {
             percent = 100;
         }
 
-        resultRobot.put(MeteorSimulation.CSTJSON_PERCENTADVANCE, percent);
+        resultRobot.put(MeteorConst.CSTJSON_PERCENTADVANCE, percent);
         // status.append("<td><progress max=\"100\"
         // value=\""+percent+"\"></progress>("+percent+" %)</td>");
         resultRobot.put("time", MeteorToolbox.getHumanDelay(mCollectPerformance.mCollectTimeSteps) + " for " + mCollectPerformance.getNbSteps() + " step");
