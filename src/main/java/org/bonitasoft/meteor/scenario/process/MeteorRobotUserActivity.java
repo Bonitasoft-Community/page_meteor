@@ -22,6 +22,7 @@ import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.engine.session.APISession;
 import org.bonitasoft.engine.session.SessionNotFoundException;
+import org.bonitasoft.meteor.MeteorConst;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorSimulation;
 
@@ -39,6 +40,8 @@ public class MeteorRobotUserActivity extends MeteorRobot {
 
     protected MeteorRobotUserActivity(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
         super(robotName, meteorSimulation, apiAccessor);
+        mTitle = "Activity:" ;
+
     }
 
     /*
@@ -51,6 +54,9 @@ public class MeteorRobotUserActivity extends MeteorRobot {
     public void executeRobot() {
         LoginAPI loginAPI = null;
         APISession userActivityApiSession = null;
+        setStatus( MeteorConst.ROBOTSTATUS.STARTED );
+        mTitle = "Activity:" ;
+
         try {
             //mCollectPerformance.mTitle = "USER:" + mMeteorUser.mUserName + " #" + mRobotId;
             //mCollectPerformance.mOperationTotal = mMeteorUser.mNumberOfCase;
@@ -66,7 +72,8 @@ public class MeteorRobotUserActivity extends MeteorRobot {
             mCollectPerformance.mOperationIndex = 0;
             while (mCollectPerformance.mOperationIndex < 10 /* mMeteorUser.mNumberOfCase */) {
                 // -------------------------------------- getPendingTask
-
+                if (pleaseStop())
+                    return;
                 // List<HumanTaskInstance> listResult =
                 // processAPI.getPendingHumanTaskInstances(userId, 0,
                 // 10, ActivityInstanceCriterion.EXPECTED_END_DATE_ASC);
@@ -82,7 +89,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
                 long timeEnd = System.currentTimeMillis();
                 mCollectPerformance.collectOneStep(timeEnd - timeStart);
 
-                HumanTaskInstance pendingTask = pendingTasks.size() > 0 ? pendingTasks.get(0) : null;
+                HumanTaskInstance pendingTask = ! pendingTasks.isEmpty()? pendingTasks.get(0) : null;
                 if (pendingTask != null && pendingTask.getProcessDefinitionId() != 100 /* mMeteorUser.mProcessDefinitionId */) {
                     pendingTask = null;
                 }
@@ -124,6 +131,7 @@ public class MeteorRobotUserActivity extends MeteorRobot {
         } catch (final LoginException e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
         } catch (final UpdateException e) {
@@ -134,11 +142,13 @@ public class MeteorRobotUserActivity extends MeteorRobot {
         } catch (final FlowNodeExecutionException e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
         } catch (final SearchException e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
             /*
@@ -154,16 +164,19 @@ public class MeteorRobotUserActivity extends MeteorRobot {
         } catch (final BonitaHomeNotSetException e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
         } catch (final ServerAPIException e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
         } catch (final UnknownAPITypeException e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
         } finally {

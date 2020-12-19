@@ -1,9 +1,6 @@
 package org.bonitasoft.custompage.meteor.test;
 
-import static org.junit.Assert.fail;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bonitasoft.engine.api.APIAccessor;
@@ -26,10 +23,6 @@ import org.bonitasoft.engine.platform.LoginException;
 import org.bonitasoft.engine.platform.UnknownUserException;
 import org.bonitasoft.engine.session.APISession;
 import org.bonitasoft.engine.util.APITypeManager;
-import org.bonitasoft.log.event.BEvent;
-import org.bonitasoft.log.event.BEventFactory;
-import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
-import org.bonitasoft.meteor.scenario.ScenarioCmd;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,28 +32,11 @@ public class TestScenario {
     public void setUp() throws Exception {
     }
 
-    @Test
-    public void testMeteorMe() {
-        final APISession apiSession = login();
-        final APIAccessor apiAccessor = new TestAccessorImpl(apiSession);
-
-        final ScenarioCmd scenario = new ScenarioCmd("");
-        scenario.addInScenario("CreateCase('MeteorMe', '1.0')");
-        final List<BEvent> listEvents = scenario.decodeScenario();
-        if (BEventFactory.isError(listEvents)) {
-            fail("Not yet implemented");
-            return;
-        }
-        LogExecution logExecution = new LogExecution();
-        for (int i = 0; i < scenario.listSentences.size(); i++) {
-            scenario.listSentences.get(i).execute(1, logExecution);
-        }
-
-    }
+   
 
     public APISession login() {
         try {
-            final Map<String, String> map = new HashMap<String, String>();
+            final Map<String, String> map = new HashMap<>();
 
             map.put("server.url", "http://localhost:8080");
             map.put("application.name", "bonita");

@@ -222,11 +222,50 @@ appCommand.controller('MeteorControler',
 	}
 	this.postCollectExperience = function( jsonResult ) {
 		console.log("postCollectExperience : listevents="+jsonResult.listevents);
-		this.listeventsexperience  		= jsonResult.listevents;
+		this.experience.listevents 		= jsonResult.listevents;
 		
 		this.experience.scenarii 		= jsonResult.experience.scenarii;
 	}
 	
+	this.removeExperience= function ( scenarioToRemove ) {
+		console.log('removeExperienceindex scenarion='+scenarioToRemove);
+		
+		var index = this.experience.scenarii.indexOf(scenarioToRemove);
+		console.log('removeExperienceindex index='+index);
+		this.experience.scenarii.splice(index, 1);
+		/*
+		for (var index in this.experience.scenarii)
+		{
+			if (this.experience.scenarii == scenarioToRemove ) {
+				console.log('removeExperienceindex index='+index);
+				this.experience.scenarii.splice(index, 1);
+			}
+		}
+		*/
+	}
+	this.setAllVersionProcess = function() {
+		// scenario in ctrl.experience.scenarii
+		for (var index in this.experience.scenarii)
+		{
+			var scenario = this.experience.scenarii[ index ];
+			scenario.allowrecentversion = true;
+		}
+	}
+	this.setAnonyseUser = function () {
+		// scenario in ctrl.experience.scenarii
+		for (var index in this.experience.scenarii)
+		{
+			var scenario = this.experience.scenarii[ index ];
+			scenario.anyUserCreatedBy=true;
+			// timeline in scenario.timelines
+			for (var indexact in scenario.timelines ) 
+			{
+				var timeline =  scenario.timelines[ indexact ];
+				timeline.anyUser = true;
+			}
+		}
+		
+	}
 	
 	// ------------------------------------------------------------------------------------------------------
 	// Start
@@ -242,6 +281,9 @@ appCommand.controller('MeteorControler',
 		this.operation="Start";
 		this.mode=mode;
 		this.execution.listevents='';
+		this.execution.robots = [];
+		this.execution.percentunittest=0;
+		
 		this.sendAllOnServer( this, "start", "start");
 		// this.starttimer();
 	

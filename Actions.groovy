@@ -358,12 +358,12 @@ public class Actions {
                 response.addHeader("content-type", "application/zip");
                 
                 
-                File file = new File("c:/temp/meteor.zip");
+                /* File file = new File("c:/temp/meteor.zip");
                 OutputStream fop = new FileOutputStream(file);
                 statusDao.containerZip.writeTo( fop );
                 fop.flush();
                 fop.close();
-                
+                */
                 
                 OutputStream output = response.getOutputStream();
 

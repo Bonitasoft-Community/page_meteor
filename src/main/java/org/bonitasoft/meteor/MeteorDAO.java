@@ -343,7 +343,7 @@ public class MeteorDAO {
             return statusDAO;
         String configurationImported = "";
 
-        List<String> listParentTmpFile = new ArrayList<String>();
+        List<String> listParentTmpFile = new ArrayList<>();
         try {
             listParentTmpFile.add(pageDirectory.getCanonicalPath() + "/../../../tmp/");
             listParentTmpFile.add(pageDirectory.getCanonicalPath() + "/../../");

@@ -27,6 +27,7 @@ import org.bonitasoft.engine.operation.OperationBuilder;
 import org.bonitasoft.engine.search.SearchOptionsBuilder;
 import org.bonitasoft.engine.search.SearchResult;
 import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.meteor.MeteorConst;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorSimulation;
 import org.bonitasoft.meteor.MeteorSimulation.LogExecution;
@@ -40,7 +41,7 @@ public class MeteorRobotActivity extends MeteorRobot {
 
     public MeteorRobotActivity(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
         super(robotName, meteorSimulation, apiAccessor);
-
+        mTitle = "Activity";
     }
 
     public void setParameters(final MeteorDefActivity meteorDefinitionActivity) {
@@ -49,13 +50,14 @@ public class MeteorRobotActivity extends MeteorRobot {
 
     @Override
     public void executeRobot() {
-        mCollectPerformance.mTitle = "EXECUTE ACTIVITY: " + mMeteorActivity.getInformation() + " #" + getRobotId();
+        mTitle = "Activity:" + mMeteorActivity.getInformation() + " #" + getRobotId();
         mCollectPerformance.mOperationTotal = mMeteorActivity.mNumberOfCases;
         ProcessAPI processAPI = getAPIAccessor().getProcessAPI();
         IdentityAPI identityAPI = getAPIAccessor().getIdentityAPI();
+        setStatus( MeteorConst.ROBOTSTATUS.STARTED);
 
         // -------------------------------------- Activity
-        List<String> alreadyLoggedException = new ArrayList<String>();
+        List<String> alreadyLoggedException = new ArrayList<>();
 
         long timeStart = System.currentTimeMillis();
 
@@ -67,6 +69,8 @@ public class MeteorRobotActivity extends MeteorRobot {
             timeStart = System.currentTimeMillis();
             mMeteorActivity.mInputs.setRunSteps(mCollectPerformance.mOperationTotal);
             for (mCollectPerformance.mOperationIndex = 0; mCollectPerformance.mOperationIndex < mCollectPerformance.mOperationTotal; mCollectPerformance.mOperationIndex++) {
+                if (pleaseStop())
+                    return;
                 logger.info("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " ------ Advancement " + mCollectPerformance.mOperationIndex + " / " + mMeteorActivity.mNumberOfCases + " Sleep[" + mMeteorActivity.mTimeSleep + "]");
 
                 // -------------------------------------- execute
@@ -89,10 +93,11 @@ public class MeteorRobotActivity extends MeteorRobot {
                 Thread.sleep(mMeteorActivity.mTimeSleep);
 
             } // end loop
-
+            setStatus( MeteorConst.ROBOTSTATUS.DONE);
         } catch (Exception e) {
             final StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
             logger.severe("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " exception " + e.toString() + " at " + sw.toString());
             if (!alreadyLoggedException.contains(e)) {
@@ -119,7 +124,6 @@ public class MeteorRobotActivity extends MeteorRobot {
 
         SearchResult<User> searchUser = identityAPI.searchUsers(new SearchOptionsBuilder(0, 10).done());
         user = searchUser.getCount() > 0 ? searchUser.getResult().get(0) : null;
-        List<String> alreadyLoggedException = new ArrayList<String>();
 
         // search a task
         int countExecute = 10;

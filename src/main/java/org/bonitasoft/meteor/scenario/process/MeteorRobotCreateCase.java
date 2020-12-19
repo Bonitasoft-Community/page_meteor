@@ -46,6 +46,7 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 
     public MeteorRobotCreateCase(String robotName, MeteorSimulation meteorSimulation, final APIAccessor apiAccessor) {
         super( robotName, meteorSimulation, apiAccessor);
+        mTitle = "CreateCase:" ;
     }
 
     /* ******************************************************************** */
@@ -81,8 +82,9 @@ public class MeteorRobotCreateCase extends MeteorRobot {
     @Override
     public void executeRobot() {
 
-        mCollectPerformance.mTitle = "CREATE CASE: " + mMeteorProcess.getInformation() + " #" + getRobotId();
-        setSignatureInfo("CREATE CASE: " + mMeteorProcess.getInformation());
+        mTitle = "CreateCase:" + mMeteorProcess.getInformation() + " #" + getRobotId();
+        setSignatureInfo("CreateCase:" + mMeteorProcess.getInformation());
+        setStatus( MeteorConst.ROBOTSTATUS.STARTED );
 
         mCollectPerformance.mOperationTotal = mMeteorProcess.mNumberOfCases;
         final ProcessAPI processAPI = getAPIAccessor().getProcessAPI();
@@ -99,6 +101,9 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 
             mMeteorProcess.mInputs.setRunSteps(mMeteorProcess.mNumberOfCases);
             for (mCollectPerformance.mOperationIndex = 0; mCollectPerformance.mOperationIndex < mMeteorProcess.mNumberOfCases; mCollectPerformance.mOperationIndex++) {
+                if (pleaseStop())
+                    return;
+
                 logger.info("--------- SID #" + meteorSimulation.getId() + " ROBOT #" + getRobotId() + " ------ Advancement " + mCollectPerformance.mOperationIndex + " / " + mMeteorProcess.mNumberOfCases + " Sleep[" + mMeteorProcess.mTimeSleep + "]");
 
                 // select the input
@@ -126,8 +131,8 @@ public class MeteorRobotCreateCase extends MeteorRobot {
 
             logger.severe("Robot #" + getSignature() + " exception " + e.toString() + " at " + sw.toString());
             mLogExecution.addLog("Error during create case " + e.toString());
+            setStatus( MeteorConst.ROBOTSTATUS.FAIL );
 
-            mStatus = MeteorConst.ROBOTSTATUS.FAIL;
             addError("Exception "+e.getMessage() );
             mLogExecution.addEvent(new BEvent(MeteorSimulation.EventLogExecution, e, "ProcessDefinitionId=" + mMeteorProcess.mProcessDefinitionId));
         }

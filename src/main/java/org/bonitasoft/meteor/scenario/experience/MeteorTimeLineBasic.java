@@ -2,7 +2,9 @@ package org.bonitasoft.meteor.scenario.experience;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bonitasoft.casedetails.CaseDetails;
 import org.bonitasoft.casedetails.CaseDetails.CaseDetailFlowNode;
@@ -71,17 +73,30 @@ public class MeteorTimeLineBasic extends MeteorTimeLine {
             }
         });
 
+        // keep all AbortedBy Boundary event activity : we don't want to register them to play them
+        Set<Long> flowNodesAborted = new HashSet<>();
+        for (CaseDetailFlowNode detailFlowNode : listCaseDetails) {
+            if (ActivityStates.ABORTED_STATE.equals(detailFlowNode.getState()) && detailFlowNode.isArchived()) {
+                flowNodesAborted.add( detailFlowNode.getSourceObjectId());
+            }
+        }
         for (CaseDetailFlowNode detailFlowNode : listCaseDetails) {
             if (detailFlowNode.getType().equals(FlowNodeType.USER_TASK) || detailFlowNode.getType().equals(FlowNodeType.HUMAN_TASK)) {
                 // keep only the executed state - READY for the Bonita Engine and executed tasks
                 if (ActivityStates.READY_STATE.equals(detailFlowNode.getState()) && detailFlowNode.isArchived()) {
+                    // do not register a AbortedByBoundary event tasks
+                    if (flowNodesAborted.contains( detailFlowNode.getSourceObjectId()))
+                        continue;
+                    
                     TimeLineStep timeLineStep = addOneStep();
-                    timeLineStep.activityName = detailFlowNode.getName();
-                    timeLineStep.sourceObjectId = detailFlowNode.getArchFlownNodeInstance().getSourceObjectId();
+                    timeLineStep.activityName           = detailFlowNode.getName();
+                    timeLineStep.displayName            = detailFlowNode.getDisplayName();
+                    timeLineStep.isMultiInstanciation   = detailFlowNode.isMultiInstanciationTask;
+                    timeLineStep.sourceObjectId         = detailFlowNode.getArchFlownNodeInstance().getSourceObjectId();
                     timeLineStep.sourceActivityDefinitionId = detailFlowNode.getFlownodeDefinitionId();
-                    timeLineStep.listContractValues = detailFlowNode.getListContractValues();
-                    timeLineStep.timelinems = detailFlowNode.getDate().getTime();
-                    timeLineStep.timeFromBeginingms = timeLineStep.timelinems - dateCreateCase;
+                    timeLineStep.listContractValues     = detailFlowNode.getListContractValues();
+                    timeLineStep.timelinems             = detailFlowNode.getDate().getTime();
+                    timeLineStep.timeFromBeginingms     = timeLineStep.timelinems - dateCreateCase;
                     // basic time line: do not wait
                     timeLineStep.timeWaitms = 0;
                 }

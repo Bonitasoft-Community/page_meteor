@@ -63,7 +63,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em">V4.0.0</a></td>
+					<td style="font-size: 0.8em">V4.0.0 Dec 14 2020</a></td>
 				</tr>
 				</div>
 			</table>
@@ -112,10 +112,13 @@
 			<td>Case Id<input ng-model="ctrl.experience.listCasesId"  placeholder="1000,1003,1005" ng-disabled="! ctrl.experience.enable" title="multiple cases separated by a comma are accepted">
 			</td><td ng-if="ctrl.wait"><span class="Loading">.</span> Collect in progress...</span>
 			</td><td><button ng-click="ctrl.collectExperience( 'addCasesId' )" class="btn btn-info" ng-disabled="ctrl.wait || ! ctrl.experience.enable"">Collect Experience</button>
+			</td><td style="padding-left: 20px"><button ng-click="ctrl.setAllVersionProcess()" class="btn btn-info btn-xs" ng-disabled="ctrl.wait || ! ctrl.experience.enable">Set all Process Version</button>
+			</td><td style="padding-left: 20px"><button ng-click="ctrl.setAnonyseUser()" class="btn btn-info btn-xs" ng-disabled="ctrl.wait || ! ctrl.experience.enable">Set Anonymize users</button>
 			</td>
+			
 			</tr>
 		</table>		
-		<div ng-bind-html="ctrl.getHtmls( ctrl.listeventsexperience )"></div>
+		<div ng-bind-html="ctrl.getHtml( ctrl.experience.listevents )"></div>
 										
 					
 		<!-- style="background-color: #f9f9f9;" -->
@@ -154,7 +157,7 @@
 							<span class="glyphicon glyphicon-list-alt"></span>
 						</a>
 					</td>				
-					<td style="background-color: #D9EDF7; text-align: center"><button ng-click="ctrl.experience.scenarii.splice(index, 1)" class="btn btn-danger btn-xs">Remove</button></td>
+					<td style="background-color: #D9EDF7; text-align: center"><button ng-click="ctrl.removeExperience( scenario );" class="btn btn-danger btn-xs">Remove</button></td>
 				</tr>
 				<tr ng-if="scenario.showtimeline == 'show'">
 					<td colspan="1">
@@ -172,23 +175,36 @@
 								</div>
 								<div class="panel-body">
 								<table style="width:100%">
-								<tr>
-									<td>Instantiation</td>
-									<td></td>
-									<td></td>
-									<td>
-									<textarea  cols="70" rows="5" ng-model="scenario.contract"  ng-disabled="true"></textarea>
-									</td>
-								</tr>
-								<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline == 'show'">
-									<td >{{timeline.actname}}</td>
-									<td class="align-text:right"><i>Executed after</i><br>{{timeline.timeLineFromBeginningMS_st}}</td>
-									<td class="align-text:right">{{timeline.timewaitms}} ms</td>
-									<td >
-										<textarea cols="70" rows="5" ng-model="timeline.contract"  ng-disabled="true"></textarea>
-									</td>
-								</tr>
-									</table>
+									<tr><th>Action</th><th>Time Line</th><th>Wait Before</th><th>User</th><th>Contract</th></tr>
+									<tr>
+										<td>Instantiation</td>
+										<td></td>
+										<td></td>
+										<td class="align-text:right">{{scenario.usernamecreatedby}}<br>
+											<input type="checkbox" ng-model="scenario.anyUserCreatedBy" title="Any user to create the case if this user does not exist"></td>
+										<td>
+										<textarea  cols="70" rows="5" ng-model="scenario.contract"  ng-disabled="true"></textarea>
+										</td>
+									</tr>
+									<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline == 'show'">
+										<td >{{timeline.actname}}
+											<div ng-if="timeline.actismultiinstanciation">
+												<br> <div title="This activity is a Multi Instance: so, search is based on the display name">{{timeline.actdisplayname}}</div>
+											</div>
+										
+										</td>
+										<td class="align-text:right">{{timeline.timeLineFromBeginningMS_st}}</td>										
+										<td class="align-text:right">
+											<input type="number" ng-model="timeline.timewaitms" style="text-align: right; width: 80px;" title="Before executing this action, sleep this time (in ms)" ng-disabled="! ctrl.experience.enable">
+										</td>
+										<td class="align-text:right">{{timeline.executedby}}<br>
+												<input type="checkbox" ng-model="timeline.anyUser" title="Any user if this user does not exist">
+										</td>
+										<td >
+											<textarea cols="70" rows="5" ng-model="timeline.contract"  ng-disabled="true"></textarea>
+										</td>
+									</tr>
+								</table>
 									
 									
 									

@@ -49,6 +49,7 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
     public final static String CSTPARAM_COMMANDEXECID = "ExecId";
 
     public final static String CSTPARAM_RESULTLISTEVENTSST = "listevents";
+    public final static String CSTPARAM_RESULTLOG = "log";
     public final static String CSTPARAM_RESULTSIMULATIONID = "simulationid";
 
     

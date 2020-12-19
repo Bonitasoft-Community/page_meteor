@@ -17,7 +17,6 @@ import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 import org.bonitasoft.meteor.MeteorSimulation.Estimation;
 import org.bonitasoft.meteor.cmd.CmdMeteor;
-import org.bonitasoft.meteor.scenario.ScenarioCmd;
 import org.bonitasoft.meteor.scenario.experience.MeteorScenarioExperience;
 import org.bonitasoft.meteor.scenario.process.MeteorScenarioProcess;
 
@@ -36,17 +35,24 @@ public class MeteorOperation {
 
         public HashMap<String, Object> result = new HashMap<>();
         public List<BEvent> listEvents = new ArrayList<>();
-        public MeteorConst.STATUS status;
+        public MeteorConst.SIMULATIONSTATUS status;
+        public StringBuilder log = new StringBuilder();
+        public long idSimulation;
         
+        public void addLog(String message ) {
+            log.append( message+";");
+            logger.info(" &~~~~~~~& MeteorOperation SIMULID[" + idSimulation + "]"+message);  
+            
+        }
 
         /**
          * We must keep MashMap because the JSON parser don't know how to JSONify a Map object
          * @return
          */
         public HashMap<String, Object> getMap() {
+            // add some information in the result
             result.put(CmdMeteor.CSTPARAM_RESULTLISTEVENTSST, BEventFactory.getHtml(listEvents));
-            // result.put(MeteorAccess.cstParamResultStatus, status == null ? ""
-            // : status.toString());
+            result.put(CmdMeteor.CSTPARAM_RESULTLOG, log.toString() );
             return result;
         }
     }
@@ -64,17 +70,18 @@ public class MeteorOperation {
     public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor) {
         final MeteorResult meteorResult = new MeteorResult();
         final MeteorSimulation meteorSimulation = new MeteorSimulation(startParameters, apiAccessor);
-
+        meteorResult.idSimulation = meteorSimulation.getId();
+                
+        meteorResult.addLog( "MeteorOperation.start");
+        
         try {
-            logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] by [" + MeteorOperation.class.getName() + "] : " + startParameters.toString());
-
+            
+            meteorResult.addLog( " Parameters: " + startParameters.toString());
             // Decode here the Json
             startParameters.decodeFromJsonSt();
 
             if (simulation) {
-
-                logger.info("  >>>>>>>>>>>>>>>>>> Simulation <<<<<<<<<<<<<<<< ");
-
+                meteorResult.addLog( "  >>>>>>>>>>>>>>>>>> Simulation <<<<<<<<<<<<<<<< " );
                 countRefresh = 0;
                 meteorResult.result.put("Start", "at " + new Date());
                 return meteorResult;
@@ -83,7 +90,7 @@ public class MeteorOperation {
             simulationInProgress.put(meteorSimulation.getId(), meteorSimulation);
             meteorResult.result.put(CmdMeteor.CSTPARAM_RESULTSIMULATIONID, String.valueOf(meteorSimulation.getId()));
 
-            MeteorScenario[] listMeteorScenario = new MeteorScenario[] { new MeteorScenarioProcess(startParameters.scenarioName ), new MeteorScenarioExperience(startParameters.scenarioName ), new ScenarioCmd(startParameters.scenarioName ) };
+            MeteorScenario[] listMeteorScenario = new MeteorScenario[] { new MeteorScenarioProcess(startParameters.scenarioName ), new MeteorScenarioExperience(startParameters.scenarioName )};
 
             for (MeteorScenario meteorScenario : listMeteorScenario) {
                 meteorResult.listEvents.addAll(meteorScenario.registerInSimulation(startParameters, meteorSimulation, apiAccessor));
@@ -106,67 +113,64 @@ public class MeteorOperation {
             // meteorResult.listEvents.addAll( meteorScenarioProcess.initialize(tenantId));
 
             if (BEventFactory.isError(meteorResult.listEvents)) {
-                logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] : NOROBOT - ERROR in InitializeProcess, end");
-                meteorResult.status = MeteorConst.STATUS.NOROBOT;
+                meteorResult.addLog( "NOROBOT - ERROR in InitializeProcess, end");
+                
+                meteorResult.status = MeteorConst.SIMULATIONSTATUS.NOROBOT;
+                meteorSimulation.setStatus( MeteorConst.SIMULATIONSTATUS.NOROBOT);
                 return meteorResult;
             }
 
-            // Ok, now let's look on the processDefinition list, and for each
-            // robots
-            // defined, let's register it in the simulation
-            // meteorResult.listEvents.addAll(meteorScenarioProcess.registerInSimulation(meteorSimulation, apiAccessor));
-
-            // 3. Scenario : cmd et groovy
-            /*
-             * for (final Map<String, Object> mapScenario : startParameters.listOfScenarii) {
-             * final Scenario meteorScenario = new Scenario(apiAccessor, tenantId);
-             * meteorScenario.fromMap(mapScenario);
-             * meteorResult.listEvents.addAll(meteorScenario.registerInSimulation(meteorSimulation, apiAccessor));
-             * }
-             */
-
-            logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] : Start ? ");
+            // logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] : Start ? ");
 
             if (meteorSimulation.getNumberOfRobots() == 0) {
-                logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] : Nothing to start");
+                meteorResult.addLog( " &~~~~~~~& MeteorOperation.Start  : No Robots detected, Nothing to start");
                 // listEvents.add()
                 // it's possible if we have a scenario
                 meteorResult.listEvents.add(new BEvent(eventCheckNothingToStart, "Nothing to start"));
+                meteorSimulation.setStatus( MeteorConst.SIMULATIONSTATUS.NOROBOT);
 
-                meteorResult.status = MeteorConst.STATUS.NOROBOT;
+                meteorResult.status = MeteorConst.SIMULATIONSTATUS.NOROBOT;
             } else {
-                meteorSimulation.runTheSimulation();
-                logger.info(" &~~~~~~~& MeteorOperation.Start SIMULID[" + meteorSimulation.getId() + "] : STARTED !");
-
-                meteorResult.result.putAll(meteorSimulation.refreshDetailStatus(apiAccessor));
+                meteorResult.addLog( "Run the simulation with "+meteorSimulation.getNumberOfRobots()+" robots" );
                 
-                if (meteorSimulation.getStatus() ==   MeteorConst.STATUS.STARTED)
+                meteorSimulation.runTheSimulation();
+                
+                meteorResult.addLog(" STARTED !");
+
+                meteorResult.result.putAll( meteorSimulation.refreshDetailStatus(apiAccessor));
+                
+                if (meteorSimulation.getStatus() ==   MeteorConst.SIMULATIONSTATUS.STARTED)
                     meteorResult.listEvents.add(MeteorSimulation.EventStarted);
-                else if (meteorSimulation.getStatus() ==   MeteorConst.STATUS.SUCCESSUNITTEST)
+                else if (meteorSimulation.getStatus() ==   MeteorConst.SIMULATIONSTATUS.SUCCESSUNITTEST)
                     meteorResult.listEvents.add(MeteorSimulation.EventSuccessUnitTest);
                 // else : will be part of the meteorSimulation.refreshDetailStatus()
                 
+                meteorResult.addLog("Status="+meteorSimulation.getStatus().toString());
                 meteorResult.status = meteorSimulation.getStatus();
             }
         } catch (Error er) {
             StringWriter sw = new StringWriter();
             er.printStackTrace(new PrintWriter(sw));
             String exceptionDetails = sw.toString();
-            meteorSimulation.setStatus(MeteorConst.STATUS.DONE);
+            meteorSimulation.setStatus(MeteorConst.SIMULATIONSTATUS.DONE);
 
             meteorResult.listEvents.add(new BEvent(MeteorSimulation.EventLogBonitaException, er.toString()));
-            logger.severe("meteorOperation.Error " + er + " at " + exceptionDetails);
-            meteorResult.status = MeteorConst.STATUS.DONE;
+            meteorResult.addLog("ERROR " + er + " at " + exceptionDetails);            
+            logger.severe("meteorOperation.Error " + er.getMessage() + " at " + exceptionDetails);
+            
+            meteorResult.status = MeteorConst.SIMULATIONSTATUS.DONE;
 
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             String exceptionDetails = sw.toString();
-            meteorSimulation.setStatus(MeteorConst.STATUS.DONE);
+            meteorSimulation.setStatus(MeteorConst.SIMULATIONSTATUS.DONE);
 
             meteorResult.listEvents.add(new BEvent(MeteorSimulation.EventLogBonitaException, e, ""));
+            meteorResult.addLog("EXCEPTION  " + e.getMessage() + " at " + exceptionDetails);            
             logger.severe("meteorOperation.Error " + e + " at " + exceptionDetails);
-            meteorResult.status = MeteorConst.STATUS.DONE;
+            
+            meteorResult.status = MeteorConst.SIMULATIONSTATUS.DONE;
 
         }
         return meteorResult;
@@ -209,8 +213,8 @@ public class MeteorOperation {
                 allSimulations += simulation.getId() + ",";
             }
             meteorResult.listEvents.add(new BEvent(eventNoSimulation, "SimulationId[" + statusParameters.simulationId + "] allSimulation=[" + allSimulations + "]"));
-            meteorResult.status = MeteorConst.STATUS.NOSIMULATION;
-            meteorResult.result.put(MeteorConst.CSTJSON_STATUS, MeteorConst.STATUS.NOSIMULATION.toString());
+            meteorResult.status = MeteorConst.SIMULATIONSTATUS.NOSIMULATION;
+            meteorResult.result.put(MeteorConst.CSTJSON_STATUS, MeteorConst.SIMULATIONSTATUS.NOSIMULATION.toString());
             return meteorResult;
         }
 

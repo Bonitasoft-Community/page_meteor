@@ -5,8 +5,8 @@ public class MeteorConst {
 
     public enum EXECUTIONMODE { CLASSIC, UNITTEST }
 
-    public enum STATUS {
-        DEFINITION, NOROBOT, STARTED, FINALISATION, DONE,NOSCENARIO, NOSIMULATION, FAILEDUNITTEST,SUCCESSUNITTEST, COMPLETEEXECUTION, INCOMPLETEEXECUTION
+    public enum SIMULATIONSTATUS {
+        DEFINITION, NOROBOT, STARTING, STARTED, FINALISATION, DONE,NOSCENARIO, NOSIMULATION, FAILEDUNITTEST,SUCCESSUNITTEST, COMPLETEEXECUTION, INCOMPLETEEXECUTION
     }
 
     /**
@@ -15,7 +15,7 @@ public class MeteorConst {
      *
      */
     public enum ROBOTSTATUS {
-        READYTOSTART, STARTED, DONE, INCOMPLETEEXECUTION, FAIL
+        READYTOSTART, STARTING, FAILSTART, STARTED, DONE, INCOMPLETEEXECUTION, FAIL, KILLED
     }
 
     public static final String CSTJSON_PERCENTUNITTEST =  "percentunittest";
@@ -40,4 +40,10 @@ public class MeteorConst {
     public static final String CSTJSON_MEM_USED_MB = "memUsedMb";
     public static final String CSTJSON_ARMTIMER = "armtimer";
 
+    public static final String CSTJSON_ROBOTTITLE = "title";
+    public static final String CSTJSON_ROBOTSTATUS = "status";
+
+    public static final String CSTJSON_ROBOTNAME = "name";
+
+    
 }

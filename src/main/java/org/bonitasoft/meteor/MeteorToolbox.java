@@ -147,7 +147,7 @@ public class MeteorToolbox {
         if (calculMs > 0 && delayMs < 60 * 1000)
             accumulate += calculMs + " ms ";
         if (accumulate.length() == 0)
-            accumulate = "";
+            accumulate = "0 s";
         // else
         // accumulate+="("+delayMs+")";
         return accumulate;
