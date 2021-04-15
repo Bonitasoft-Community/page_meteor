@@ -4,10 +4,10 @@
 	<artifactId>bonita-meteor</artifactId>
 	<!-- Attention, when number change here, update MeteorAPI.getMeteorCommandDescription -->
 	
-	<version>4.0.0</version>
+	<version>4.0.1</version>
 	<name>CustomPageMeteor</name>
 	<properties>
-        <bonita.version>7.8.4</bonita.version>
+        <bonita.version>7.12.3</bonita.version>
 	   	<maven.compiler.source>1.8</maven.compiler.source>
    		<maven.compiler.target>1.8</maven.compiler.target>
   	</properties>

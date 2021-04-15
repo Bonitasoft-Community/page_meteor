@@ -196,7 +196,7 @@ public class MeteorAPI {
         BonitaCommandDescription commandDescription = new BonitaCommandDescription(CmdMeteor.CSTCOMMANDNAME, pageDirectory);
         commandDescription.forceDeploy = false;
         commandDescription.mainCommandClassName = CmdMeteor.class.getName();
-        commandDescription.mainJarFile = "bonita-meteor-4.0.0.jar";
+        commandDescription.mainJarFile = "bonita-meteor-4.0.1.jar";
         commandDescription.commandDescription = CmdMeteor.CSTCOMMANDDESCRIPTION;
 
         commandDescription.addJarDependencyLastVersion("bonita-event", "1.10.0", "bonita-event-1.10.0.jar");
