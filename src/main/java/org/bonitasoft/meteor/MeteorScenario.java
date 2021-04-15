@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.scenario.process.MeteorDefProcess;
 
 /* ************************************************************************ */
@@ -25,7 +24,7 @@ public abstract class MeteorScenario {
     public MeteorScenario(String name ) {
         this.mScenarioName = name;
     }
-    public abstract List<BEvent> registerInSimulation(StartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor);
+    public abstract List<BEvent> registerInSimulation(MeteorStartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor);
 
     /**
      * Simulation need to register all robots created by the scenario. This method instanciated all robots, ready to start

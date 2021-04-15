@@ -58,7 +58,7 @@ import org.bonitasoft.properties.BonitaProperties;
 import org.bonitasoft.command.BonitaCommandDeployment.DeployStatus;
 
 import org.bonitasoft.meteor.MeteorAPI;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
+import org.bonitasoft.meteor.MeteorStartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 import org.bonitasoft.meteor.scenario.process.MeteorScenarioProcess.ListProcessParameter;
 
@@ -257,7 +257,7 @@ public class Actions {
                     actionAnswer.isResponseMap=false;
                     return actionAnswer;
                 }
-                actionAnswer.setResponse( meteorAPI.startup( pageResourceProvider.getPageDirectory(), commandAPI, null, apiSession.getTenantId() ));
+                actionAnswer.setResponse( meteorAPI.startup( pageResourceProvider.getPageDirectory(), commandAPI, processAPI, null, apiSession.getTenantId() ));
                     
               
             }
@@ -424,9 +424,9 @@ public class Actions {
         }
 
         // logger.info("Json=["+paramJsonSt+"]");
-        StartParameters startParameters;
+        MeteorStartParameters startParameters;
         logger.fine(" We get a LIST JSON size=("+accumulateJson.length()+" - first value =["+ (accumulateJson==null ? null :(accumulateJson.length()>100 ? accumulateJson.substring(0,100) :accumulateJson))+ "]");
-        startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
+        startParameters = MeteorStartParameters.getInstanceFromJsonSt( accumulateJson );
         
         answer.putAll( meteorAPI.start(startParameters, processAPI, commandAPI,tenantId));
 

@@ -290,9 +290,9 @@ public class MeteorRobotExperience extends MeteorRobot {
         }
         SearchResult<User> searchUser;
         try {
-            mLogExecution.addLog("finUserId: beforeSearch");
+            
             searchUser = identityAPI.searchUsers(sob.done());
-            mLogExecution.addLog("finUserId: afterSearch count=" + searchUser.getCount());
+            
 
             if (searchUser.getCount() > 0) {
                 mLogExecution.addLog("finUserId: return userId[" + searchUser.getResult().get(0).getId() + "]");
@@ -308,7 +308,7 @@ public class MeteorRobotExperience extends MeteorRobot {
                 searchUser = identityAPI.searchUsers(sob.done());
                 mLogExecution.addLog("finUserId: afterSearch count=" + searchUser.getCount());
                 if (searchUser.getCount() > 0) {
-                    mLogExecution.addLog("finUserId: return userId[" + searchUser.getResult().get(0).getId() + "]");
+                    mLogExecution.addLog("findUserId: return userId[" + searchUser.getResult().get(0).getId() + "]");
                     return searchUser.getResult().get(0).getId();
                 }
             }

@@ -4,7 +4,7 @@
 
 (function() {
 
-<!-- 'ng-file-upload' -->
+// 'ng-file-upload' 
 var appCommand = angular.module('meteormonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize','ngModal','angularFileUpload','ngCookies']);
 
 
@@ -280,6 +280,8 @@ appCommand.controller('MeteorControler',
 		this.wait=true;
 		this.operation="Start";
 		this.mode=mode;
+		if (! this.execution)
+			this.execution= {};
 		this.execution.listevents='';
 		this.execution.robots = [];
 		this.execution.percentunittest=0;
@@ -385,10 +387,12 @@ appCommand.controller('MeteorControler',
 					window.location.reload();
 				}
 				
-				self.config.list 		= jsonResult.configList;
-				self.listeventsconfig 	= jsonResult.listeventsconfig;
-				self.deploimentsuc  	= jsonResult.deploimentsuc;
-				self.deploimenterr  	= jsonResult.deploimenterr;
+				self.config.list 				= jsonResult.configList;
+				self.listeventsconfig 		= jsonResult.listeventsconfig;
+				self.deploimentsuc  		= jsonResult.deploimentsuc;
+				self.deploimenterr  		= jsonResult.deploimenterr;
+				self.execution 	 			= {};
+				self.execution.listSimulations = jsonResult.listSimulations;
 				console.log("deploymebntsuc ="+self.deploimentsuc);
 				self.wait				= false;
 			})
@@ -436,9 +440,9 @@ appCommand.controller('MeteorControler',
 				}
 			
 				
-				self.execution 							= jsonResult;
+				self.execution 										= jsonResult;
 				self.execution.listeventsexecution    	= jsonResult.listevents;
-				self.refreshinprogress					= false;
+				self.refreshinprogress							= false;
 				
 				// $scope.chartTimeline = JSON.parse(jsonResult.chartTimeline);
 				

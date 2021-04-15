@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorConst.SIMULATIONSTATUS;
 import org.bonitasoft.meteor.MeteorScenario.CollectResult;
 import org.bonitasoft.meteor.scenario.process.MeteorCalculCover;
@@ -139,14 +138,14 @@ public class MeteorSimulation {
     private int sleepBetweenTwoTentativesInMs = 1000;
     
     /** generate a unique ID */
-    public MeteorSimulation(StartParameters startParameters, APIAccessor apiAccessor) {
+    public MeteorSimulation(MeteorStartParameters startParameters, APIAccessor apiAccessor) {
         
         mId = System.currentTimeMillis();
         mStatus=SIMULATIONSTATUS.DEFINITION;
         this.apiAccessor = apiAccessor;
-        this.tenantId = startParameters.tenantId;
-        this.executionMode = startParameters.executionMode;
-        this.timeMaxInMs = startParameters.timeMaxInMs;
+        this.tenantId = startParameters.getTenantId();
+        this.executionMode = startParameters.getExecutionMode();
+        this.timeMaxInMs = startParameters.getTimeMaxInMs();
         
             
         // according the exectionMode, fix the number of tentatives to wait a task show up

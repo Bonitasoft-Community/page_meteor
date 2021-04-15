@@ -24,11 +24,11 @@ import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfo;
 import org.bonitasoft.engine.bpm.process.ProcessDeploymentInfoCriterion;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorScenario;
 import org.bonitasoft.meteor.MeteorSimulation;
 import org.bonitasoft.meteor.MeteorToolbox;
+import org.bonitasoft.meteor.MeteorStartParameters;
 import org.json.simple.JSONValue;
 
 /* ******************************************************************** */
@@ -39,64 +39,62 @@ import org.json.simple.JSONValue;
 
 public class MeteorScenarioProcess extends MeteorScenario {
 
-    private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
-
     // todo : rename html => json
-    public final static String CSTJSON_NUMBEROFCASES = "nbcases";
-    public final static String cstHtmlType = "type";
-    public final static String cstHtmlTypeProcess = "pro";
-    public final static String cstHtmlTypeActivity = "act";
-    public final static String cstHtmlTypeUser = "usr";
+    public static final String CSTJSON_NUMBEROFCASES = "nbcases";
+    public static final String CSTJSON_HTMLTYPE = "type";
+    public static final String cstHtmlTypeProcess = "pro";
+    public static final String cstHtmlTypeActivity = "act";
+    public static final String cstHtmlTypeUser = "usr";
 
-    public final static String cstHtmlId = "id";
-    public final static String cstHtmlNumberOfRobots = "nbrob";
-    public final static String cstHtmlTimeSleep = "timesleep";
-    public final static String cstHtmlDelaySleep = "delaysleep";
-    public final static String cstHtmlInputPercent = "percent";
-    public final static String cstHtmlInputContent = "content";
-    public final static String cstHtmlInputProposeContent = "proposecontent";
+    public static final String cstHtmlId = "id";
+    public static final String cstHtmlNumberOfRobots = "nbrob";
+    public static final String cstHtmlTimeSleep = "timesleep";
+    public static final String cstHtmlDelaySleep = "delaysleep";
+    public static final String cstHtmlInputPercent = "percent";
+    public static final String cstHtmlInputContent = "content";
+    public static final String cstHtmlInputProposeContent = "proposecontent";
 
-    public final static String cstHtmlInputs = "inputs";
-    public final static String cstHtmlUserName = "username";
-    public final static String cstHtmlUserPassword = "userpassword";
-    public final static String CSTHTML_DOCUMENTNAME = "documentname";
-    public final static String cstHtmlDocumentValue = "documentvalue";
-    public final static String CSTJSON_PROCESSNAME = "processname";
-    public final static String CSTJSON_ALLOWLASTVERSION = "allowlastversion";
-    public final static String CSTJSON_PROCESSVERSION = "processversion";
-    public final static String CSTJSON_ACTIVITYNAME = "activityname";
-    public final static String cstHtmlProcessDefId = "processid";
-    public final static String CSTJSON_COVERALL = "coverall";
-    public final static String CSTJSON_COVERPERCENT = "coverpercent";
-    public final static String CSTJSON_HAPPYPATHPERCENT = "coverhappypathpercent";
-    public final static String CSTJSON_ACTIVITIES_NOTCOVERED = "activitiesnotcovered";
+    public static final String cstHtmlInputs = "inputs";
+    public static final String cstHtmlUserName = "username";
+    public static final String cstHtmlUserPassword = "userpassword";
+    public static final String CSTHTML_DOCUMENTNAME = "documentname";
+    public static final String cstHtmlDocumentValue = "documentvalue";
+    public static final String CSTJSON_PROCESSNAME = "processname";
+    public static final String CSTJSON_ALLOWLASTVERSION = "allowlastversion";
+    public static final String CSTJSON_PROCESSVERSION = "processversion";
+    public static final String CSTJSON_ACTIVITYNAME = "activityname";
+    public static final String cstHtmlProcessDefId = "processid";
+    public static final String CSTJSON_COVERALL = "coverall";
+    public static final String CSTJSON_COVERPERCENT = "coverpercent";
+    public static final String CSTJSON_HAPPYPATHPERCENT = "coverhappypathpercent";
+    public static final String CSTJSON_ACTIVITIES_NOTCOVERED = "activitiesnotcovered";
 
-    public final static String CSTJSON_LISTEVENTS = "listevents";
+    public static final String CSTJSON_LISTEVENTS = "listevents";
 
-    public final static String CSTHTML_PREFIXACTIVITY = "ACT_";
-    public final static String CSTHTML_PREFIXDOCUMENT = "DOC_";
-    public static int cstCurrentSimulation = 2;
+    public static final String CSTHTML_PREFIXACTIVITY = "ACT_";
+    public static final String CSTHTML_PREFIXDOCUMENT = "DOC_";
 
-    private final static BEvent EventGetListProcesses = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
+    private long performanceCalcul = 0;
 
-    private final static BEvent EventCalculateListProcess = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
-
-    private final static BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorScenarioProcess.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
-            "If you set a number of robot, then set a number of case(or inverse)");
-
-    private final static BEvent EventInitializeJson = new BEvent(MeteorScenarioProcess.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
+    private final Logger logger = Logger.getLogger(MeteorScenarioProcess.class.getName());
 
     private boolean mShowActivity = true;
 
+    private static final BEvent EventGetListProcesses = new BEvent(MeteorScenarioProcess.class.getName(), 1, Level.ERROR, "Error while accessing information on process list", "Check Exception ", "The processes presented may be incomplete", "Check Exception");
+
+    private static final BEvent EventCalculateListProcess = new BEvent(MeteorScenarioProcess.class.getName(), 2, Level.SUCCESS, "Collect of processes done with success", "");
+
+    private static final BEvent EventCheckRobotCaseIncoherent = new BEvent(MeteorScenarioProcess.class.getName(), 3, Level.APPLICATIONERROR, "Number of Robots and Cases not coherent", "No robots can start", "No test can be done if the robot=0 and case>0 or if robot>0 and case=0",
+            "If you set a number of robot, then set a number of case(or inverse)");
+
+    private static final BEvent EventInitializeJson = new BEvent(MeteorScenarioProcess.class.getName(), 4, Level.APPLICATIONERROR, "Variables can't be decoded", "The variable you gave must be JSON compatible", "The simulation will not start until this error is fixed", "Verify the JSON syntaxe");
     /**
      * after the calculation, we get this information : the
      * listprocessDefinition, the listEventCalculation and the performance
      */
     final List<BEvent> listEventsCalculation = new ArrayList<>();
-    public long performanceCalcul = 0;
     private final HashMap<Long, MeteorDefProcess> mListProcessDefinition = new HashMap<>();
 
-    
     public MeteorScenarioProcess(String scenarioName) {
         super(scenarioName);
     }
@@ -261,7 +259,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                     }
 
                 } // end for
-            } while (listProcessDeploymentInfos.size() > 0);
+            } while (!listProcessDeploymentInfos.isEmpty());
             listEventsCalculation.add(new BEvent(EventCalculateListProcess, mListProcessDefinition.size() + " processes detected"));
 
         } catch (final Exception e1) {
@@ -282,11 +280,11 @@ public class MeteorScenarioProcess extends MeteorScenario {
         mListProcessDefinition.clear();
     }
 
-    public HashMap<Long, MeteorDefProcess> getListProcessCalculation() {
+    public Map<Long, MeteorDefProcess> getListProcessCalculation() {
         return mListProcessDefinition;
     }
 
-    final public List<BEvent> getListEventCalculation() {
+    public List<BEvent> getListEventCalculation() {
         return listEventsCalculation;
     }
 
@@ -322,20 +320,18 @@ public class MeteorScenarioProcess extends MeteorScenario {
         for (final MeteorDefProcess meteorProcess : mListProcessDefinition.values()) {
             final Map<String, Object> oneProcess = meteorProcess.getMap();
             result.add(oneProcess);
-            oneProcess.put(cstHtmlType, cstHtmlTypeProcess);
+            oneProcess.put(CSTJSON_HTMLTYPE, cstHtmlTypeProcess);
             oneProcess.put("information", meteorProcess.getInformation());
-            if (listProcessParameters.mShowCreateCases) {
+            if (listProcessParameters.mShowCreateCases && listProcessParameters.mShowDocuments) {
+                final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<>();
+                oneProcess.put("listdocuments", listDocuments);
 
-                if (listProcessParameters.mShowDocuments) {
-                    final ArrayList<HashMap<String, Object>> listDocuments = new ArrayList<>();
-                    oneProcess.put("listdocuments", listDocuments);
-
-                    for (final MeteorDocument meteorDocument : meteorProcess.mListDocuments) {
-                        final HashMap<String, Object> oneDocument = new HashMap<>();
-                        listDocuments.add(oneDocument);
-                        oneDocument.put( CSTHTML_DOCUMENTNAME, meteorDocument.mDocumentName);
-                    }
+                for (final MeteorDocument meteorDocument : meteorProcess.mListDocuments) {
+                    final HashMap<String, Object> oneDocument = new HashMap<>();
+                    listDocuments.add(oneDocument);
+                    oneDocument.put(CSTHTML_DOCUMENTNAME, meteorDocument.mDocumentName);
                 }
+
             }
 
             // for each activity
@@ -353,7 +349,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
                         for (final MeteorDocument meteorDocument : meteorActivity.mListDocuments) {
                             final HashMap<String, Object> oneDocument = new HashMap<>();
                             listDocuments.add(oneDocument);
-                            oneDocument.put( CSTHTML_DOCUMENTNAME, meteorDocument.mDocumentName);
+                            oneDocument.put(CSTHTML_DOCUMENTNAME, meteorDocument.mDocumentName);
                         }
                     }
                 }
@@ -482,10 +478,10 @@ public class MeteorScenarioProcess extends MeteorScenario {
     /* ************************************************************************ */
 
     @Override
-    public List<BEvent> registerInSimulation(StartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
+    public List<BEvent> registerInSimulation(MeteorStartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
         List<BEvent> listEvents = new ArrayList<BEvent>();
-        listEvents.addAll(fromList(startParameters.listOfProcesses, null, apiAccessor.getProcessAPI()));
-        listEvents.addAll(initialize(startParameters.tenantId, apiAccessor.getProcessAPI()));
+        listEvents.addAll(fromList(startParameters.getListOfProcesses(), null, apiAccessor.getProcessAPI()));
+        listEvents.addAll(initialize(startParameters.getTenantId(), apiAccessor.getProcessAPI()));
         meteorSimulation.registerScenario(this);
 
         return listEvents;
@@ -507,7 +503,7 @@ public class MeteorScenarioProcess extends MeteorScenario {
         }
 
         for (final Map<String, Object> oneProcess : listOfFlatInformation) {
-            final String type = MeteorToolbox.getParameterString(oneProcess, cstHtmlType, null);
+            final String type = MeteorToolbox.getParameterString(oneProcess, CSTJSON_HTMLTYPE, null);
             if (cstHtmlTypeProcess.equals(type)) {
 
                 final MeteorDefProcess meteorProcess = MeteorDefProcess.getInstanceFromMap(oneProcess, processAPI);

@@ -12,11 +12,11 @@ import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.log.event.BEventFactory;
 import org.bonitasoft.meteor.MeteorAPI;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorRobot;
 import org.bonitasoft.meteor.MeteorScenario;
 import org.bonitasoft.meteor.MeteorSimulation;
 import org.bonitasoft.meteor.MeteorToolbox;
+import org.bonitasoft.meteor.MeteorStartParameters;
 import org.bonitasoft.meteor.scenario.process.MeteorDefProcess;
 import org.json.simple.JSONValue;
 
@@ -142,10 +142,10 @@ public class MeteorScenarioExperience extends MeteorScenario {
      * registerInSimulation
      */
     @Override
-    public List<BEvent> registerInSimulation(StartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
+    public List<BEvent> registerInSimulation(MeteorStartParameters startParameters, MeteorSimulation meteorSimulation, APIAccessor apiAccessor) {
 
         List<BEvent> listEvents = new ArrayList<>();
-        MeteorExperienceParameter meteorExperienceParameter = MeteorExperienceParameter.getInstanceFromMap(startParameters.mapOfExperience);
+        MeteorExperienceParameter meteorExperienceParameter = MeteorExperienceParameter.getInstanceFromMap(startParameters.getMapOfExperience() );
         for (Map<String, Object> scenario : meteorExperienceParameter.scenarii) {
             MeteorTimeLine timeLine = MeteorTimeLine.getInstanceFromJson(scenario);
             if (timeLine.getNbCases() * timeLine.getNbRobots() > 0) {

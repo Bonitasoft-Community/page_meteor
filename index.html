@@ -63,7 +63,7 @@
 						heigth="150" /></td>
 				</tr>
 				<tr>
-					<td style="font-size: 0.8em">V4.0.0 Dec 14 2020</a></td>
+					<td style="font-size: 0.8em">V4.0.0 Dec 21 2020</a></td>
 				</tr>
 				</div>
 			</table>
@@ -189,7 +189,7 @@
 									<tr ng-repeat="timeline in scenario.timelines" ng-if="scenario.showtimeline == 'show'">
 										<td >{{timeline.actname}}
 											<div ng-if="timeline.actismultiinstanciation">
-												<br> <div title="This activity is a Multi Instance: so, search is based on the display name">{{timeline.actdisplayname}}</div>
+												<br> <div class="label label-default" title="This activity is a Multi Instance: so, search is based on the display name"><i>{{timeline.actdisplayname}}</i></div>
 											</div>
 										
 										</td>

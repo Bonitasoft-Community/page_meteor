@@ -25,6 +25,7 @@ public class MeteorConst {
     
     public static final String CSTJSON_STATUS = "status";
     public static final String CSTJSON_ID = "id";
+    public static final String CSTJSON_SIMULATIONID = "simulationid";
     public static final String CSTJSON_PERCENTADVANCE = "percentAdvance";
     public static final String CSTJSON_TIMEESTIMATEDDELAY = "timeEstimatedDelay";
     public static final String CSTJSON_TIMEESTIMATEDEND = "timeEstimatedEnd";
@@ -44,6 +45,7 @@ public class MeteorConst {
     public static final String CSTJSON_ROBOTSTATUS = "status";
 
     public static final String CSTJSON_ROBOTNAME = "name";
+    public static final String CSTJSON_SCENARIO = "scenario";
 
     
 }

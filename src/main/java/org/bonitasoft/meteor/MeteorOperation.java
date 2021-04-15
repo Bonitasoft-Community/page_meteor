@@ -13,7 +13,6 @@ import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.log.event.BEventFactory;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 import org.bonitasoft.meteor.MeteorSimulation.Estimation;
 import org.bonitasoft.meteor.cmd.CmdMeteor;
@@ -67,7 +66,7 @@ public class MeteorOperation {
      * @param processAPI
      * @return
      */
-    public static MeteorResult start(final StartParameters startParameters, final APIAccessor apiAccessor) {
+    public static MeteorResult start(final MeteorStartParameters startParameters, final APIAccessor apiAccessor) {
         final MeteorResult meteorResult = new MeteorResult();
         final MeteorSimulation meteorSimulation = new MeteorSimulation(startParameters, apiAccessor);
         meteorResult.idSimulation = meteorSimulation.getId();
@@ -78,7 +77,6 @@ public class MeteorOperation {
             
             meteorResult.addLog( " Parameters: " + startParameters.toString());
             // Decode here the Json
-            startParameters.decodeFromJsonSt();
 
             if (simulation) {
                 meteorResult.addLog( "  >>>>>>>>>>>>>>>>>> Simulation <<<<<<<<<<<<<<<< " );
@@ -90,7 +88,7 @@ public class MeteorOperation {
             simulationInProgress.put(meteorSimulation.getId(), meteorSimulation);
             meteorResult.result.put(CmdMeteor.CSTPARAM_RESULTSIMULATIONID, String.valueOf(meteorSimulation.getId()));
 
-            MeteorScenario[] listMeteorScenario = new MeteorScenario[] { new MeteorScenarioProcess(startParameters.scenarioName ), new MeteorScenarioExperience(startParameters.scenarioName )};
+            MeteorScenario[] listMeteorScenario = new MeteorScenario[] { new MeteorScenarioProcess(startParameters.getScenarioName() ), new MeteorScenarioExperience(startParameters.getScenarioName() )};
 
             for (MeteorScenario meteorScenario : listMeteorScenario) {
                 meteorResult.listEvents.addAll(meteorScenario.registerInSimulation(startParameters, meteorSimulation, apiAccessor));

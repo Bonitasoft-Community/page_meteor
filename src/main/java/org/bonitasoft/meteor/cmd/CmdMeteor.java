@@ -10,11 +10,11 @@ import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.engine.connector.ConnectorAPIAccessorImpl;
 import org.bonitasoft.engine.service.TenantServiceAccessor;
 import org.bonitasoft.log.event.BEventFactory;
-import org.bonitasoft.meteor.MeteorAPI.StartParameters;
 import org.bonitasoft.meteor.MeteorAPI.StatusParameters;
 import org.bonitasoft.meteor.MeteorDAO;
 import org.bonitasoft.meteor.MeteorOperation;
 import org.bonitasoft.meteor.MeteorOperation.MeteorResult;
+import org.bonitasoft.meteor.MeteorStartParameters;
 
 public class CmdMeteor extends BonitaCommandApiAccessor {
 
@@ -79,9 +79,9 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
         } else if (VERBE.START.toString().equals(commandName)) {
 
             @SuppressWarnings("unchecked")
-            final StartParameters startParameters = StartParameters.getInstanceFromJsonList((ArrayList<String>) executeParameters.parametersCommand.get(CSTPARAM_COMMANDNAMESTARTPARAMS));
+            final MeteorStartParameters startParameters = MeteorStartParameters.getInstanceFromJsonSt( (String) executeParameters.parametersCommand.get(CSTPARAM_COMMANDNAMESTARTPARAMS));
             logger.fine(logHeader+"COMMANDMETEOR.Start params[" + startParameters.toString() + "]");
-            startParameters.tenantId = tenantId;
+            startParameters.setTenantId( tenantId );
             MeteorResult meteorResult  = MeteorOperation.start(startParameters, connectorAccessorAPI);
             executeAnswer.result = meteorResult.getMap();
             executeAnswer.listEvents = meteorResult.listEvents;
@@ -104,7 +104,7 @@ public class CmdMeteor extends BonitaCommandApiAccessor {
             }
             else {
                 String accumulateJson=statusDao.configuration.content;
-                final StartParameters startParameters = StartParameters.getInstanceFromJsonSt( accumulateJson );
+                final MeteorStartParameters startParameters = MeteorStartParameters.getInstanceFromJsonSt( accumulateJson );
                 MeteorResult meteorResult  = MeteorOperation.start(startParameters, connectorAccessorAPI);
                 executeAnswer.result = meteorResult.getMap();
                 executeAnswer.listEvents = meteorResult.listEvents;
